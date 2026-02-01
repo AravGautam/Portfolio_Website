@@ -60,7 +60,7 @@ const About = () => {
               <Achievements />
 
               <a 
-                href="https://drive.google.com/file/d/18TVsgKbhzlDlwKV7tSVfK29xRgXvsZjl/view?usp=sharing"
+                href="https://drive.google.com/file/d/1URqmRAd0bKbM50Ez-6E2t2mRz1hW8Vz-/view?usp=sharing"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-block px-6 py-3 bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-500 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-purple-500/50 transform hover:-translate-y-1 transition-all duration-300"
