@@ -5,7 +5,7 @@ const Contact = () => {
   const links = [
     { href: 'mailto:working.aravgautam@gmail.com', icon: '📧', label: 'Email' },
     { href: 'https://www.linkedin.com/in/arav-gautam-007swerty2024/', icon: '💼', label: 'LinkedIn' },
-    { href: 'https://github.com/MasterOFSnippet/', icon: '💻', label: 'GitHub' },
+    { href: 'https://github.com/AravGautam/', icon: '💻', label: 'GitHub' },
     { href: 'https://www.instagram.com/_i_m_arav__/', icon: '📷', label: 'Instagram' },
     { href: 'https://x.com/_i_m_arav__', icon: '🐦', label: '𝕏 (Twitter)' }
   ];

@@ -20,7 +20,7 @@ const Projects = () => {
       title: 'Real-Time Online Chess Platform',
       description: 'Built a multiplayer chess web application using React, Node.js, Socket.IO, and Chess.js. Implemented real-time gameplay with move validation and socket-based synchronization. Added authentication, room management, and responsive UI for seamless user experience across devices.',
       tags: ['React', 'Node.js', 'Socket.IO', 'Chess.js', 'Real-time'],
-      githubLink: 'https://github.com/MasterOFSnippet/Chess-MinorProject',
+      githubLink: 'https://github.com/AravGautam/Chess-MinorProject',
       liveLink: 'https://minorproject-chessmaster.vercel.app/'
     },
     {
@@ -28,7 +28,7 @@ const Projects = () => {
       title: 'MERN Stack Mini Projects Collection',
       description: 'Comprehensive collection of MERN-based applications including To-Do List, Notes Organizer, Student Lister, and Climate App. Demonstrated CRUD operations, REST API design, and seamless frontend-backend integration using MongoDB, Express, React, and Node.js.',
       tags: ['MongoDB', 'Express', 'React', 'Node.js', 'REST API'],
-      githubLink: 'https://github.com/MasterOFSnippet/Clg_Training-Internship-MERN-Projects',
+      githubLink: 'https://github.com/AravGautam/Clg_Training-Internship-MERN-Projects',
       liveLink: null
     }
   ];
@@ -88,7 +88,7 @@ const Projects = () => {
           }}
         >
           <a
-            href="https://github.com/MasterOFSnippet"
+            href="https://github.com/AravGautam"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-block px-8 py-4 border-2 border-purple-500/50 text-white font-semibold rounded-full hover:bg-purple-500/10 hover:border-cyan-400/50 hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-300 backdrop-blur-sm group"

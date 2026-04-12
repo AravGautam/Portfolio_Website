@@ -116,7 +116,7 @@ const Navbar = () => {
               {/* Social Links */}
               <div className="flex gap-6 pb-8 border-t border-purple-500/20 pt-6">
                 <a 
-                  href="https://github.com/MasterOFSnippet/" 
+                  href="https://github.com/AravGautam/" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="text-gray-400 hover:text-purple-400 transition-colors"
