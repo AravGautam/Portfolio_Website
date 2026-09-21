@@ -1,103 +1,207 @@
-import React from 'react';
-import { useScrollAnimation } from '../hooks/useScrollAnimation';
-import ProjectCard from './ProjectCard';
+import React, { useState, useCallback, useRef } from 'react';
+import { portfolioData } from '../../data/portfolioData';
+import WebGLCanvas from '../webgl/WebGLCanvas';
+import { ProjectVisualizerScene } from '../webgl/ProjectVisualizer';
+import ProjectModal from './ProjectModal';
+import { ExternalLink, Github, ArrowRight, Eye, ChevronRight } from 'lucide-react';
 
 const Projects = () => {
-  const [titleRef, titleVisible] = useScrollAnimation({ threshold: 0.3, once: true });
-  const [cardsRef, cardsVisible] = useScrollAnimation({ threshold: 0.1, once: true });
+  const [activeProjectIndex, setActiveProjectIndex] = useState(0);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const visualizerRef = useRef(null);
 
-  const projects = [
-    {
-      emoji: '🤖',
-      title: 'AI-Powered Personal Fitness Tracker',
-      description: 'Developed an AI-based fitness application achieving 92% calorie prediction accuracy using RandomForest Regressor. Designed data pipelines with NumPy, Pandas, Matplotlib, and Scikit-learn for model training and analytics. Deployed via Streamlit Cloud, improving accessibility and interactivity. Improved user adherence by 40% through personalized feedback.',
-      tags: ['Python', 'Machine Learning', 'Scikit-learn', 'Streamlit', 'NumPy', 'Pandas'],
-      githubLink: 'https://github.com/CodeCosmonautArav/Internship_Project',
-      liveLink: 'https://personal-fitness-tracker-01.streamlit.app/'
-    },
-    {
-      emoji: '♟️',
-      title: 'Real-Time Online Chess Platform',
-      description: 'Built a multiplayer chess web application using React, Node.js, Socket.IO, and Chess.js. Implemented real-time gameplay with move validation and socket-based synchronization. Added authentication, room management, and responsive UI for seamless user experience across devices.',
-      tags: ['React', 'Node.js', 'Socket.IO', 'Chess.js', 'Real-time'],
-      githubLink: 'https://github.com/AravGautam/Chess-MinorProject',
-      liveLink: 'https://minorproject-chessmaster.vercel.app/'
-    },
-    {
-      emoji: '📦',
-      title: 'MERN Stack Mini Projects Collection',
-      description: 'Comprehensive collection of MERN-based applications including To-Do List, Notes Organizer, Student Lister, and Climate App. Demonstrated CRUD operations, REST API design, and seamless frontend-backend integration using MongoDB, Express, React, and Node.js.',
-      tags: ['MongoDB', 'Express', 'React', 'Node.js', 'REST API'],
-      githubLink: 'https://github.com/AravGautam/Clg_Training-Internship-MERN-Projects',
-      liveLink: null
+  const activeProject = portfolioData.projects[activeProjectIndex];
+
+  const createScene = useCallback((container) => {
+    const scene = new ProjectVisualizerScene(container, portfolioData.projects[0].visualType);
+    visualizerRef.current = scene;
+    return scene;
+  }, []);
+
+  const handleSelectProject = (index) => {
+    if (index === activeProjectIndex) return;
+    setActiveProjectIndex(index);
+    if (visualizerRef.current) {
+      visualizerRef.current.setVisualType(portfolioData.projects[index].visualType);
     }
-  ];
+  };
 
   return (
-    <section id="projects" className="py-24 px-[5%] bg-slate-950 relative overflow-hidden">
-      {/* Animated Background */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute w-full h-full bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.3)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
-      </div>
+    <section id="projects" className="relative py-28 px-6 md:px-12 bg-[#07070a] overflow-hidden">
+      {/* Background Ambience */}
+      <div className="absolute top-1/3 -left-40 w-96 h-96 bg-[#00f0ff]/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-1/4 -right-40 w-96 h-96 bg-[#8b5cf6]/5 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Floating orbs */}
-      <div className="absolute top-20 right-20 w-64 h-64 bg-purple-600/10 rounded-full blur-3xl animate-pulse-slow" />
-      <div className="absolute bottom-20 left-20 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }} />
-      
-      <div className="max-w-6xl mx-auto relative z-10">
-        {/* Animated Title */}
-        <div
-          ref={titleRef}
-          style={{
-            opacity: titleVisible ? 1 : 0,
-            transform: titleVisible ? 'translateY(0)' : 'translateY(40px)',
-            transition: 'all 0.8s cubic-bezier(0.17, 0.55, 0.55, 1)',
-          }}
-        >
-          <h2 className="text-5xl font-bold text-white text-center mb-4">
-            Featured <span className="bg-gradient-to-r from-purple-400 via-blue-500 to-cyan-400 bg-clip-text text-transparent">Projects</span>
-          </h2>
-          <p className="text-gray-400 text-center mb-12 max-w-2xl mx-auto">
-            A showcase of my technical projects spanning AI/ML, full-stack development, and real-time applications
+      <div className="max-w-7xl mx-auto relative z-10">
+        {/* Section Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-wider text-[#00f0ff] mb-3">
+              Featured Work
+            </div>
+            <h2 className="text-4xl sm:text-6xl font-display font-extrabold text-white tracking-tight">
+              Selected Projects & Systems
+            </h2>
+          </div>
+
+          <p className="text-sm text-gray-400 max-w-md leading-relaxed font-normal">
+            An interactive showcase of full-stack engineering, machine learning predictive models, and real-time WebSocket applications.
           </p>
         </div>
 
-        {/* Project Cards with Sequential Animation */}
-        <div ref={cardsRef} className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {projects.map((project, index) => (
-            <div
-              key={index}
-              style={{
-                opacity: cardsVisible ? 1 : 0,
-                transform: cardsVisible ? 'translateY(0) scale(1)' : 'translateY(40px) scale(0.95)',
-                transition: `all 0.8s cubic-bezier(0.17, 0.55, 0.55, 1) ${index * 0.2}s`,
-              }}
-            >
-              <ProjectCard {...project} />
+        {/* Interactive 3D Showcase Viewport */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch mb-12">
+          {/* Left Column: Interactive 3D Visualizer Screen (7 cols) */}
+          <div className="lg:col-span-7 relative rounded-3xl bg-[#0e0e14]/90 border border-white/10 overflow-hidden flex flex-col justify-between p-6 sm:p-8 min-h-[440px] shadow-2xl">
+            {/* Top Scene Badge */}
+            <div className="relative z-10 flex items-center justify-between pointer-events-none">
+              <div className="flex items-center gap-2 text-xs bg-black/60 border border-white/10 px-3.5 py-1.5 rounded-full backdrop-blur-md text-gray-300 font-medium">
+                <span className="w-2 h-2 rounded-full bg-[#00f0ff] animate-pulse" />
+                <span>3D Interactive Environment</span>
+              </div>
+
+              <div className="text-xs text-gray-400 bg-black/60 border border-white/10 px-3 py-1.5 rounded-full backdrop-blur-md">
+                {activeProject.category}
+              </div>
             </div>
-          ))}
+
+            {/* 3D WebGL Canvas Layer */}
+            <div className="absolute inset-0 z-0">
+              <WebGLCanvas createScene={createScene} className="w-full h-full" />
+            </div>
+
+            {/* Bottom Scene Controller & Expand Trigger */}
+            <div className="relative z-10 flex flex-wrap items-end justify-between gap-4 pt-28 pointer-events-auto">
+              <div>
+                <span className="text-xs font-semibold text-[#00f0ff] tracking-wide block mb-1">
+                  {activeProject.category}
+                </span>
+                <h3 className="text-2xl sm:text-3xl font-display font-bold text-white drop-shadow-md">
+                  {activeProject.title}
+                </h3>
+              </div>
+
+              <button
+                onClick={() => setSelectedProject(activeProject)}
+                className="text-xs font-semibold px-6 py-3 rounded-full bg-white text-black hover:bg-[#00f0ff] hover:shadow-xl transition-all duration-300 flex items-center gap-2 shadow-lg"
+              >
+                <Eye className="w-3.5 h-3.5" />
+                <span>View Project</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Right Column: Project Selector Cards (5 cols) */}
+          <div className="lg:col-span-5 flex flex-col gap-4">
+            {portfolioData.projects.map((proj, idx) => {
+              const isSelected = activeProjectIndex === idx;
+              return (
+                <div
+                  key={proj.id}
+                  onClick={() => handleSelectProject(idx)}
+                  className={`cursor-pointer p-6 rounded-2xl border transition-all duration-300 relative overflow-hidden group ${
+                    isSelected
+                      ? 'bg-[#0e0e14] border-[#00f0ff]/50 shadow-xl shadow-[#00f0ff]/10'
+                      : 'bg-[#0e0e14]/50 border-white/5 hover:border-white/20 hover:bg-[#0e0e14]/80'
+                  }`}
+                >
+                  {/* Active Indicator Bar */}
+                  {isSelected && (
+                    <div className="absolute top-0 left-0 bottom-0 w-1 bg-gradient-to-b from-[#00f0ff] to-[#8b5cf6]" />
+                  )}
+
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-semibold text-[#00f0ff]">
+                      {proj.category}
+                    </span>
+                    {isSelected && (
+                      <span className="text-[11px] font-medium text-[#00f0ff] flex items-center gap-1">
+                        <span>Viewing in 3D</span>
+                        <ChevronRight className="w-3 h-3" />
+                      </span>
+                    )}
+                  </div>
+
+                  <h4 className="text-lg font-display font-bold text-white mb-2 group-hover:text-[#00f0ff] transition-colors">
+                    {proj.title}
+                  </h4>
+
+                  <p className="text-xs text-gray-400 mb-4 line-clamp-2 leading-relaxed font-normal">
+                    {proj.shortDesc}
+                  </p>
+
+                  {/* Tech Tags */}
+                  <div className="flex flex-wrap gap-1.5 mb-4">
+                    {proj.tags.slice(0, 4).map((tag, tIdx) => (
+                      <span
+                        key={tIdx}
+                        className="text-[11px] px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-gray-300"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                    {proj.tags.length > 4 && (
+                      <span className="text-[11px] px-2 py-0.5 rounded-full text-gray-400">
+                        +{proj.tags.length - 4}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Action Links */}
+                  <div className="flex items-center gap-4 pt-3 border-t border-white/5">
+                    {proj.githubLink && (
+                      <a
+                        href={proj.githubLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex items-center gap-1.5 text-xs text-gray-300 hover:text-white transition-colors font-medium"
+                      >
+                        <Github className="w-3.5 h-3.5" />
+                        <span>Source Code</span>
+                      </a>
+                    )}
+                    {proj.liveLink && (
+                      <a
+                        href={proj.liveLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex items-center gap-1.5 text-xs text-[#00f0ff] hover:text-white transition-colors font-medium"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        <span>Live Demo</span>
+                      </a>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
-        {/* View More Button (Optional) */}
-        <div
-          className="text-center mt-12"
-          style={{
-            opacity: cardsVisible ? 1 : 0,
-            transform: cardsVisible ? 'translateY(0)' : 'translateY(20px)',
-            transition: 'all 0.8s cubic-bezier(0.17, 0.55, 0.55, 1) 0.8s',
-          }}
-        >
+        {/* Global GitHub CTA */}
+        <div className="text-center pt-8 border-t border-white/5">
           <a
             href="https://github.com/AravGautam"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-block px-8 py-4 border-2 border-purple-500/50 text-white font-semibold rounded-full hover:bg-purple-500/10 hover:border-cyan-400/50 hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-300 backdrop-blur-sm group"
+            className="inline-flex items-center gap-2 text-xs font-semibold px-8 py-4 rounded-full border border-white/15 hover:border-white/40 bg-[#0e0e14] hover:bg-white/5 text-white transition-all duration-300 group shadow-lg"
           >
-            <span className="mr-2">View All Projects</span>
-            <span className="inline-block transition-transform duration-300 group-hover:translate-x-1">→</span>
+            <Github className="w-4 h-4 text-[#00f0ff]" />
+            <span>Explore All Projects on GitHub</span>
+            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform text-[#00f0ff]" />
           </a>
         </div>
       </div>
+
+      {/* Expanded Project Modal */}
+      {selectedProject && (
+        <ProjectModal
+          project={selectedProject}
+          onClose={() => setSelectedProject(null)}
+        />
+      )}
     </section>
   );
 };

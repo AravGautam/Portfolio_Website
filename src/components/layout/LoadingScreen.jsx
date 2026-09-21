@@ -1,130 +1,69 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const LoadingScreen = ({ onComplete }) => {
   const [progress, setProgress] = useState(0);
-  const [showNamaste, setShowNamaste] = useState(false);
   const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
-    // Simulate loading progress
-    const progressInterval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(progressInterval);
+    const timer = setInterval(() => {
+      setProgress((prev) => {
+        const next = prev + Math.floor(Math.random() * 8) + 4;
+        if (next >= 100) {
+          clearInterval(timer);
+          setTimeout(() => {
+            setFadeOut(true);
+            setTimeout(() => onComplete(), 600);
+          }, 250);
           return 100;
         }
-        return prev + 2;
+        return next;
       });
-    }, 30);
+    }, 35);
 
-    // Show Namaste text after brief delay
-    const namasteTimer = setTimeout(() => setShowNamaste(true), 500);
-
-    // Start fade out when complete
-    const completeTimer = setTimeout(() => {
-      setFadeOut(true);
-      setTimeout(() => onComplete(), 800);
-    }, 3500);
-
-    return () => {
-      clearInterval(progressInterval);
-      clearTimeout(namasteTimer);
-      clearTimeout(completeTimer);
-    };
+    return () => clearInterval(timer);
   }, [onComplete]);
 
   return (
-    <div className={`fixed inset-0 z-[9999] transition-opacity duration-800 ${fadeOut ? 'opacity-0' : 'opacity-100'}`}>
-      {/* Background with gradient animation */}
-      <div className="absolute inset-0 bg-gradient-to-br from-black via-purple-950 to-blue-950">
-        {/* Animated particles */}
-        <div className="absolute inset-0 overflow-hidden">
-          {[...Array(20)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-1 h-1 bg-purple-400/30 rounded-full"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animation: `float ${5 + Math.random() * 5}s ease-in-out infinite`,
-                animationDelay: `${Math.random() * 2}s`
-              }}
-            />
-          ))}
-        </div>
+    <div
+      className={`fixed inset-0 z-[9999] bg-[#07070a] flex flex-col items-center justify-center p-6 select-none transition-opacity duration-700 ${
+        fadeOut ? 'opacity-0 pointer-events-none' : 'opacity-100'
+      }`}
+    >
+      {/* Ambient background glow */}
+      <div className="absolute w-[500px] h-[500px] bg-gradient-to-br from-[#8b5cf6]/15 via-[#00f0ff]/10 to-transparent rounded-full blur-3xl pointer-events-none animate-pulse-glow" />
 
-        {/* Glowing orbs */}
-        <div className="absolute w-96 h-96 bg-purple-600/20 rounded-full blur-3xl top-1/4 left-1/4 animate-pulse" />
-        <div className="absolute w-80 h-80 bg-blue-600/20 rounded-full blur-3xl bottom-1/4 right-1/4 animate-pulse" style={{ animationDelay: '1s' }} />
-      </div>
-
-      {/* Content */}
-      <div className="relative h-full flex flex-col items-center justify-center">
-        {/* Namaste Text */}
-        <div className={`mb-12 transition-all duration-1000 ${showNamaste ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-          {/* Hindi - नमस्ते */}
-          <div className="text-center mb-4 px-4">
-            <h1 className="text-6xl md:text-8xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent mb-3"
-                style={{ 
-                  fontFamily: 'Georgia, serif',
-                  animation: 'glow 2s ease-in-out infinite',
-                  lineHeight: '1.2',
-                  paddingTop: '0.1em'
-                }}>
-              नमस्ते
-            </h1>
-            <p className="text-gray-400 text-sm tracking-widest">NAMASTE</p>
-          </div>
-
-          {/* Greeting message */}
-          <p className={`text-gray-300 text-center text-lg transition-all duration-1000 delay-500 ${showNamaste ? 'opacity-100' : 'opacity-0'}`}>
+      <div className="relative z-10 w-full max-w-sm flex flex-col items-center text-center">
+        {/* Hindi Greeting नमस्ते */}
+        <div className="mb-6">
+          <h1
+            className="text-6xl sm:text-7xl font-bold bg-gradient-to-r from-purple-300 via-cyan-200 to-white bg-clip-text text-transparent mb-2 tracking-wide"
+            style={{
+              fontFamily: "'Georgia', 'Times New Roman', serif",
+              lineHeight: '1.2',
+              filter: 'drop-shadow(0 0 30px rgba(0, 240, 255, 0.35))'
+            }}
+          >
+            नमस्ते
+          </h1>
+          <p className="text-gray-400 text-sm tracking-wide font-normal">
             Welcome to my digital space
           </p>
         </div>
 
-        {/* Progress bar */}
-        <div className="w-64 md:w-80">
-          <div className="h-1 bg-gray-800 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-500 transition-all duration-300 ease-out rounded-full"
-              style={{ 
-                width: `${progress}%`,
-                boxShadow: '0 0 20px rgba(168, 85, 247, 0.6)'
-              }}
-            />
-          </div>
-          <p className="text-center text-gray-500 text-sm mt-3">{progress}%</p>
+        {/* Minimal Progress Bar */}
+        <div className="w-64 sm:w-72 bg-white/5 h-1 rounded-full overflow-hidden mb-3 border border-white/10">
+          <div
+            className="h-full bg-gradient-to-r from-[#00f0ff] via-[#8b5cf6] to-white transition-all duration-150 ease-out rounded-full shadow-lg shadow-[#00f0ff]/50"
+            style={{ width: `${progress}%` }}
+          />
         </div>
 
-        {/* Decorative elements */}
-        <div className="absolute bottom-20 flex items-center gap-2 opacity-40">
-          <div className="w-2 h-2 bg-purple-400 rounded-full animate-ping" />
-          <div className="w-2 h-2 bg-blue-400 rounded-full animate-ping" style={{ animationDelay: '0.5s' }} />
-          <div className="w-2 h-2 bg-cyan-400 rounded-full animate-ping" style={{ animationDelay: '1s' }} />
+        {/* English NAMASTE + Progress below bar */}
+        <div className="flex items-center justify-between w-64 sm:w-72 text-xs text-gray-400 font-mono tracking-widest">
+          <span className="text-gray-300 font-semibold tracking-[0.25em]">NAMASTE</span>
+          <span className="text-[#00f0ff] font-medium">{progress}%</span>
         </div>
       </div>
-
-      <style>{`
-        @keyframes glow {
-          0%, 100% { 
-            filter: drop-shadow(0 0 20px rgba(168, 85, 247, 0.5));
-          }
-          50% { 
-            filter: drop-shadow(0 0 40px rgba(168, 85, 247, 0.8)) drop-shadow(0 0 60px rgba(59, 130, 246, 0.5));
-          }
-        }
-
-        @keyframes float {
-          0%, 100% { 
-            transform: translate(0, 0) scale(1);
-            opacity: 0.3;
-          }
-          50% { 
-            transform: translate(30px, -30px) scale(1.5);
-            opacity: 0.8;
-          }
-        }
-      `}</style>
     </div>
   );
 };

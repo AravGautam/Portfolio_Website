@@ -11,11 +11,13 @@
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
+    "gsap": "^3.15.0",
     "lucide-react": "^0.556.0",
     "path": "^0.12.7",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "react-router-dom": "^7.9.5"
+    "react-router-dom": "^7.9.5",
+    "three": "^0.186.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",

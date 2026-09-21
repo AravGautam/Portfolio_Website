@@ -1,122 +1,93 @@
 import React from 'react';
-import { useScrollAnimation, animations } from '../hooks/useScrollAnimation';
-import SkillItem from './SkillItem';
+import { portfolioData } from '../../data/portfolioData';
+import { MapPin, ExternalLink, Sparkles } from 'lucide-react';
 import Education from './Education';
 import Achievements from './Achievements';
 
 const About = () => {
-  const [titleRef, titleVisible] = useScrollAnimation({ threshold: 0.3, once: true });
-  const [contentRef, contentVisible] = useScrollAnimation({ threshold: 0.2, once: true });
-  const [skillsRef, skillsVisible] = useScrollAnimation({ threshold: 0.2, once: true });
-
-  const skills = [
-    { icon: '☕', name: 'Java, Python, C/C++' },
-    { icon: '⚛️', name: 'MERN Stack & Next.js' },
-    { icon: '🔧', name: 'Node.js & Express' },
-    { icon: '💾', name: 'MongoDB & MySQL' },
-    { icon: '🤖', name: 'AI/ML & Data Science' },
-    { icon: '🛠️', name: 'Git, VS Code, Postman' }
-  ];
-
   return (
-    <section id="about" className="py-24 px-[5%] bg-gradient-to-b from-slate-950 via-purple-950/20 to-slate-950 relative overflow-hidden">
-      {/* Animated Background Pattern */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute w-full h-full bg-[radial-gradient(circle_at_center,rgba(139,92,246,0.3)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
-      </div>
-      
-      <div className="max-w-6xl mx-auto relative z-10">
-        {/* Animated Title */}
-        <div
-          ref={titleRef}
-          style={{
-            opacity: titleVisible ? 1 : 0,
-            transform: titleVisible ? 'translateY(0)' : 'translateY(40px)',
-            transition: 'all 0.8s cubic-bezier(0.17, 0.55, 0.55, 1)',
-          }}
-        >
-          <h2 className="text-5xl font-bold text-white text-center mb-12">
-            About <span className="bg-gradient-to-r from-purple-400 via-blue-500 to-cyan-400 bg-clip-text text-transparent">Me</span>
-          </h2>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-16 items-start">
-          {/* Left Column - Content (Slide in from left) */}
-          <div
-            ref={contentRef}
-            style={{
-              opacity: contentVisible ? 1 : 0,
-              transform: contentVisible ? 'translateX(0)' : 'translateX(-60px)',
-              transition: 'all 1s cubic-bezier(0.17, 0.55, 0.55, 1) 0.2s',
-            }}
-          >
-            <div className="text-gray-300 text-lg leading-relaxed">
-              <h3 className="text-white text-2xl font-semibold mb-4">Career Objective</h3>
-              <p className="mb-6">
-                Enthusiastic Computer Science student with hands-on experience in MERN stack development, algorithms, and AI concepts. Passionate about building efficient, user-focused applications and solving challenging technical problems through innovative software solutions.
-              </p>
-              
-              <Education />
-              <Achievements />
-
-              <a 
-                href="https://drive.google.com/file/d/1URqmRAd0bKbM50Ez-6E2t2mRz1hW8Vz-/view?usp=sharing"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block px-6 py-3 bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-500 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-purple-500/50 transform hover:-translate-y-1 transition-all duration-300"
-              >
-                📄 View Résumé
-              </a>
+    <section id="about" className="relative py-28 px-6 md:px-12 bg-[#07070a] border-t border-white/5 overflow-hidden">
+      <div className="max-w-7xl mx-auto">
+        {/* Section Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-wider text-[#00f0ff] mb-3">
+              Background & Education
             </div>
+            <h2 className="text-4xl sm:text-6xl font-display font-extrabold text-white tracking-tight">
+              About Me
+            </h2>
           </div>
 
-          {/* Right Column - Skills (Slide in from right with stagger) */}
-          <div
-            ref={skillsRef}
-            style={{
-              opacity: skillsVisible ? 1 : 0,
-              transform: skillsVisible ? 'translateX(0)' : 'translateX(60px)',
-              transition: 'all 1s cubic-bezier(0.17, 0.55, 0.55, 1) 0.4s',
-            }}
-          >
-            <h3 className="text-white text-xl font-semibold mb-4">Technical Skills</h3>
-            <div className="grid grid-cols-2 gap-4">
-              {skills.map((skill, index) => (
-                <div
-                  key={index}
-                  style={{
-                    opacity: skillsVisible ? 1 : 0,
-                    transform: skillsVisible ? 'translateY(0)' : 'translateY(20px)',
-                    transition: `all 0.6s cubic-bezier(0.17, 0.55, 0.55, 1) ${0.6 + index * 0.1}s`,
-                  }}
-                >
-                  <SkillItem icon={skill.icon} name={skill.name} />
-                </div>
-              ))}
-            </div>
-            
-            <div 
-              className="mt-6 bg-gradient-to-br from-purple-900/20 to-blue-900/20 p-4 rounded-lg border border-purple-500/20 backdrop-blur-sm"
-              style={{
-                opacity: skillsVisible ? 1 : 0,
-                transform: skillsVisible ? 'scale(1)' : 'scale(0.95)',
-                transition: 'all 0.8s cubic-bezier(0.17, 0.55, 0.55, 1) 1.2s',
-              }}
-            >
-              <h4 className="text-white font-semibold mb-2">Core Competencies</h4>
-              <p className="text-gray-300 text-sm">Data Structures & Algorithms, Operating Systems, DBMS, REST APIs, Object-Oriented Programming, Algorithm Analysis & Design</p>
+          <div className="flex items-center gap-2 text-xs text-gray-300 bg-[#0e0e14] border border-white/10 px-4 py-2 rounded-full font-medium">
+            <MapPin className="w-3.5 h-3.5 text-[#00f0ff]" />
+            <span>{portfolioData.personal.location}</span>
+          </div>
+        </div>
+
+        {/* 2-Column Grid Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Left Column (7 cols): Bio Statement & Education */}
+          <div className="lg:col-span-7 space-y-8">
+            {/* Bio Card */}
+            <div className="p-8 rounded-3xl bg-[#0e0e14]/70 border border-white/10 backdrop-blur-xl shadow-2xl relative overflow-hidden group hover:border-white/20 transition-all duration-300">
+              <div className="flex items-center gap-2 text-xs font-semibold text-[#00f0ff] uppercase tracking-wider mb-4">
+                <Sparkles className="w-4 h-4" />
+                <span>Career Focus & Background</span>
+              </div>
+              <h3 className="font-display font-bold text-2xl text-white mb-4">
+                Full-Stack Engineer with an AI & Systems Focus
+              </h3>
+              <p className="text-gray-300 text-sm sm:text-base leading-relaxed mb-6 font-normal">
+                Computer Science student with hands-on experience in MERN stack development, algorithms, and machine learning concepts. Passionate about building efficient, user-focused applications and solving challenging engineering problems through clean, maintainable code.
+              </p>
+
+              {/* Status Indicator */}
+              <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/[0.02] border border-white/5">
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400"></span>
+                </span>
+                <span className="text-xs text-gray-300 font-medium">
+                  {portfolioData.personal.status}
+                </span>
+              </div>
             </div>
 
-            <div 
-              className="mt-6 bg-gradient-to-br from-purple-900/20 to-blue-900/20 p-4 rounded-lg border border-purple-500/20 backdrop-blur-sm"
-              style={{
-                opacity: skillsVisible ? 1 : 0,
-                transform: skillsVisible ? 'scale(1)' : 'scale(0.95)',
-                transition: 'all 0.8s cubic-bezier(0.17, 0.55, 0.55, 1) 1.4s',
-              }}
-            >
-              <h4 className="text-white font-semibold mb-2">Soft Skills</h4>
-              <p className="text-gray-300 text-sm">Problem-solving, Team Leadership, Time Management, Adaptability, Fast Learning, Communication</p>
+            {/* Education Card */}
+            <Education />
+          </div>
+
+          {/* Right Column (5 cols): Milestones & Verified Resume */}
+          <div className="lg:col-span-5 space-y-8">
+            <Achievements />
+
+            {/* Resume Card */}
+            <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-[#0e0e14] to-[#141026] border border-white/10 hover:border-white/30 transition-all duration-300 shadow-2xl flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-semibold text-purple-300 uppercase tracking-wider">
+                    Official Document
+                  </span>
+                  <span className="text-[11px] text-gray-400">PDF • Verified</span>
+                </div>
+                <h4 className="font-display font-bold text-xl text-white mb-2">
+                  Technical Résumé
+                </h4>
+                <p className="text-xs text-gray-400 mb-6 leading-relaxed font-normal">
+                  Detailed summary of academic records, production code repositories, algorithmic problem-solving certifications, and technical proficiencies.
+                </p>
+              </div>
+
+              <a
+                href={portfolioData.personal.resumeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full text-xs font-semibold py-3.5 px-6 rounded-full bg-white text-black hover:bg-[#00f0ff] transition-all flex items-center justify-center gap-2 shadow-lg"
+              >
+                <span>Open Resume (Google Drive)</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
             </div>
           </div>
         </div>

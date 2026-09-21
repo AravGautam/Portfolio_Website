@@ -1,146 +1,91 @@
 import React, { useEffect, useState } from 'react';
 
 const CustomCursor = () => {
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [isHovering, setIsHovering] = useState(false);
-  const [currentSection, setCurrentSection] = useState('home');
-  const [isVisible, setIsVisible] = useState(true);
+  const [position, setPosition] = useState({ x: -100, y: -100 });
+  const [isPointer, setIsPointer] = useState(false);
+  const [isClicked, setIsClicked] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // Hide default cursor
-    document.body.style.cursor = 'none';
+    // Only enable on desktop devices (width >= 1024px and non-touch fine pointer)
+    const isTouchOrMobile = () => {
+      return (
+        window.innerWidth < 1024 ||
+        window.matchMedia('(pointer: coarse)').matches ||
+        'ontouchstart' in window ||
+        navigator.maxTouchPoints > 0
+      );
+    };
+
+    if (isTouchOrMobile()) {
+      setIsVisible(false);
+      return;
+    }
 
     const handleMouseMove = (e) => {
+      if (isTouchOrMobile()) {
+        setIsVisible(false);
+        return;
+      }
       setPosition({ x: e.clientX, y: e.clientY });
+      setIsVisible(true);
+
+      const target = e.target;
+      setIsPointer(
+        window.getComputedStyle(target).cursor === 'pointer' ||
+        target.tagName === 'A' ||
+        target.tagName === 'BUTTON' ||
+        target.closest('button') ||
+        target.closest('a')
+      );
     };
 
-    const handleMouseEnter = () => setIsVisible(true);
+    const handleResize = () => {
+      if (isTouchOrMobile()) {
+        setIsVisible(false);
+      }
+    };
+
+    const handleMouseDown = () => setIsClicked(true);
+    const handleMouseUp = () => setIsClicked(false);
     const handleMouseLeave = () => setIsVisible(false);
 
-    // Detect hoverable elements
-    const handleHoverElements = () => {
-      const hoverables = document.querySelectorAll('a, button, [role="button"], input, textarea, select');
-      
-      hoverables.forEach((element) => {
-        element.addEventListener('mouseenter', () => setIsHovering(true));
-        element.addEventListener('mouseleave', () => setIsHovering(false));
-      });
-    };
-
-    // Detect current section for color change
-    const handleScroll = () => {
-      const sections = ['home', 'about', 'projects', 'contact'];
-      const current = sections.find(section => {
-        const element = document.getElementById(section);
-        if (element) {
-          const rect = element.getBoundingClientRect();
-          return rect.top <= 100 && rect.bottom >= 100;
-        }
-        return false;
-      });
-      if (current) setCurrentSection(current);
-    };
-
     window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseenter', handleMouseEnter);
-    window.addEventListener('mouseleave', handleMouseLeave);
-    window.addEventListener('scroll', handleScroll);
-    
-    // Initialize hover listeners
-    handleHoverElements();
-    
-    // Re-initialize on DOM changes (for dynamic content)
-    const observer = new MutationObserver(handleHoverElements);
-    observer.observe(document.body, { childList: true, subtree: true });
+    window.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('resize', handleResize);
+    document.body.addEventListener('mouseleave', handleMouseLeave);
 
     return () => {
-      document.body.style.cursor = 'auto';
       window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseenter', handleMouseEnter);
-      window.removeEventListener('mouseleave', handleMouseLeave);
-      window.removeEventListener('scroll', handleScroll);
-      observer.disconnect();
+      window.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('resize', handleResize);
+      document.body.removeEventListener('mouseleave', handleMouseLeave);
     };
   }, []);
 
-  // Section-specific colors
-  const sectionColors = {
-    home: 'from-purple-500 to-cyan-500',
-    about: 'from-blue-500 to-purple-500',
-    projects: 'from-cyan-500 to-blue-500',
-    contact: 'from-purple-500 to-pink-500',
-  };
-
-  const cursorColor = sectionColors[currentSection] || sectionColors.home;
+  if (!isVisible) return null;
 
   return (
-    <>
-      {/* Main Cursor */}
+    <div className="hidden lg:block">
+      {/* Primary Dot */}
       <div
-        className={`fixed pointer-events-none z-[10000] mix-blend-difference transition-all duration-200 ${
-          isVisible ? 'opacity-100' : 'opacity-0'
-        }`}
+        className="fixed top-0 left-0 w-2.5 h-2.5 rounded-full bg-[#00f0ff] pointer-events-none z-[99999] -translate-x-1/2 -translate-y-1/2 transition-transform duration-75"
         style={{
-          left: `${position.x}px`,
-          top: `${position.y}px`,
-          transform: `translate(-50%, -50%) scale(${isHovering ? 1.5 : 1})`,
+          transform: `translate3d(${position.x}px, ${position.y}px, 0) scale(${isClicked ? 0.7 : isPointer ? 1.5 : 1})`,
         }}
-      >
-        {/* Inner Dot */}
-        <div
-          className={`w-2 h-2 rounded-full bg-gradient-to-r ${cursorColor} transition-all duration-300`}
-        />
-      </div>
+      />
 
-      {/* Outer Ring */}
+      {/* Trailing Outer Ring */}
       <div
-        className={`fixed pointer-events-none z-[9999] transition-all duration-500 ease-out ${
-          isVisible ? 'opacity-100' : 'opacity-0'
-        }`}
+        className="fixed top-0 left-0 w-8 h-8 rounded-full border border-[#00f0ff]/50 pointer-events-none z-[99998] -translate-x-1/2 -translate-y-1/2 transition-all duration-200 ease-out"
         style={{
-          left: `${position.x}px`,
-          top: `${position.y}px`,
-          transform: `translate(-50%, -50%) scale(${isHovering ? 1.8 : 1})`,
+          transform: `translate3d(${position.x}px, ${position.y}px, 0) scale(${isClicked ? 1.3 : isPointer ? 1.8 : 1})`,
+          backgroundColor: isPointer ? 'rgba(0, 240, 255, 0.08)' : 'transparent',
         }}
-      >
-        {/* Ring */}
-        <div
-          className={`w-8 h-8 rounded-full border-2 border-gradient bg-gradient-to-r ${cursorColor} opacity-50`}
-          style={{
-            background: 'transparent',
-            borderImage: `linear-gradient(to right, currentColor, currentColor) 1`,
-          }}
-        />
-      </div>
-
-      {/* Trail Effect */}
-      <div
-        className={`fixed pointer-events-none z-[9998] transition-all duration-700 ease-out ${
-          isVisible ? 'opacity-30' : 'opacity-0'
-        }`}
-        style={{
-          left: `${position.x}px`,
-          top: `${position.y}px`,
-          transform: 'translate(-50%, -50%)',
-        }}
-      >
-        <div className={`w-12 h-12 rounded-full bg-gradient-to-r ${cursorColor} blur-xl`} />
-      </div>
-
-      {/* Hover Text */}
-      {isHovering && (
-        <div
-          className="fixed pointer-events-none z-[10001] text-white text-xs font-semibold transition-all duration-200"
-          style={{
-            left: `${position.x}px`,
-            top: `${position.y - 30}px`,
-            transform: 'translateX(-50%)',
-          }}
-        >
-          <span className="bg-black/80 px-2 py-1 rounded backdrop-blur-sm">Click</span>
-        </div>
-      )}
-    </>
+      />
+    </div>
   );
 };
 
