@@ -33,7 +33,7 @@ export const ExperienceView = () => {
         {/* 3D Timeline Visualizer + Structured Dossier */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
           {/* Left Column: 3D Road of Career Journey (5 cols - Full Section Height) */}
-          <div className="lg:col-span-5 relative min-h-[580px] lg:h-full lg:min-h-0 rounded-3xl bg-[#0a0a0c] border border-white/10 overflow-hidden flex flex-col justify-between p-6 sm:p-7 shadow-2xl">
+          <div className="lg:col-span-5 relative min-h-[580px] lg:h-full lg:min-h-0 rounded-3xl bg-[#0a0a0c] border border-white/10 overflow-hidden flex flex-col justify-between p-6 sm:p-7 card-cyber-static">
             <div className="relative z-10 flex items-center justify-between pointer-events-none">
               <span className="font-mono text-xs text-[#b46f32] bg-black px-3.5 py-1.5 rounded-full border border-white/10 flex items-center gap-1.5 shadow-md">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
@@ -59,7 +59,7 @@ export const ExperienceView = () => {
               <div
                 key={exp.id}
                 onMouseEnter={() => soundEngine.playHover()}
-                className="p-6 sm:p-7 rounded-3xl bg-[#0a0a0c] border border-[#b46f32]/40 hover:border-[#b46f32] transition-all duration-300 shadow-2xl space-y-4 group relative overflow-hidden"
+                className="p-6 sm:p-7 rounded-3xl bg-[#0a0a0c] border border-[#b46f32]/40 hover:border-[#b46f32] transition-all duration-300 card-cyber-shadow space-y-4 group relative overflow-hidden"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
@@ -79,7 +79,7 @@ export const ExperienceView = () => {
                     </div>
                   </div>
 
-                  <span className="font-mono text-xs text-emerald-400 bg-emerald-400/10 px-3 py-1 rounded-full font-bold border border-emerald-400/30 flex items-center gap-1.5">
+                  <span className="font-mono text-xs text-emerald-400 bg-emerald-400/10 px-3 py-1 rounded-full font-bold border border-emerald-400/30 flex items-center gap-1.5 shadow-sm">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                     CURRENT INTERNSHIP
                   </span>
@@ -114,7 +114,7 @@ export const ExperienceView = () => {
             {/* Education Milestone Card */}
             <div
               onMouseEnter={() => soundEngine.playHover()}
-              className="p-6 sm:p-7 rounded-3xl bg-[#0a0a0c] border border-white/10 hover:border-[#b46f32]/40 transition-all duration-300 shadow-xl space-y-4 group"
+              className="p-6 sm:p-7 rounded-3xl bg-[#0a0a0c] border border-white/10 hover:border-[#b46f32]/50 transition-all duration-300 card-cyber-shadow space-y-4 group"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -156,7 +156,7 @@ export const ExperienceView = () => {
                 <div
                   key={idx}
                   onMouseEnter={() => soundEngine.playHover()}
-                  className="p-5 rounded-2xl bg-[#0a0a0c] border border-white/5 hover:border-[#b46f32]/40 transition-all duration-300 space-y-2 group"
+                  className="p-5 rounded-2xl bg-[#0a0a0c] border border-white/5 hover:border-[#b46f32]/40 transition-all duration-300 space-y-2 group card-cyber-shadow"
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-mono text-[10px] text-[#b46f32] uppercase tracking-wider font-semibold">
@@ -177,7 +177,7 @@ export const ExperienceView = () => {
             </div>
 
             {/* Competitive Programming Badge */}
-            <div className="p-4 rounded-2xl bg-[#0a0a0c] border border-white/10 flex items-center justify-between text-xs font-mono">
+            <div className="p-4 rounded-2xl bg-[#0a0a0c] border border-white/10 flex items-center justify-between text-xs font-mono card-cyber-shadow">
               <div className="flex items-center gap-2.5 text-gray-300">
                 <Code className="w-4 h-4 text-[#b46f32]" />
                 <span>DSA REPOSITORY: LeetCode, Codeforces, GeeksforGeeks</span>
@@ -185,6 +185,7 @@ export const ExperienceView = () => {
               <span className="text-[#b46f32] font-bold">200+ SOLVED</span>
             </div>
           </div>
+
         </div>
       </div>
     </div>

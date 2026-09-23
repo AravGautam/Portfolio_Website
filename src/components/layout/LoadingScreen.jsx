@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { soundEngine } from '../../audio/soundEngine';
+import { Volume2, Sparkles } from 'lucide-react';
 
 const LoadingScreen = ({ onComplete }) => {
   const [progress, setProgress] = useState(0);
   const [fadeOut, setFadeOut] = useState(false);
+  const [isReady, setIsReady] = useState(false);
+  const [audioActivated, setAudioActivated] = useState(false);
   const canvasContainerRef = useRef(null);
 
   // Play loading sound and ambient BGM immediately by default on mount
@@ -233,21 +236,39 @@ const LoadingScreen = ({ onComplete }) => {
       if (linearRatio >= 1) {
         clearInterval(interval);
         setProgress(100);
-        soundEngine.finishLoadingScreen();
-        setTimeout(() => {
-          setFadeOut(true);
-          setTimeout(() => onComplete(), 500);
-        }, 150);
+        setIsReady(true);
       }
     }, 25);
 
     return () => clearInterval(interval);
-  }, [onComplete]);
+  }, []);
+
+  // When 100% ready, if audio is already active, transition automatically
+  useEffect(() => {
+    if (isReady && audioActivated) {
+      const timer = setTimeout(() => {
+        setFadeOut(true);
+        soundEngine.finishLoadingScreen();
+        setTimeout(() => onComplete(), 500);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isReady, audioActivated, onComplete]);
 
   const handleScreenInteract = () => {
+    setAudioActivated(true);
     soundEngine.initContext();
     soundEngine.playLoadingSound();
     soundEngine.playBGM('default');
+    soundEngine.speakGreeting();
+
+    if (isReady) {
+      setTimeout(() => {
+        setFadeOut(true);
+        soundEngine.finishLoadingScreen();
+        setTimeout(() => onComplete(), 500);
+      }, 400);
+    }
   };
 
   return (
@@ -295,16 +316,35 @@ const LoadingScreen = ({ onComplete }) => {
         {/* Clean Hairline Progress Bar */}
         <div className="w-64 sm:w-80 bg-white/[0.08] h-1 rounded-full overflow-hidden mb-3 relative">
           <div
-            className="h-full bg-[#b46f32] transition-all duration-75 ease-out rounded-full shadow-[0_0_8px_rgba(180,111,50,0.6)]"
+            className="h-full bg-[#b46f32] transition-all duration-75 ease-out rounded-full shadow-[0_0_12px_rgba(180,111,50,0.8)]"
             style={{ width: `${progress}%` }}
           />
         </div>
 
         {/* Minimal Progress Indicator */}
-        <div className="flex items-center justify-between w-64 sm:w-80 text-[11px] text-gray-500 font-mono">
+        <div className="flex items-center justify-between w-64 sm:w-80 text-[11px] text-gray-500 font-mono mb-2">
           <span>Loading</span>
           <span className="text-gray-400">{progress}%</span>
         </div>
+
+        {/* Interactive Audio Cues / Enter Button */}
+        {isReady && !audioActivated ? (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleScreenInteract();
+            }}
+            className="mt-2 px-6 py-2.5 rounded-full bg-[#b46f32] text-white font-mono text-xs font-bold tracking-wider hover:bg-white hover:text-black transition-all duration-300 flex items-center gap-2 shadow-[0_0_24px_rgba(180,111,50,0.6)] animate-pulse"
+          >
+            <Volume2 className="w-4 h-4" />
+            <span>ENTER EXPERIENCE</span>
+          </button>
+        ) : (
+          <div className="mt-1 flex items-center gap-2 text-[11px] font-mono text-[#b46f32] tracking-wider py-1 px-3 rounded-full bg-[#b46f32]/10 border border-[#b46f32]/25">
+            <Volume2 className="w-3.5 h-3.5 animate-pulse" />
+            <span>{audioActivated ? 'AUDIO ACTIVE' : 'TAP ANYWHERE TO ACTIVATE AUDIO'}</span>
+          </div>
+        )}
       </div>
 
       {/* Bottom Subtle Footnote */}
@@ -314,5 +354,6 @@ const LoadingScreen = ({ onComplete }) => {
     </div>
   );
 };
+
 
 export default LoadingScreen;

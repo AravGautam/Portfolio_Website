@@ -26,10 +26,20 @@ const SkillsConstellation = () => {
   };
 
   const handleCategoryClick = (catId) => {
-    soundEngine.playNote(categoryFrequencies[catId] || 528);
+    soundEngine.playClick();
+    if (typeof soundEngine.playNote === 'function') {
+      soundEngine.playNote(categoryFrequencies[catId] || 528);
+    }
     setActiveCategory(catId);
     if (constellationRef.current) {
       constellationRef.current.highlightCategory(catId === 'all' ? null : catId);
+    }
+  };
+
+  const handleSkillCardClick = (skill, idx) => {
+    soundEngine.playClick();
+    if (typeof soundEngine.playNote === 'function') {
+      soundEngine.playNote(400 + (idx % 8) * 80);
     }
   };
 
@@ -64,7 +74,7 @@ const SkillsConstellation = () => {
           </div>
 
           <p className="text-sm text-gray-300 max-w-md leading-relaxed font-normal">
-            An interactive 3D map of languages, frameworks, runtime engines, and data architectures I work with.
+            An interactive 3D map of languages, frameworks, runtime engines, and data architectures I work with. Click any category or skill node.
           </p>
         </div>
 
@@ -72,11 +82,11 @@ const SkillsConstellation = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch mb-12">
           {/* 3D Constellation Viewport (5 cols) */}
           <div
-            className="lg:col-span-5 relative rounded-3xl bg-[#0a0a0c] border border-white/10 p-6 flex flex-col justify-between min-h-[380px] shadow-2xl overflow-hidden"
+            className="lg:col-span-5 relative rounded-3xl bg-[#0a0a0c] border border-white/10 p-6 flex flex-col justify-between min-h-[380px] card-cyber-shadow overflow-hidden"
             data-cursor="NODE"
           >
             <div className="relative z-10 flex items-center justify-between pointer-events-none">
-              <div className="flex items-center gap-2 text-xs bg-black/70 border border-white/10 px-3.5 py-1.5 rounded-full text-gray-200 backdrop-blur-md font-mono font-medium">
+              <div className="flex items-center gap-2 text-xs bg-black/70 border border-white/10 px-3.5 py-1.5 rounded-full text-gray-200 backdrop-blur-md font-mono font-medium shadow-md">
                 <span className="w-2 h-2 rounded-full bg-[#b46f32]" />
                 <span>3D Skills Graph</span>
               </div>
@@ -88,7 +98,7 @@ const SkillsConstellation = () => {
             </div>
 
             <div className="relative z-10 text-xs text-gray-300 font-mono bg-black/70 border border-white/10 p-3.5 rounded-2xl backdrop-blur-md pointer-events-none">
-              Select any category to highlight associated skills and connections.
+              Select any category above to highlight associated skills and connections in 3D.
             </div>
           </div>
 
@@ -98,11 +108,13 @@ const SkillsConstellation = () => {
             <div className="flex flex-wrap gap-2 mb-6">
               <MagneticWrapper strength={0.25}>
                 <button
+                  type="button"
                   onClick={() => handleCategoryClick('all')}
-                  className={`text-xs font-mono px-4 py-2 rounded-full transition-all duration-200 border font-medium ${
+                  onMouseEnter={() => soundEngine.playHover()}
+                  className={`text-xs font-mono px-4 py-2.5 rounded-full transition-all duration-200 border font-medium cursor-pointer shadow-sm ${
                     activeCategory === 'all'
-                      ? 'bg-[#b46f32] text-white font-bold border-[#b46f32] shadow-md shadow-[#b46f32]/20'
-                      : 'bg-[#0a0a0c] text-gray-300 border-white/10 hover:border-[#b46f32]/40'
+                      ? 'bg-[#b46f32] text-white font-bold border-[#b46f32] shadow-lg shadow-[#b46f32]/25 scale-[1.02]'
+                      : 'bg-[#0a0a0c] text-gray-300 border-white/10 hover:border-[#b46f32]/50 hover:bg-white/5'
                   }`}
                 >
                   All Skills
@@ -114,11 +126,13 @@ const SkillsConstellation = () => {
                 return (
                   <MagneticWrapper key={cat.id} strength={0.25}>
                     <button
+                      type="button"
                       onClick={() => handleCategoryClick(cat.id)}
-                      className={`text-xs font-mono px-4 py-2 rounded-full transition-all duration-200 border flex items-center gap-2 font-medium ${
+                      onMouseEnter={() => soundEngine.playHover()}
+                      className={`text-xs font-mono px-4 py-2.5 rounded-full transition-all duration-200 border flex items-center gap-2 font-medium cursor-pointer shadow-sm ${
                         isActive
-                          ? 'bg-[#b46f32] text-white font-bold border-[#b46f32] shadow-md shadow-[#b46f32]/20'
-                          : 'bg-[#0a0a0c] text-gray-300 border-white/10 hover:border-[#b46f32]/40'
+                          ? 'bg-[#b46f32] text-white font-bold border-[#b46f32] shadow-lg shadow-[#b46f32]/25 scale-[1.02]'
+                          : 'bg-[#0a0a0c] text-gray-300 border-white/10 hover:border-[#b46f32]/50 hover:bg-white/5'
                       }`}
                     >
                       {getCategoryIcon(cat.id)}
@@ -134,8 +148,9 @@ const SkillsConstellation = () => {
               {filteredSkills.map((skill, idx) => (
                 <div
                   key={idx}
+                  onClick={() => handleSkillCardClick(skill, idx)}
                   onMouseEnter={() => soundEngine.playHover()}
-                  className="p-4 rounded-2xl bg-[#0a0a0c] border border-white/5 hover:border-[#b46f32]/30 transition-all duration-200 group"
+                  className="p-4 rounded-2xl bg-[#0a0a0c] border border-white/5 hover:border-[#b46f32]/40 transition-all duration-200 group cursor-pointer card-cyber-shadow"
                 >
                   <div className="flex items-center justify-between mb-1.5">
                     <h4 className="font-display font-bold text-white group-hover:text-[#b46f32] transition-colors text-sm">
@@ -153,7 +168,7 @@ const SkillsConstellation = () => {
                   {/* Proficiency Meter Bar */}
                   <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-[#b46f32] rounded-full transition-all duration-500"
+                      className="h-full bg-[#b46f32] rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(180,111,50,0.6)]"
                       style={{ width: `${skill.level}%` }}
                     />
                   </div>
@@ -167,5 +182,7 @@ const SkillsConstellation = () => {
   );
 };
 
+
 export default SkillsConstellation;
+
 

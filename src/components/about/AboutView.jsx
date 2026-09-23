@@ -28,12 +28,16 @@ export const AboutView = () => {
   };
 
   const handleCategoryClick = (catId) => {
-    soundEngine.playNote(categoryFrequencies[catId] || 528);
+    soundEngine.playClick();
+    if (typeof soundEngine.playNote === 'function') {
+      soundEngine.playNote(categoryFrequencies[catId] || 528);
+    }
     setActiveCategory(catId);
     if (constellationRef.current) {
       constellationRef.current.highlightCategory(catId === 'all' ? null : catId);
     }
   };
+
 
   const getCategoryIcon = (id) => {
     switch (id) {

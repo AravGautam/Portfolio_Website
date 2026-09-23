@@ -77,6 +77,30 @@
   color: #b46f32;
 }
 
+/* Unique Bespoke Card Shadows & Elevation */
+.card-cyber-shadow {
+  box-shadow: 
+    0 14px 34px -10px rgba(0, 0, 0, 0.94),
+    0 0 24px -4px rgba(180, 111, 50, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.09);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-cyber-shadow:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 24px 50px -12px rgba(0, 0, 0, 0.98),
+    0 0 36px -2px rgba(180, 111, 50, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.card-cyber-static {
+  box-shadow: 
+    0 16px 40px -12px rgba(0, 0, 0, 0.95),
+    0 0 28px -4px rgba(180, 111, 50, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
 /* Subtle Kinetic Animations */
 @keyframes pulseGlow {
   0%, 100% { opacity: 0.25; transform: scale(1); }

@@ -57,21 +57,21 @@ class SoundEngine {
 
   initAudioElements() {
     try {
-      // 1. Default Ambient Background Music
+      // 1. Default Ambient Background Music (Subtle & Atmospheric)
       this.bgmAudio = new Audio('/audio/ambient-bgm.mp3');
       this.bgmAudio.loop = true;
-      this.bgmAudio.volume = 0.45;
+      this.bgmAudio.volume = 0.16;
       this.bgmAudio.preload = 'auto';
 
-      // 2. Projects Section Synthesizer Music
+      // 2. Projects Section Synthesizer Music (Subtle)
       this.projectsBgmAudio = new Audio('/audio/482961__yellowtree__super-strange-synths.wav');
       this.projectsBgmAudio.loop = true;
-      this.projectsBgmAudio.volume = 0.38;
+      this.projectsBgmAudio.volume = 0.14;
       this.projectsBgmAudio.preload = 'auto';
 
       // 3. Loading Screen SFX
       this.loadingAudio = new Audio('/audio/122276__zimbot__squirble9.wav');
-      this.loadingAudio.volume = 0.70;
+      this.loadingAudio.volume = 0.75;
       this.loadingAudio.preload = 'auto';
     } catch {
       // Fallback
@@ -304,81 +304,141 @@ class SoundEngine {
     return this.muted;
   }
 
+  /**
+   * Delicate, Crystal Glass Acoustic Tick on Hover
+   * Subtle, high-frequency, distinctly different from click.
+   */
   playHover() {
     if (this.muted) return;
     this.initContext();
     if (!this.ctx) return;
 
-    try {
-      const now = this.ctx.currentTime;
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(1400, now);
-      osc.frequency.exponentialRampToValueAtTime(900, now + 0.025);
-
-      gain.gain.setValueAtTime(0.04, now);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.025);
-
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-
-      osc.start(now);
-      osc.stop(now + 0.03);
-    } catch {
-      // Ignore
-    }
-  }
-
-  playClick() {
-    if (this.muted) return;
-    this.initContext();
-    if (!this.ctx) return;
-
-    const doSynth = () => {
+    const doHover = () => {
       try {
         const now = this.ctx.currentTime;
-        // Crisp dual-tone mechanical click (warm body + high transient click)
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
 
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(420, now);
-        osc.frequency.exponentialRampToValueAtTime(110, now + 0.05);
+        osc.type = 'sine';
+        // Ultra-short, delicate crystal tick (1850Hz -> 2500Hz)
+        osc.frequency.setValueAtTime(1850, now);
+        osc.frequency.exponentialRampToValueAtTime(2500, now + 0.025);
 
-        gain.gain.setValueAtTime(0.22, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+        gain.gain.setValueAtTime(0.08, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.028);
 
         osc.connect(gain);
         gain.connect(this.ctx.destination);
 
         osc.start(now);
-        osc.stop(now + 0.055);
-
-        // High transient click
-        const clickOsc = this.ctx.createOscillator();
-        const clickGain = this.ctx.createGain();
-        clickOsc.type = 'sine';
-        clickOsc.frequency.setValueAtTime(2200, now);
-        clickOsc.frequency.exponentialRampToValueAtTime(800, now + 0.015);
-        clickGain.gain.setValueAtTime(0.12, now);
-        clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.015);
-        clickOsc.connect(clickGain);
-        clickGain.connect(this.ctx.destination);
-        clickOsc.start(now);
-        clickOsc.stop(now + 0.02);
+        osc.stop(now + 0.03);
       } catch {
         // Ignore
       }
     };
 
     if (this.ctx.state === 'suspended') {
-      this.ctx.resume().then(doSynth).catch(() => {});
+      this.ctx.resume().then(doHover).catch(() => {});
     } else {
-      doSynth();
+      doHover();
     }
   }
+
+  /**
+   * Satisfying, Deep Mechanical Switch Actuation on Click
+   * Resonant low punch + crisp switch transient. Unmistakable from hover!
+   */
+  playClick() {
+    if (this.muted) return;
+    this.initContext();
+    if (!this.ctx) return;
+
+    const doClick = () => {
+      try {
+        const now = this.ctx.currentTime;
+
+        // 1. Deep tactile mechanical thump (160Hz -> 48Hz)
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(160, now);
+        osc.frequency.exponentialRampToValueAtTime(48, now + 0.065);
+
+        gain.gain.setValueAtTime(0.32, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.065);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.07);
+
+        // 2. High crisp snap transient (switch actuation click)
+        const snap = this.ctx.createOscillator();
+        const snapGain = this.ctx.createGain();
+
+        snap.type = 'sine';
+        snap.frequency.setValueAtTime(950, now);
+        snap.frequency.exponentialRampToValueAtTime(220, now + 0.02);
+
+        snapGain.gain.setValueAtTime(0.20, now);
+        snapGain.gain.exponentialRampToValueAtTime(0.001, now + 0.02);
+
+        snap.connect(snapGain);
+        snapGain.connect(this.ctx.destination);
+
+        snap.start(now);
+        snap.stop(now + 0.022);
+      } catch {
+        // Ignore
+      }
+    };
+
+    if (this.ctx.state === 'suspended') {
+      this.ctx.resume().then(doClick).catch(() => {});
+    } else {
+      doClick();
+    }
+  }
+
+  /**
+   * Resonant Harmonic Chime (Used for skill constellation & interactive chips)
+   */
+  playNote(freq = 528) {
+    if (this.muted) return;
+    this.initContext();
+    if (!this.ctx) return;
+
+    const doNote = () => {
+      try {
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now);
+
+        gain.gain.setValueAtTime(0.22, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.32);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.34);
+      } catch {
+        // Ignore
+      }
+    };
+
+    if (this.ctx.state === 'suspended') {
+      this.ctx.resume().then(doNote).catch(() => {});
+    } else {
+      doNote();
+    }
+  }
+
 
 
   playWhoosh() {

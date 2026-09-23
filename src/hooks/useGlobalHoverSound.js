@@ -24,10 +24,10 @@ export function useGlobalHoverSound() {
     window.addEventListener('keydown', unlockAudio, { once: true, passive: true });
     window.addEventListener('touchstart', unlockAudio, { once: true, passive: true });
 
-    // Selector for all hoverable sections, cards, and interactive components
+    // Selector for interactive buttons, links, chips, tabs, and controls
     const interactiveSelector = [
-      'a',
       'button',
+      'a',
       'input',
       'textarea',
       'select',
@@ -41,11 +41,7 @@ export function useGlobalHoverSound() {
       '[data-magnetic]',
       '.cursor-pointer',
       'nav button',
-      'nav a',
-      'section',
-      'article',
-      '[class*="hover:"]',
-      '[class*="group"]'
+      'nav a'
     ].join(', ');
 
     const handleMouseOver = (e) => {
