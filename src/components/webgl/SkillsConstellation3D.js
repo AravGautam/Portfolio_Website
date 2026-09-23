@@ -30,7 +30,7 @@ export class SkillsConstellationScene {
     const nodeGeo = new THREE.IcosahedronGeometry(0.6, 1);
     const subNodeGeo = new THREE.SphereGeometry(0.3, 8, 8);
 
-    const categoryColors = [0x00f0ff, 0x8b5cf6, 0x3b82f6, 0xec4899, 0x10b981];
+    const categoryColors = [0x00f0ff, 0x38bdf8, 0x2563eb, 0x10b981, 0x34d399];
 
     this.categories.forEach((cat, catIdx) => {
       const angle = (catIdx / this.categories.length) * Math.PI * 2;

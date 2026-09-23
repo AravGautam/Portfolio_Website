@@ -7,9 +7,9 @@ import MagneticWrapper from '../ui/MagneticWrapper';
 import { soundEngine } from '../../audio/soundEngine';
 import AudioCreditsModal from '../ui/AudioCreditsModal';
 
-export const Contact = () => {
+export const ContactView = () => {
   const [formData, setFormData] = useState({ name: '', email: '', message: '', honeypot: '' });
-  const [formStatus, setFormStatus] = useState('idle');
+  const [formStatus, setFormStatus] = useState('idle'); // 'idle' | 'sending' | 'success'
   const [copied, setCopied] = useState(false);
   const [showCredits, setShowCredits] = useState(false);
 
@@ -56,7 +56,7 @@ export const Contact = () => {
   };
 
   return (
-    <section id="contact" className="relative min-h-screen py-28 px-6 md:px-12 bg-black border-t border-white/5 overflow-hidden flex flex-col justify-between">
+    <div className="relative min-h-screen pt-32 pb-24 px-6 md:px-12 bg-black flex flex-col justify-between">
       <div className="max-w-7xl mx-auto w-full relative z-10">
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
@@ -65,9 +65,9 @@ export const Contact = () => {
               <Radio className="w-3.5 h-3.5" />
               <span>GLOBAL REACH & DIRECT CONTACT</span>
             </div>
-            <h2 className="text-4xl sm:text-6xl lg:text-7xl font-display font-extrabold text-white tracking-tight uppercase">
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-display font-extrabold text-white tracking-tight uppercase">
               LET'S BUILD SOMETHING GREAT.
-            </h2>
+            </h1>
           </div>
 
           <div className="font-mono text-xs text-gray-300 bg-[#0a0a0c] border border-white/10 px-5 py-3 rounded-2xl backdrop-blur-md">
@@ -97,7 +97,7 @@ export const Contact = () => {
               <WebGLCanvas createScene={createGlobeScene} className="w-full h-full" />
             </div>
 
-            {/* Bottom Info */}
+            {/* Bottom Geospatial Info */}
             <div className="relative z-10 flex items-center justify-between pt-3 border-t border-white/5 font-mono text-[11px] text-gray-400 pointer-events-none">
               <span>Drag to rotate</span>
               <span className="text-[#b46f32]">Open for Worldwide Roles</span>
@@ -240,7 +240,6 @@ export const Contact = () => {
                       href={link.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      onMouseEnter={() => soundEngine.playHover()}
                       className="w-full p-2.5 rounded-xl bg-white/[0.02] border border-white/5 hover:border-[#b46f32]/40 hover:bg-[#b46f32]/5 transition-all duration-200 flex items-center justify-between group"
                     >
                       <div className="flex items-center gap-2.5">
@@ -286,8 +285,8 @@ export const Contact = () => {
 
       {/* Audio Credits Modal */}
       <AudioCreditsModal isOpen={showCredits} onClose={() => setShowCredits(false)} />
-    </section>
+    </div>
   );
 };
 
-export default Contact;
+export default ContactView;

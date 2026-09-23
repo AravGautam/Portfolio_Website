@@ -26,17 +26,17 @@ const Introduction = () => {
   ];
 
   return (
-    <section className="relative py-28 px-6 md:px-12 bg-[#07070a] border-y border-white/5 overflow-hidden">
+    <section className="relative py-28 px-6 md:px-12 bg-black border-y border-white/5 overflow-hidden">
       <div className="max-w-6xl mx-auto">
         {/* Editorial Statement */}
         <div className="mb-16">
-          <div className="text-xs font-semibold uppercase tracking-wider text-[#00f0ff] mb-4">
+          <div className="text-xs font-semibold uppercase tracking-wider text-[#b46f32] mb-4 font-mono">
             Engineering & Design Philosophy
           </div>
 
           <h2 className="text-3xl sm:text-5xl md:text-6xl font-display font-bold text-white tracking-tight leading-tight max-w-4xl mb-6">
             "I build software that <br className="hidden sm:inline" />
-            <span className="bg-gradient-to-r from-white via-gray-200 to-[#00f0ff] bg-clip-text text-transparent">
+            <span className="text-[#b46f32]">
               does more than work.
             </span>"
           </h2>

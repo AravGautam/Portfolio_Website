@@ -1,180 +1,228 @@
 import React, { useState, useEffect } from 'react';
-import { Sheet, SheetContent, SheetTrigger, SheetClose } from '../ui/sheet';
-import { Menu, ArrowUpRight } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { Menu, X, ArrowUpRight, LayoutList, Layers } from 'lucide-react';
+import { soundEngine } from '../../audio/soundEngine';
+import SoundToggle from '../ui/SoundToggle';
+import AGLogo from '../ui/AGLogo';
 import { portfolioData } from '../../data/portfolioData';
+import { scrollToElement } from '../../hooks/useLenis';
 
-const Navbar = () => {
-  const [activeSection, setActiveSection] = useState('hero');
+const NAV_ITEMS = [
+  { id: 'hero', path: '/', label: 'HOME' },
+  { id: 'about', path: '/about', label: 'ABOUT' },
+  { id: 'projects', path: '/work', label: 'WORK' },
+  { id: 'experience', path: '/experience', label: 'EXPERIENCE' },
+  { id: 'experiments', path: '/experiments', label: 'LAB' },
+  { id: 'contact', path: '/contact', label: 'CONTACT' },
+];
+
+export const Navbar = ({ viewMode = 'scroll', onToggleViewMode }) => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState('hero');
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 30);
+      setScrolled(window.scrollY > 20);
 
-      const sections = ['hero', 'projects', 'skills', 'about', 'experiments', 'contact'];
-      for (const section of sections) {
-        const el = document.getElementById(section);
-        if (el) {
-          const rect = el.getBoundingClientRect();
-          if (rect.top <= 220 && rect.bottom >= 220) {
-            setActiveSection(section);
-            break;
+      if (viewMode === 'scroll') {
+        const sections = ['hero', 'about', 'skills', 'projects', 'experience', 'experiments', 'contact'];
+        for (const sec of sections) {
+          const el = document.getElementById(sec);
+          if (el) {
+            const rect = el.getBoundingClientRect();
+            if (rect.top <= 250 && rect.bottom >= 250) {
+              setActiveSection(sec === 'skills' ? 'about' : sec);
+              break;
+            }
           }
         }
       }
     };
-
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [viewMode]);
 
-  const scrollTo = (id) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const handleNavClick = (item) => {
+    soundEngine.playClick();
+    setMobileMenuOpen(false);
+
+    if (viewMode === 'scroll') {
+      if (location.pathname !== '/') {
+        navigate('/');
+        setTimeout(() => {
+          scrollToElement(item.id);
+        }, 120);
+      } else {
+        scrollToElement(item.id);
+      }
+    } else {
+      navigate(item.path);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
-  const navLinks = [
-    { id: 'projects', label: 'Work' },
-    { id: 'skills', label: 'Skills' },
-    { id: 'about', label: 'About' },
-    { id: 'experiments', label: 'Lab' },
-    { id: 'contact', label: 'Contact' }
-  ];
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled
-          ? 'bg-[#07070a]/85 backdrop-blur-xl border-b border-white/10 shadow-2xl py-3.5'
-          : 'bg-transparent border-b border-transparent py-5 sm:py-7'
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled ? 'py-3.5 bg-black/90 backdrop-blur-md border-b border-white/10 shadow-2xl' : 'py-5 bg-transparent'
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between">
-        {/* Brand / Name */}
+        {/* Brand / AG Logo */}
         <button
-          onClick={() => scrollTo('hero')}
-          className="flex items-center gap-3 group text-left focus:outline-none"
+          onClick={() => handleNavClick(NAV_ITEMS[0])}
+          onMouseEnter={() => soundEngine.playHover()}
+          className="flex items-center gap-3.5 group focus:outline-none text-left"
         >
-          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#00f0ff] to-[#8b5cf6] p-[1.5px] flex items-center justify-center group-hover:scale-105 transition-transform">
-            <div className="w-full h-full bg-[#07070a] rounded-full flex items-center justify-center">
-              <span className="font-display text-xs font-bold text-white group-hover:text-[#00f0ff] transition-colors">
-                AG
-              </span>
-            </div>
+          <div className="w-9 h-9 flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+            <AGLogo className="w-9 h-9" />
           </div>
           <div>
-            <div className="font-display font-bold text-sm tracking-tight text-white group-hover:text-[#00f0ff] transition-colors flex items-center gap-2">
-              <span>Arav Gautam</span>
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400" title="Available for work" />
+            <div className="font-display font-bold text-sm text-white tracking-tight flex items-center gap-1.5">
+              <span>{portfolioData.personal.name}</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#b46f32]" />
             </div>
-            <div className="text-[11px] text-gray-400 font-normal hidden sm:block">
-              Full-Stack Developer
+            <div className="font-mono text-[10px] text-gray-400 tracking-wider">
+              SOFTWARE ENGINEER & CREATIVE DEV
             </div>
           </div>
         </button>
 
-        {/* Desktop Navigation Links */}
-        <nav className="hidden md:flex items-center gap-1 bg-[#0e0e14]/80 border border-white/10 backdrop-blur-md px-4 py-1.5 rounded-full shadow-lg">
-          {navLinks.map((link) => {
-            const isActive = activeSection === link.id;
+        {/* Desktop Navigation Links (No Numbers) */}
+        <nav className="hidden lg:flex items-center gap-1.5 bg-[#0a0a0c] border border-white/10 px-3 py-1.5 rounded-full backdrop-blur-md shadow-lg">
+          {NAV_ITEMS.map((item) => {
+            const isActive =
+              viewMode === 'scroll'
+                ? activeSection === item.id
+                : location.pathname === item.path;
+
             return (
               <button
-                key={link.id}
-                onClick={() => scrollTo(link.id)}
-                className={`text-xs px-4 py-1.5 rounded-full transition-all duration-300 font-medium ${
+                key={item.id}
+                onClick={() => handleNavClick(item)}
+                onMouseEnter={() => soundEngine.playHover()}
+                className={`relative px-4 py-1.5 rounded-full text-xs font-mono font-medium transition-all duration-200 flex items-center focus:outline-none ${
                   isActive
-                    ? 'text-black bg-[#00f0ff] shadow-md font-semibold'
-                    : 'text-gray-300 hover:text-white hover:bg-white/5'
+                    ? 'text-white bg-[#b46f32] font-bold shadow-[0_0_12px_rgba(180,111,50,0.4)]'
+                    : 'text-gray-400 hover:text-white hover:bg-white/5'
                 }`}
               >
-                {link.label}
+                <span>{item.label}</span>
               </button>
             );
           })}
         </nav>
 
-        {/* Right CTA Actions */}
-        <div className="hidden sm:flex items-center gap-3">
+        {/* Right Utilities: Mode Toggle + Audio + Resume */}
+        <div className="hidden sm:flex items-center gap-2.5">
+          {/* View Mode Switcher */}
+          {onToggleViewMode && (
+            <button
+              onClick={() => {
+                soundEngine.playClick();
+                onToggleViewMode();
+              }}
+              onMouseEnter={() => soundEngine.playHover()}
+              className="text-xs font-mono px-3.5 py-1.5 rounded-full bg-[#0a0a0c] border border-white/15 hover:border-[#b46f32]/50 text-gray-300 hover:text-[#b46f32] transition-all flex items-center gap-1.5 shadow-sm"
+              title="Toggle between Continuous Scroll and Multi-Route View"
+            >
+              {viewMode === 'scroll' ? (
+                <>
+                  <LayoutList className="w-3.5 h-3.5 text-[#b46f32]" />
+                  <span className="text-[11px] font-semibold">SCROLL</span>
+                </>
+              ) : (
+                <>
+                  <Layers className="w-3.5 h-3.5 text-[#b46f32]" />
+                  <span className="text-[11px] font-semibold">ROUTES</span>
+                </>
+              )}
+            </button>
+          )}
+
+          <SoundToggle />
+
           <a
             href={portfolioData.personal.resumeUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-xs px-4 py-2 rounded-full border border-white/15 hover:border-[#00f0ff]/50 bg-white/[0.02] hover:bg-[#00f0ff]/10 text-gray-300 hover:text-white transition-all font-medium"
+            onMouseEnter={() => soundEngine.playHover()}
+            onClick={() => soundEngine.playClick()}
+            className="text-xs font-mono px-4 py-1.5 rounded-full border border-white/15 bg-white/[0.04] text-gray-200 hover:border-[#b46f32]/50 hover:text-[#b46f32] transition-all flex items-center gap-1.5"
           >
             <span>Resume</span>
-            <ArrowUpRight className="w-3.5 h-3.5 text-[#00f0ff]" />
+            <ArrowUpRight className="w-3.5 h-3.5 text-[#b46f32]" />
           </a>
-
-          <button
-            onClick={() => scrollTo('contact')}
-            className="text-xs px-4 py-2 rounded-full bg-white text-black font-semibold hover:bg-[#00f0ff] hover:shadow-lg transition-all duration-300"
-          >
-            Let's Talk
-          </button>
         </div>
 
-        {/* Mobile Menu Trigger */}
-        <Sheet>
-          <SheetTrigger asChild className="md:hidden">
+        {/* Mobile Controls */}
+        <div className="flex sm:hidden items-center gap-2">
+          {onToggleViewMode && (
             <button
-              className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-white hover:border-[#00f0ff]/50 focus:outline-none"
-              aria-label="Open menu"
+              onClick={() => {
+                soundEngine.playClick();
+                onToggleViewMode();
+              }}
+              className="p-2 rounded-lg bg-white/5 border border-white/10 text-gray-300 text-xs font-mono"
             >
-              <Menu className="w-5 h-5 text-gray-200" />
+              {viewMode === 'scroll' ? 'SCROLL' : 'ROUTES'}
             </button>
-          </SheetTrigger>
+          )}
 
-          <SheetContent
-            side="right"
-            className="w-[290px] bg-[#07070a]/98 border-l border-white/10 backdrop-blur-2xl p-6 flex flex-col justify-between"
+          <SoundToggle />
+
+          <button
+            onClick={() => {
+              soundEngine.playClick();
+              setMobileMenuOpen(!mobileMenuOpen);
+            }}
+            className="p-2 rounded-lg bg-white/5 border border-white/10 text-gray-300 focus:outline-none"
+            aria-label="Toggle Navigation"
           >
-            <div>
-              <div className="mb-8 pt-4">
-                <h3 className="font-display font-bold text-white text-lg">Arav Gautam</h3>
-                <p className="text-xs text-gray-400">Full-Stack & Creative Developer</p>
-              </div>
-
-              <nav className="flex flex-col gap-2">
-                {navLinks.map((link) => {
-                  const isActive = activeSection === link.id;
-                  return (
-                    <SheetClose asChild key={link.id}>
-                      <button
-                        onClick={() => scrollTo(link.id)}
-                        className={`text-sm text-left px-4 py-3 rounded-xl transition-all flex items-center justify-between font-medium ${
-                          isActive
-                            ? 'bg-[#00f0ff]/15 text-[#00f0ff] font-semibold'
-                            : 'text-gray-300 hover:text-white hover:bg-white/5'
-                        }`}
-                      >
-                        <span>{link.label}</span>
-                        {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#00f0ff]" />}
-                      </button>
-                    </SheetClose>
-                  );
-                })}
-              </nav>
-            </div>
-
-            <div className="border-t border-white/10 pt-6 space-y-3">
-              <a
-                href={portfolioData.personal.resumeUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 w-full text-xs py-3 rounded-xl border border-white/15 bg-white/5 text-white font-medium hover:border-[#00f0ff]"
-              >
-                <span>View Resume</span>
-                <ArrowUpRight className="w-3.5 h-3.5 text-[#00f0ff]" />
-              </a>
-              <p className="text-[11px] text-center text-gray-400">
-                Satna, India • VITS 2023–2027
-              </p>
-            </div>
-          </SheetContent>
-        </Sheet>
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
       </div>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="sm:hidden fixed inset-x-0 top-[65px] bg-black/95 border-b border-white/10 p-6 backdrop-blur-2xl flex flex-col gap-3 shadow-2xl">
+          {NAV_ITEMS.map((item) => {
+            const isActive =
+              viewMode === 'scroll'
+                ? activeSection === item.id
+                : location.pathname === item.path;
+
+            return (
+              <button
+                key={item.id}
+                onClick={() => handleNavClick(item)}
+                className={`w-full py-3 px-4 rounded-xl text-left font-mono text-sm flex items-center justify-between border transition-all ${
+                  isActive
+                    ? 'bg-[#b46f32]/10 border-[#b46f32]/50 text-[#b46f32] font-bold'
+                    : 'border-white/5 text-gray-300 hover:border-white/20'
+                }`}
+              >
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
+
+          <a
+            href={portfolioData.personal.resumeUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 w-full py-3 px-4 rounded-xl font-mono text-xs text-center border border-[#b46f32]/40 bg-[#b46f32]/10 text-white flex items-center justify-center gap-2"
+          >
+            <span>View Resume</span>
+            <ArrowUpRight className="w-4 h-4 text-[#b46f32]" />
+          </a>
+        </div>
+      )}
     </header>
   );
 };

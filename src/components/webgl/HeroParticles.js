@@ -40,7 +40,7 @@ export class HeroParticlesScene {
     const colors = new Float32Array(this.particleCount * 3);
 
     const color1 = new THREE.Color(0x00f0ff); // Electric Cyan
-    const color2 = new THREE.Color(0x8b5cf6); // Cyber Purple
+    const color2 = new THREE.Color(0x38bdf8); // Electric Sky Blue
     const color3 = new THREE.Color(0xffffff); // Crisp White
 
     for (let i = 0; i < this.particleCount; i++) {

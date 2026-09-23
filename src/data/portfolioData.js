@@ -1,26 +1,46 @@
 export const portfolioData = {
   personal: {
     name: "Arav Gautam",
-    role: "Full-Stack Engineer & Creative Developer",
-    tagline: "I build software that does more than work — I make it intuitive, resilient, and engaging.",
-    bio: "Computer Science student and full-stack developer with a passion for high-performance backends, machine learning workflows, and interactive 3D web experiences. I care deeply about clean architecture, snappy interfaces, and pragmatic engineering.",
+    role: "Backend Engineer & Full-Stack Developer",
+    tagline: "Backend Engineer Intern at Dream Filler Company. I build high-performance, resilient distributed systems and intuitive applications.",
+    bio: "Backend Engineer Intern at Dream Filler Company and Computer Science student. Specialized in architecting high-throughput backend APIs, scalable database systems, machine learning workflows, and interactive 3D web experiences with clean, pragmatic engineering.",
     location: "Madhya Pradesh, India",
-    status: "Available for Software Engineering Roles & Select Projects",
+    status: "Backend Engineer Intern @ Dream Filler Company",
     resumeUrl: "https://drive.google.com/file/d/1URqmRAd0bKbM50Ez-6E2t2mRz1hW8Vz-/view?usp=sharing",
     email: "working.aravgautam@gmail.com",
     stats: [
-      { value: "200+", label: "DSA Problems", sub: "LeetCode & Codeforces" },
-      { value: "7.7", label: "Current CGPA", sub: "B.Tech CSE (2023–2027)" },
-      { value: "92%", label: "Model Accuracy", sub: "Fitness Prediction Engine" },
-      { value: "4+", label: "Shipped Projects", sub: "Full-Stack & ML" }
+      { value: "Backend", label: "Engineer Intern", sub: "Dream Filler Company" },
+      { value: "200+", label: "DSA Solved", sub: "LeetCode & Codeforces" },
+      { value: "7.8", label: "Current CGPA", sub: "B.Tech CSE (2023–2027)" },
+      { value: "92%", label: "Model Accuracy", sub: "Fitness Prediction Engine" }
     ]
   },
+
+  experience: [
+    {
+      id: "dream-filler",
+      role: "Backend Engineer Intern",
+      company: "Dream Filler Company",
+      location: "Remote / Hybrid",
+      duration: "Present",
+      current: true,
+      type: "Internship",
+      description: "Engineering scalable backend architectures, high-performance RESTful APIs, and robust data management layers.",
+      highlights: [
+        "Architecting and optimizing high-throughput RESTful backend endpoints and API microservices",
+        "Designing scalable database schemas, indexing strategies, and aggregation pipelines with Node.js, Express, and MongoDB",
+        "Implementing authentication, JWT authorization, request validation, and resilient error-handling middleware",
+        "Collaborating with cross-functional teams on distributed system design, code reviews, and API response latency optimization"
+      ],
+      skills: ["Node.js", "Express.js", "MongoDB", "REST APIs", "System Design", "JWT Auth", "Backend Engineering"]
+    }
+  ],
 
   education: {
     degree: "Bachelor of Technology in Computer Science & Engineering",
     institution: "Vindhya Institute of Technology and Science (VITS), RGPV",
     duration: "2023 — 2027",
-    cgpa: "7.7",
+    cgpa: "7.8",
     highlights: [
       "Rigorous core in Data Structures, Algorithms, Operating Systems, and DBMS",
       "Object-Oriented Software Design and REST API Architecture",
@@ -29,6 +49,11 @@ export const portfolioData = {
   },
 
   achievements: [
+    {
+      title: "Backend Engineer Intern @ Dream Filler",
+      description: "Driving server-side service architecture, API performance tuning, and scalable database operations.",
+      category: "Professional Experience"
+    },
     {
       title: "200+ DSA Problems Solved",
       description: "Consistent problem-solving on LeetCode, Codeforces, GeeksforGeeks, and CodeChef focusing on Dynamic Programming, Trees, Graphs, and Greedy Algorithms.",
@@ -72,17 +97,17 @@ export const portfolioData = {
       id: "backend",
       name: "Backend & Systems",
       skills: [
-        { name: "Node.js", level: 90, tag: "Runtime", desc: "Event-driven asynchronous backend services" },
-        { name: "Express.js", level: 92, tag: "APIs", desc: "RESTful endpoints, middleware, authentication" },
+        { name: "Node.js", level: 92, tag: "Runtime", desc: "Event-driven asynchronous backend services" },
+        { name: "Express.js", level: 94, tag: "APIs", desc: "RESTful endpoints, middleware, authentication" },
         { name: "Socket.IO", level: 86, tag: "Real-Time", desc: "WebSockets, live game synchronization, rooms" },
-        { name: "REST APIs", level: 94, tag: "Design", desc: "Clean contract design, pagination, error handling" }
+        { name: "REST APIs", level: 95, tag: "Design", desc: "Clean contract design, pagination, error handling" }
       ]
     },
     {
       id: "database",
       name: "Database & Tools",
       skills: [
-        { name: "MongoDB", level: 88, tag: "NoSQL", desc: "Mongoose schemas, indexing, aggregation" },
+        { name: "MongoDB", level: 90, tag: "NoSQL", desc: "Mongoose schemas, indexing, aggregation" },
         { name: "MySQL", level: 84, tag: "SQL", desc: "Relational modeling, normalization, queries" },
         { name: "Git & GitHub", level: 92, tag: "Workflow", desc: "Version control, branching, PR collaboration" },
         { name: "Postman", level: 90, tag: "Testing", desc: "API testing, payload validation, mock servers" }
@@ -140,7 +165,7 @@ export const portfolioData = {
       tags: ["React", "Node.js", "Socket.IO", "Chess.js", "Express", "TailwindCSS"],
       githubLink: "https://github.com/AravGautam/Chess-MinorProject",
       liveLink: "https://minorproject-chessmaster.vercel.app/",
-      accentColor: "#a855f7",
+      accentColor: "#ff3344",
       features: [
         "Instant bi-directional state synchronization via Socket.IO",
         "Full FIDE ruleset enforcement, checkmate detection & legal move indicators",
@@ -175,6 +200,14 @@ export const portfolioData = {
   ],
 
   experiments: [
+    {
+      id: "lidar-portrait",
+      title: "3D LiDAR Particle Portrait",
+      category: "Point-Cloud / Depth",
+      desc: "Sampling image luminance depth into 15,000+ interactive 3D particles with cursor repulsion and dispersion physics.",
+      tags: ["Three.js", "Point Cloud", "Depth Map"],
+      interactive: true
+    },
     {
       id: "particle-vortex",
       title: "Interactive Particle Vortex",

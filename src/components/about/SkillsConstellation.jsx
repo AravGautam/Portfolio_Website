@@ -3,6 +3,8 @@ import { portfolioData } from '../../data/portfolioData';
 import WebGLCanvas from '../webgl/WebGLCanvas';
 import { SkillsConstellationScene } from '../webgl/SkillsConstellation3D';
 import { Sparkles, Layers, Cpu, Database, Code, Brain } from 'lucide-react';
+import MagneticWrapper from '../ui/MagneticWrapper';
+import { soundEngine } from '../../audio/soundEngine';
 
 const SkillsConstellation = () => {
   const [activeCategory, setActiveCategory] = useState('all');
@@ -14,7 +16,17 @@ const SkillsConstellation = () => {
     return scene;
   }, []);
 
+  const categoryFrequencies = {
+    all: 440,
+    languages: 528,
+    frontend: 639,
+    backend: 741,
+    database: 852,
+    ai_data: 963
+  };
+
   const handleCategoryClick = (catId) => {
+    soundEngine.playNote(categoryFrequencies[catId] || 528);
     setActiveCategory(catId);
     if (constellationRef.current) {
       constellationRef.current.highlightCategory(catId === 'all' ? null : catId);
@@ -23,12 +35,12 @@ const SkillsConstellation = () => {
 
   const getCategoryIcon = (id) => {
     switch (id) {
-      case 'languages': return <Code className="w-3.5 h-3.5 text-[#00f0ff]" />;
-      case 'frontend': return <Layers className="w-3.5 h-3.5 text-[#8b5cf6]" />;
+      case 'languages': return <Code className="w-3.5 h-3.5 text-[#b46f32]" />;
+      case 'frontend': return <Layers className="w-3.5 h-3.5 text-[#c27a3c]" />;
       case 'backend': return <Cpu className="w-3.5 h-3.5 text-[#3b82f6]" />;
-      case 'database': return <Database className="w-3.5 h-3.5 text-pink-400" />;
+      case 'database': return <Database className="w-3.5 h-3.5 text-[#60a5fa]" />;
       case 'ai_data': return <Brain className="w-3.5 h-3.5 text-emerald-400" />;
-      default: return <Sparkles className="w-3.5 h-3.5 text-[#00f0ff]" />;
+      default: return <Sparkles className="w-3.5 h-3.5 text-[#b46f32]" />;
     }
   };
 
@@ -37,20 +49,21 @@ const SkillsConstellation = () => {
     : portfolioData.skillCategories.find(c => c.id === activeCategory)?.skills || [];
 
   return (
-    <section id="skills" className="relative py-28 px-6 md:px-12 bg-[#07070a] border-t border-white/5 overflow-hidden">
+    <section id="skills" className="relative py-28 px-6 md:px-12 bg-black border-t border-white/5 overflow-hidden">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-14 gap-6">
           <div>
-            <div className="text-xs font-semibold uppercase tracking-wider text-[#00f0ff] mb-3">
-              Technical Expertise
+            <div className="text-xs font-mono font-bold uppercase tracking-wider text-[#b46f32] mb-3 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#b46f32]" />
+              <span>TECHNICAL EXPERTISE</span>
             </div>
             <h2 className="text-4xl sm:text-6xl font-display font-extrabold text-white tracking-tight">
               Skills & Technologies
             </h2>
           </div>
 
-          <p className="text-sm text-gray-400 max-w-md leading-relaxed font-normal">
+          <p className="text-sm text-gray-300 max-w-md leading-relaxed font-normal">
             An interactive 3D map of languages, frameworks, runtime engines, and data architectures I work with.
           </p>
         </div>
@@ -58,10 +71,13 @@ const SkillsConstellation = () => {
         {/* 3D WebGL Constellation + Matrix Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch mb-12">
           {/* 3D Constellation Viewport (5 cols) */}
-          <div className="lg:col-span-5 relative rounded-3xl bg-[#0e0e14]/80 border border-white/10 p-6 flex flex-col justify-between min-h-[380px] shadow-2xl overflow-hidden">
+          <div
+            className="lg:col-span-5 relative rounded-3xl bg-[#0a0a0c] border border-white/10 p-6 flex flex-col justify-between min-h-[380px] shadow-2xl overflow-hidden"
+            data-cursor="NODE"
+          >
             <div className="relative z-10 flex items-center justify-between pointer-events-none">
-              <div className="flex items-center gap-2 text-xs bg-black/60 border border-white/10 px-3.5 py-1.5 rounded-full text-gray-300 backdrop-blur-md font-medium">
-                <span className="w-2 h-2 rounded-full bg-[#00f0ff]" />
+              <div className="flex items-center gap-2 text-xs bg-black/70 border border-white/10 px-3.5 py-1.5 rounded-full text-gray-200 backdrop-blur-md font-mono font-medium">
+                <span className="w-2 h-2 rounded-full bg-[#b46f32]" />
                 <span>3D Skills Graph</span>
               </div>
             </div>
@@ -71,8 +87,8 @@ const SkillsConstellation = () => {
               <WebGLCanvas createScene={createScene} className="w-full h-full" />
             </div>
 
-            <div className="relative z-10 text-xs text-gray-400 bg-black/70 border border-white/10 p-3.5 rounded-2xl backdrop-blur-md pointer-events-none">
-              Select any category above to highlight associated skills and connections.
+            <div className="relative z-10 text-xs text-gray-300 font-mono bg-black/70 border border-white/10 p-3.5 rounded-2xl backdrop-blur-md pointer-events-none">
+              Select any category to highlight associated skills and connections.
             </div>
           </div>
 
@@ -80,32 +96,35 @@ const SkillsConstellation = () => {
           <div className="lg:col-span-7 flex flex-col justify-between">
             {/* Category Filter Chips */}
             <div className="flex flex-wrap gap-2 mb-6">
-              <button
-                onClick={() => handleCategoryClick('all')}
-                className={`text-xs px-4 py-2 rounded-full transition-all duration-200 border font-medium ${
-                  activeCategory === 'all'
-                    ? 'bg-[#00f0ff] text-black font-semibold border-[#00f0ff] shadow-md'
-                    : 'bg-[#0e0e14] text-gray-300 border-white/10 hover:border-white/30'
-                }`}
-              >
-                All Skills
-              </button>
+              <MagneticWrapper strength={0.25}>
+                <button
+                  onClick={() => handleCategoryClick('all')}
+                  className={`text-xs font-mono px-4 py-2 rounded-full transition-all duration-200 border font-medium ${
+                    activeCategory === 'all'
+                      ? 'bg-[#b46f32] text-white font-bold border-[#b46f32] shadow-md shadow-[#b46f32]/20'
+                      : 'bg-[#0a0a0c] text-gray-300 border-white/10 hover:border-[#b46f32]/40'
+                  }`}
+                >
+                  All Skills
+                </button>
+              </MagneticWrapper>
 
               {portfolioData.skillCategories.map((cat) => {
                 const isActive = activeCategory === cat.id;
                 return (
-                  <button
-                    key={cat.id}
-                    onClick={() => handleCategoryClick(cat.id)}
-                    className={`text-xs px-4 py-2 rounded-full transition-all duration-200 border flex items-center gap-2 font-medium ${
-                      isActive
-                        ? 'bg-[#00f0ff] text-black font-semibold border-[#00f0ff] shadow-md'
-                        : 'bg-[#0e0e14] text-gray-300 border-white/10 hover:border-white/30'
-                    }`}
-                  >
-                    {getCategoryIcon(cat.id)}
-                    <span>{cat.name}</span>
-                  </button>
+                  <MagneticWrapper key={cat.id} strength={0.25}>
+                    <button
+                      onClick={() => handleCategoryClick(cat.id)}
+                      className={`text-xs font-mono px-4 py-2 rounded-full transition-all duration-200 border flex items-center gap-2 font-medium ${
+                        isActive
+                          ? 'bg-[#b46f32] text-white font-bold border-[#b46f32] shadow-md shadow-[#b46f32]/20'
+                          : 'bg-[#0a0a0c] text-gray-300 border-white/10 hover:border-[#b46f32]/40'
+                      }`}
+                    >
+                      {getCategoryIcon(cat.id)}
+                      <span>{cat.name}</span>
+                    </button>
+                  </MagneticWrapper>
                 );
               })}
             </div>
@@ -115,25 +134,26 @@ const SkillsConstellation = () => {
               {filteredSkills.map((skill, idx) => (
                 <div
                   key={idx}
-                  className="p-4 rounded-2xl bg-[#0e0e14]/70 border border-white/5 hover:border-white/20 transition-all duration-200 group"
+                  onMouseEnter={() => soundEngine.playHover()}
+                  className="p-4 rounded-2xl bg-[#0a0a0c] border border-white/5 hover:border-[#b46f32]/30 transition-all duration-200 group"
                 >
                   <div className="flex items-center justify-between mb-1.5">
-                    <h4 className="font-display font-bold text-white group-hover:text-[#00f0ff] transition-colors text-sm">
+                    <h4 className="font-display font-bold text-white group-hover:text-[#b46f32] transition-colors text-sm">
                       {skill.name}
                     </h4>
-                    <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-gray-300">
+                    <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-gray-300">
                       {skill.tag}
                     </span>
                   </div>
 
-                  <p className="text-xs text-gray-400 mb-3 leading-relaxed font-normal">
+                  <p className="text-xs text-gray-300 mb-3 leading-relaxed font-normal">
                     {skill.desc}
                   </p>
 
                   {/* Proficiency Meter Bar */}
                   <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-[#00f0ff] to-[#8b5cf6] rounded-full transition-all duration-500"
+                      className="h-full bg-[#b46f32] rounded-full transition-all duration-500"
                       style={{ width: `${skill.level}%` }}
                     />
                   </div>
@@ -148,3 +168,4 @@ const SkillsConstellation = () => {
 };
 
 export default SkillsConstellation;
+

@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { portfolioData } from '../../data/portfolioData';
-import { ArrowDown, ArrowUpRight, Github, Linkedin, Twitter, Instagram, Mail, Code2, MapPin, Terminal, ChevronRight, Layers, Cpu } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, Github, Linkedin, Twitter, Instagram, Mail, Code2, MapPin, Terminal, ChevronRight, Layers, Cpu } from 'lucide-react';
 import MagneticWrapper from '../ui/MagneticWrapper';
 import { soundEngine } from '../../audio/soundEngine';
-import { scrollToElement } from '../../hooks/useLenis';
 
-const Hero = () => {
+export const HomeView = () => {
+  const navigate = useNavigate();
   const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
 
-  const scrollToSection = (id) => {
+  const handleExplore = (path) => {
     soundEngine.playClick();
-    scrollToElement(id);
+    navigate(path);
   };
-
 
   const handleMouseMove = (e) => {
     const { clientX, clientY } = e;
@@ -32,10 +32,9 @@ const Hero = () => {
   };
 
   return (
-    <section
-      id="hero"
+    <div
       onMouseMove={handleMouseMove}
-      className="relative w-full min-h-screen flex flex-col justify-between overflow-hidden pt-24 md:pt-28 pb-10 px-6 md:px-12 lg:px-16 bg-black"
+      className="relative min-h-screen flex flex-col justify-between overflow-hidden pt-24 md:pt-28 pb-10 px-6 md:px-12 lg:px-16 bg-black"
     >
       {/* Normal Pristine Hero Developer Portrait */}
       <div
@@ -64,10 +63,10 @@ const Hero = () => {
         </div>
       </div>
 
-      {/* Foreground UI Layer (Persona / Developer X Structure) */}
+      {/* Foreground UI Layer */}
       <div className="relative z-10 max-w-7xl mx-auto w-full my-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 items-center pt-2 pointer-events-none">
         
-        {/* Left Column: Big Bold Identity & Actions */}
+        {/* Left Column: Identity & Actions */}
         <div className="lg:col-span-5 space-y-6 text-left pointer-events-auto">
           
           {/* Developer Tag */}
@@ -89,7 +88,7 @@ const Hero = () => {
             </p>
           </div>
 
-          {/* Subtitle / Bio */}
+          {/* Subtitle */}
           <p className="text-sm text-gray-300 font-normal leading-relaxed max-w-md">
             {portfolioData.personal.tagline} Engineering distributed web platforms, 3D interactive graphics, and machine learning models.
           </p>
@@ -98,31 +97,28 @@ const Hero = () => {
           <div className="flex flex-wrap items-center gap-4 pt-1">
             <MagneticWrapper strength={0.3}>
               <button
-                onClick={() => scrollToSection('projects')}
+                onClick={() => handleExplore('/work')}
                 onMouseEnter={() => soundEngine.playHover()}
                 className="text-xs font-mono font-bold px-7 py-3.5 rounded-full bg-[#b46f32] text-white hover:bg-white hover:text-black hover:shadow-[0_0_20px_rgba(180,111,50,0.5)] transition-all duration-300 shadow-xl flex items-center gap-2"
               >
-                <span>Browse Portfolio</span>
-                <ArrowDown className="w-3.5 h-3.5" />
+                <span>Explore Projects</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </MagneticWrapper>
 
             <MagneticWrapper strength={0.25}>
-              <a
-                href={portfolioData.personal.resumeUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                onClick={() => handleExplore('/contact')}
                 onMouseEnter={() => soundEngine.playHover()}
-                onClick={() => soundEngine.playClick()}
                 className="text-xs font-mono font-medium px-6 py-3.5 rounded-full border border-white/20 bg-[#0a0a0c] text-gray-200 hover:border-[#b46f32]/60 hover:text-[#b46f32] backdrop-blur-md transition-all duration-300 flex items-center gap-2"
               >
-                <span>Resume</span>
+                <span>Get In Touch</span>
                 <ArrowUpRight className="w-3.5 h-3.5 text-[#b46f32]" />
-              </a>
+              </button>
             </MagneticWrapper>
           </div>
 
-          {/* Social Links Row */}
+          {/* Social Icons Row */}
           <div className="pt-2">
             <div className="text-[11px] font-mono text-gray-400 mb-2 uppercase tracking-wider font-semibold">
               Connect
@@ -146,14 +142,14 @@ const Hero = () => {
           </div>
         </div>
 
-        {/* Center Spacer for Portrait */}
+        {/* Center Spacer */}
         <div className="hidden lg:block lg:col-span-3 min-h-[300px] pointer-events-none" />
 
-        {/* Right Column: Clean Developer Highlights */}
+        {/* Right Column: Clean Highlights */}
         <div className="lg:col-span-4 space-y-4 text-left pointer-events-auto">
           {/* Quick Bio Link */}
           <div
-            onClick={() => scrollToSection('about')}
+            onClick={() => handleExplore('/about')}
             className="p-5 rounded-2xl bg-white/[0.02] border border-white/[0.08] hover:border-[#b46f32]/40 transition-all duration-300 cursor-pointer group backdrop-blur-md shadow-xl"
           >
             <div className="text-xs font-mono text-gray-400 flex items-center justify-between mb-2">
@@ -169,7 +165,7 @@ const Hero = () => {
 
           {/* Selected Work Link */}
           <div
-            onClick={() => scrollToSection('projects')}
+            onClick={() => handleExplore('/work')}
             className="p-5 rounded-2xl bg-white/[0.02] border border-white/[0.08] hover:border-[#b46f32]/40 transition-all duration-300 cursor-pointer group backdrop-blur-md shadow-xl"
           >
             <div className="text-xs font-mono text-gray-400 flex items-center justify-between mb-2">
@@ -189,7 +185,7 @@ const Hero = () => {
 
       </div>
 
-      {/* Bottom Highlights & Metrics Bar */}
+      {/* Bottom Highlights */}
       <div className="relative z-10 w-full max-w-7xl mx-auto pt-6 border-t border-white/10 mt-4">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
           {portfolioData.personal.stats.map((stat, idx) => (
@@ -210,22 +206,11 @@ const Hero = () => {
             </div>
           ))}
         </div>
-
-        {/* Scroll Down Button */}
-        <div className="flex justify-center mt-4">
-          <MagneticWrapper strength={0.4}>
-            <button
-              onClick={() => scrollToSection('projects')}
-              className="p-2 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-[#b46f32] hover:border-[#b46f32]/40 transition-all focus:outline-none"
-              aria-label="Scroll to projects"
-            >
-              <ArrowDown className="w-4 h-4 animate-bounce" />
-            </button>
-          </MagneticWrapper>
-        </div>
       </div>
-    </section>
+    </div>
   );
 };
 
-export default Hero;
+export default HomeView;
+
+
