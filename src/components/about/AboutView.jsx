@@ -229,11 +229,10 @@ export const AboutView = () => {
                 <MagneticWrapper strength={0.25}>
                   <button
                     onClick={() => handleCategoryClick('all')}
-                    className={`text-xs font-mono px-4 py-2 rounded-full transition-all duration-200 border font-medium ${
-                      activeCategory === 'all'
+                    className={`text-xs font-mono px-4 py-2 rounded-full transition-all duration-200 border font-medium ${activeCategory === 'all'
                         ? 'bg-[#b46f32] text-white font-bold border-[#b46f32] shadow-md shadow-[#b46f32]/20'
                         : 'bg-[#0a0a0c] text-gray-300 border-white/10 hover:border-[#b46f32]/40'
-                    }`}
+                      }`}
                   >
                     All Skills
                   </button>
@@ -245,11 +244,10 @@ export const AboutView = () => {
                     <MagneticWrapper key={cat.id} strength={0.25}>
                       <button
                         onClick={() => handleCategoryClick(cat.id)}
-                        className={`text-xs font-mono px-4 py-2 rounded-full transition-all duration-200 border flex items-center gap-2 font-medium ${
-                          isActive
+                        className={`text-xs font-mono px-4 py-2 rounded-full transition-all duration-200 border flex items-center gap-2 font-medium ${isActive
                             ? 'bg-[#b46f32] text-white font-bold border-[#b46f32] shadow-md shadow-[#b46f32]/20'
                             : 'bg-[#0a0a0c] text-gray-300 border-white/10 hover:border-[#b46f32]/40'
-                        }`}
+                          }`}
                       >
                         {getCategoryIcon(cat.id)}
                         <span>{cat.name}</span>

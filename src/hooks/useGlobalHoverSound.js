@@ -2,29 +2,14 @@ import { useEffect, useRef } from 'react';
 import { soundEngine } from '../audio/soundEngine';
 
 /**
- * Custom hook to attach global hover and interaction sound effects to any
- * hoverable section, card, button, link, and interactive element across the entire portfolio.
+ * Global hover sound hook — attaches subtle audio feedback to every
+ * interactive element across the portfolio without requiring manual wiring.
  */
 export function useGlobalHoverSound() {
   const lastHoveredRef = useRef(null);
   const lastTimeRef = useRef(0);
 
   useEffect(() => {
-    // Unlock Web Audio on first user gesture
-    const unlockAudio = () => {
-      soundEngine.initContext();
-      window.removeEventListener('pointerdown', unlockAudio);
-      window.removeEventListener('pointermove', unlockAudio);
-      window.removeEventListener('keydown', unlockAudio);
-      window.removeEventListener('touchstart', unlockAudio);
-    };
-
-    window.addEventListener('pointerdown', unlockAudio, { once: true, passive: true });
-    window.addEventListener('pointermove', unlockAudio, { once: true, passive: true });
-    window.addEventListener('keydown', unlockAudio, { once: true, passive: true });
-    window.addEventListener('touchstart', unlockAudio, { once: true, passive: true });
-
-    // Selector for interactive buttons, links, chips, tabs, and controls
     const interactiveSelector = [
       'button',
       'a',
@@ -48,26 +33,19 @@ export function useGlobalHoverSound() {
       const target = e.target;
       if (!target || !(target instanceof Element)) return;
 
-      // Find nearest hoverable container or interactive element
       let hoverTarget = target.closest(interactiveSelector);
 
-      // Check computed pointer cursor as fallback
       if (!hoverTarget) {
         try {
-          const computedCursor = window.getComputedStyle(target).cursor;
-          if (computedCursor === 'pointer') {
+          if (window.getComputedStyle(target).cursor === 'pointer') {
             hoverTarget = target;
           }
-        } catch {
-          // Ignore
-        }
+        } catch { /* ignore */ }
       }
 
       if (hoverTarget) {
-        // Only trigger if we entered a different hoverable element
         if (hoverTarget !== lastHoveredRef.current) {
           const now = Date.now();
-          // Rate-limit to prevent audio distortion on rapid mouse sweeps
           if (now - lastTimeRef.current > 35) {
             soundEngine.playHover();
             lastTimeRef.current = now;
@@ -89,10 +67,6 @@ export function useGlobalHoverSound() {
     return () => {
       document.removeEventListener('mouseover', handleMouseOver);
       document.removeEventListener('mouseleave', handleMouseLeave);
-      window.removeEventListener('pointerdown', unlockAudio);
-      window.removeEventListener('pointermove', unlockAudio);
-      window.removeEventListener('keydown', unlockAudio);
-      window.removeEventListener('touchstart', unlockAudio);
     };
   }, []);
 }

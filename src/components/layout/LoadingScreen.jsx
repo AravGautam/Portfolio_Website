@@ -1,45 +1,40 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { soundEngine } from '../../audio/soundEngine';
-import { Volume2, Sparkles } from 'lucide-react';
 
 const LoadingScreen = ({ onComplete }) => {
   const [progress, setProgress] = useState(0);
   const [fadeOut, setFadeOut] = useState(false);
   const [isReady, setIsReady] = useState(false);
-  const [audioActivated, setAudioActivated] = useState(false);
   const canvasContainerRef = useRef(null);
+  const completedRef = useRef(false);
 
-  // Play loading sound and ambient BGM immediately by default on mount
+  // Attempt audio autoplay immediately; unlock on first gesture
   useEffect(() => {
     soundEngine.initContext();
     soundEngine.playBGM('default');
     soundEngine.playLoadingSound();
-    soundEngine.speakGreeting("Namaste. Welcome to Arav Gautam's portfolio.");
 
-    // Direct gesture unlock for browsers blocking unprompted autoplay
-    const unlockOnGesture = () => {
+    const unlock = () => {
       soundEngine.initContext();
-      soundEngine.playLoadingSound();
       soundEngine.playBGM('default');
+      soundEngine.playLoadingSound();
+      soundEngine.speakGreeting("Namaste. Welcome to Arav Gautam's portfolio.");
     };
 
-    window.addEventListener('click', unlockOnGesture, { once: true, passive: true });
-    window.addEventListener('pointerdown', unlockOnGesture, { once: true, passive: true });
-    window.addEventListener('keydown', unlockOnGesture, { once: true, passive: true });
-    window.addEventListener('touchstart', unlockOnGesture, { once: true, passive: true });
+    ['click', 'pointerdown', 'touchstart', 'keydown', 'mousemove', 'wheel'].forEach(evt =>
+      window.addEventListener(evt, unlock, { once: true, passive: true })
+    );
 
     return () => {
-      window.removeEventListener('click', unlockOnGesture);
-      window.removeEventListener('pointerdown', unlockOnGesture);
-      window.removeEventListener('keydown', unlockOnGesture);
-      window.removeEventListener('touchstart', unlockOnGesture);
+      ['click', 'pointerdown', 'touchstart', 'keydown', 'mousemove', 'wheel'].forEach(evt =>
+        window.removeEventListener(evt, unlock)
+      );
       soundEngine.finishLoadingScreen();
     };
   }, []);
 
-
-  // Sleek, Grand 3D Kinetic Torus Sculpture (Bigger, Clean, Mind-Boggling Aesthetic)
+  // 3D Kinetic Torus Sculpture
   useEffect(() => {
     const container = canvasContainerRef.current;
     if (!container) return;
@@ -62,7 +57,6 @@ const LoadingScreen = ({ onComplete }) => {
     renderer.toneMappingExposure = 1.3;
     container.appendChild(renderer.domElement);
 
-    // Warm Studio Lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
     scene.add(ambientLight);
 
@@ -81,7 +75,6 @@ const LoadingScreen = ({ onComplete }) => {
     const mainGroup = new THREE.Group();
     scene.add(mainGroup);
 
-    // 1. Primary Kinetic Torus Knot Sculpture (Sleek, fluid, metallic copper & dark glass)
     const knotGeo = new THREE.TorusKnotGeometry(1.65, 0.38, 160, 32, 2, 3);
     const knotMat = new THREE.MeshStandardMaterial({
       color: 0x0c0d12,
@@ -93,7 +86,6 @@ const LoadingScreen = ({ onComplete }) => {
     const knotMesh = new THREE.Mesh(knotGeo, knotMat);
     mainGroup.add(knotMesh);
 
-    // 2. Wireframe Filament Halo (Delicate glowing outer contour)
     const wireGeo = new THREE.TorusKnotGeometry(1.68, 0.39, 90, 16, 2, 3);
     const wireMat = new THREE.MeshBasicMaterial({
       color: 0xb46f32,
@@ -104,15 +96,11 @@ const LoadingScreen = ({ onComplete }) => {
     const wireMesh = new THREE.Mesh(wireGeo, wireMat);
     mainGroup.add(wireMesh);
 
-    // 3. Central Luminous Core Orb
     const coreOrbGeo = new THREE.SphereGeometry(0.55, 32, 32);
-    const coreOrbMat = new THREE.MeshBasicMaterial({
-      color: 0xffffff
-    });
+    const coreOrbMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
     const coreOrb = new THREE.Mesh(coreOrbGeo, coreOrbMat);
     mainGroup.add(coreOrb);
 
-    // 4. Subtle Outer Horizon Rings
     const ringGeo = new THREE.TorusGeometry(3.1, 0.02, 16, 100);
     const ringMat = new THREE.MeshBasicMaterial({
       color: 0xb46f32,
@@ -123,7 +111,6 @@ const LoadingScreen = ({ onComplete }) => {
     ring.rotation.x = Math.PI / 2.8;
     mainGroup.add(ring);
 
-    // 5. Floating Ambient Stardust (120 delicate embers)
     const particleCount = 140;
     const pPositions = new Float32Array(particleCount * 3);
     for (let i = 0; i < particleCount * 3; i += 3) {
@@ -146,7 +133,6 @@ const LoadingScreen = ({ onComplete }) => {
     const particles = new THREE.Points(pGeo, pMat);
     mainGroup.add(particles);
 
-    // Mouse Tracking for Smooth 3D Inertia Tilt
     const mouse = { x: 0, y: 0, targetX: 0, targetY: 0 };
     const onMouseMove = (e) => {
       mouse.targetX = (e.clientX / window.innerWidth - 0.5) * 0.8;
@@ -159,28 +145,22 @@ const LoadingScreen = ({ onComplete }) => {
 
     const animate = () => {
       const time = clock.getElapsedTime();
-
       mouse.x += (mouse.targetX - mouse.x) * 0.05;
       mouse.y += (mouse.targetY - mouse.y) * 0.05;
 
-      // Elegant sculpture rotation
       knotMesh.rotation.x = time * 0.35 + mouse.y * 0.5;
       knotMesh.rotation.y = time * 0.45 + mouse.x * 0.5;
-
       wireMesh.rotation.x = knotMesh.rotation.x;
       wireMesh.rotation.y = knotMesh.rotation.y;
-
       ring.rotation.z = time * 0.15;
       particles.rotation.y = time * 0.08;
 
-      // Soft core breathing
       const breath = 1 + Math.sin(time * 3) * 0.12;
       coreOrb.scale.setScalar(breath);
 
       renderer.render(scene, camera);
       animationFrameId = requestAnimationFrame(animate);
     };
-
     animate();
 
     const onResize = () => {
@@ -201,20 +181,11 @@ const LoadingScreen = ({ onComplete }) => {
         container.removeChild(renderer.domElement);
       }
       renderer.dispose();
-      knotGeo.dispose();
-      knotMat.dispose();
-      wireGeo.dispose();
-      wireMat.dispose();
-      coreOrbGeo.dispose();
-      coreOrbMat.dispose();
-      ringGeo.dispose();
-      ringMat.dispose();
-      pGeo.dispose();
-      pMat.dispose();
+      [knotGeo, knotMat, wireGeo, wireMat, coreOrbGeo, coreOrbMat, ringGeo, ringMat, pGeo, pMat].forEach(r => r.dispose());
     };
   }, []);
 
-  // Smooth Progress
+  // Smooth Progress bar
   useEffect(() => {
     const startTime = Date.now();
     const duration = 2200;
@@ -243,60 +214,39 @@ const LoadingScreen = ({ onComplete }) => {
     return () => clearInterval(interval);
   }, []);
 
-  // When 100% ready, if audio is already active, transition automatically
+  // Auto-transition as soon as loading hits 100% — no button, no gating
   useEffect(() => {
-    if (isReady && audioActivated) {
+    if (isReady && !completedRef.current) {
+      completedRef.current = true;
       const timer = setTimeout(() => {
         setFadeOut(true);
         soundEngine.finishLoadingScreen();
         setTimeout(() => onComplete(), 500);
-      }, 300);
+      }, 400);
       return () => clearTimeout(timer);
     }
-  }, [isReady, audioActivated, onComplete]);
-
-  const handleScreenInteract = () => {
-    setAudioActivated(true);
-    soundEngine.initContext();
-    soundEngine.playLoadingSound();
-    soundEngine.playBGM('default');
-    soundEngine.speakGreeting();
-
-    if (isReady) {
-      setTimeout(() => {
-        setFadeOut(true);
-        soundEngine.finishLoadingScreen();
-        setTimeout(() => onComplete(), 500);
-      }, 400);
-    }
-  };
+  }, [isReady, onComplete]);
 
   return (
     <div
-      onClick={handleScreenInteract}
-      className={`fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-between p-6 sm:p-10 select-none cursor-pointer transition-opacity duration-600 ${
+      className={`fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-between p-6 sm:p-10 select-none transition-opacity duration-600 ${
         fadeOut ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
     >
       {/* Top Header */}
       <div className="relative z-10 w-full max-w-4xl flex items-center justify-between text-xs font-mono text-gray-400">
-        <span className="text-gray-300 font-medium tracking-widest">
-          ARAV GAUTAM
-        </span>
-        <span className="text-gray-500 tracking-wider">
-          PORTFOLIO '26
-        </span>
+        <span className="text-gray-300 font-medium tracking-widest">ARAV GAUTAM</span>
+        <span className="text-gray-500 tracking-wider">PORTFOLIO '26</span>
       </div>
 
-      {/* Center 3D Sculpture Showcase */}
+      {/* Center 3D Sculpture */}
       <div className="relative z-10 w-full max-w-3xl flex flex-col items-center text-center my-auto">
-        {/* Generous 3D Sculpture Viewport */}
         <div
           ref={canvasContainerRef}
           className="w-full max-w-[500px] sm:max-w-[620px] h-[340px] sm:h-[440px] flex items-center justify-center pointer-events-none -my-2"
         />
 
-        {/* Hindi Greeting नमस्ते */}
+        {/* Greeting */}
         <div className="mb-5">
           <h1
             className="text-5xl sm:text-6xl md:text-7xl font-bold text-white mb-2 tracking-wide select-none"
@@ -313,7 +263,7 @@ const LoadingScreen = ({ onComplete }) => {
           </p>
         </div>
 
-        {/* Clean Hairline Progress Bar */}
+        {/* Progress Bar */}
         <div className="w-64 sm:w-80 bg-white/[0.08] h-1 rounded-full overflow-hidden mb-3 relative">
           <div
             className="h-full bg-[#b46f32] transition-all duration-75 ease-out rounded-full shadow-[0_0_12px_rgba(180,111,50,0.8)]"
@@ -321,39 +271,18 @@ const LoadingScreen = ({ onComplete }) => {
           />
         </div>
 
-        {/* Minimal Progress Indicator */}
-        <div className="flex items-center justify-between w-64 sm:w-80 text-[11px] text-gray-500 font-mono mb-2">
+        <div className="flex items-center justify-between w-64 sm:w-80 text-[11px] text-gray-500 font-mono">
           <span>Loading</span>
           <span className="text-gray-400">{progress}%</span>
         </div>
-
-        {/* Interactive Audio Cues / Enter Button */}
-        {isReady && !audioActivated ? (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleScreenInteract();
-            }}
-            className="mt-2 px-6 py-2.5 rounded-full bg-[#b46f32] text-white font-mono text-xs font-bold tracking-wider hover:bg-white hover:text-black transition-all duration-300 flex items-center gap-2 shadow-[0_0_24px_rgba(180,111,50,0.6)] animate-pulse"
-          >
-            <Volume2 className="w-4 h-4" />
-            <span>ENTER EXPERIENCE</span>
-          </button>
-        ) : (
-          <div className="mt-1 flex items-center gap-2 text-[11px] font-mono text-[#b46f32] tracking-wider py-1 px-3 rounded-full bg-[#b46f32]/10 border border-[#b46f32]/25">
-            <Volume2 className="w-3.5 h-3.5 animate-pulse" />
-            <span>{audioActivated ? 'AUDIO ACTIVE' : 'TAP ANYWHERE TO ACTIVATE AUDIO'}</span>
-          </div>
-        )}
       </div>
 
-      {/* Bottom Subtle Footnote */}
+      {/* Footer */}
       <div className="relative z-10 w-full max-w-4xl flex justify-center text-[11px] font-mono text-gray-500">
         <span>Clean Code • Distributed Systems • 3D Experiences</span>
       </div>
     </div>
   );
 };
-
 
 export default LoadingScreen;
