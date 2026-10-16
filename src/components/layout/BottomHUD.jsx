@@ -42,11 +42,7 @@ export const BottomHUD = () => {
           {muted ? (
             <VolumeX className="w-3.5 h-3.5 text-gray-500 hover:text-gray-300 transition-colors" />
           ) : (
-            <div className="flex items-end gap-[2px] h-3 w-3">
-              <span className="w-[1.5px] bg-[#0781ff] rounded-full h-full animate-[pulse_0.8s_ease-in-out_infinite]" />
-              <span className="w-[1.5px] bg-[#0781ff] rounded-full h-2 animate-[pulse_1.1s_ease-in-out_infinite_0.2s]" />
-              <span className="w-[1.5px] bg-[#0781ff] rounded-full h-2.5 animate-[pulse_0.9s_ease-in-out_infinite_0.4s]" />
-            </div>
+            <Volume2 className="w-3.5 h-3.5 text-blue-400 hover:text-white transition-colors" />
           )}
         </button>
 

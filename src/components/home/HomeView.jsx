@@ -312,7 +312,7 @@ export const HomeView = () => {
             className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-mono text-gray-300 transition-all hover:scale-105 cursor-pointer"
           >
             <span>Scroll down to explore</span>
-            <ChevronDown className="w-3.5 h-3.5 text-blue-400 animate-bounce" />
+            <ChevronDown className="w-3.5 h-3.5 text-blue-400" />
           </button>
 
           {/* Bottom Right: Specialization */}
@@ -555,7 +555,7 @@ export const HomeView = () => {
                     {/* Header hugging the clock edge at the top */}
                     <div className="space-y-0.5 max-w-[210px] lg:mr-[140px] text-left">
                       <div className="flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
                         <span className="text-[10px] text-gray-400 font-mono tracking-widest uppercase">
                           AVAILABLE GLOBALLY
                         </span>

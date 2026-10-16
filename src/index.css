@@ -2,7 +2,20 @@
 
 /* Global Unlayered Rule: Enforces custom cursor on fine pointers across 100% of DOM */
 @media (pointer: fine) {
-  *, *::before, *::after, html, body, canvas, a, button, input, select, textarea, [role="button"], [data-cursor] {
+
+  *,
+  *::before,
+  *::after,
+  html,
+  body,
+  canvas,
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  [role="button"],
+  [data-cursor] {
     cursor: none !important;
   }
 }
@@ -30,12 +43,17 @@
     overflow-x: hidden;
   }
 
-  h1, h2, h3, .font-display {
+  h1,
+  h2,
+  h3,
+  .font-display {
     font-family: 'Syne', 'Space Grotesk', -apple-system, sans-serif;
     letter-spacing: -0.025em;
   }
 
-  code, pre, .font-mono {
+  code,
+  pre,
+  .font-mono {
     font-family: 'JetBrains Mono', monospace;
   }
 
@@ -58,6 +76,33 @@
     background: #0781ff;
   }
 }
+
+/* Custom Skills Scrollbar */
+.custom-skills-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(7, 129, 255, 0.7) rgba(255, 255, 255, 0.05);
+}
+
+.custom-skills-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-skills-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 9999px;
+}
+
+.custom-skills-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(7, 129, 255, 0.75);
+  border-radius: 9999px;
+  border: 1px solid rgba(7, 129, 255, 0.3);
+}
+
+.custom-skills-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #38bdf8;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
+}
+
 
 /* Minimalist Dark Panel Utilities */
 .glass-panel {
@@ -86,7 +131,7 @@
 
 /* Unique Bespoke Card Shadows & Elevation */
 .card-cyber-shadow {
-  box-shadow: 
+  box-shadow:
     0 14px 34px -10px rgba(0, 0, 0, 0.94),
     0 0 24px -4px rgba(7, 129, 255, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.09);
@@ -95,14 +140,14 @@
 
 .card-cyber-shadow:hover {
   transform: translateY(-2px);
-  box-shadow: 
+  box-shadow:
     0 24px 50px -12px rgba(0, 0, 0, 0.98),
     0 0 36px -2px rgba(7, 129, 255, 0.22),
     inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
 .card-cyber-static {
-  box-shadow: 
+  box-shadow:
     0 16px 40px -12px rgba(0, 0, 0, 0.95),
     0 0 28px -4px rgba(7, 129, 255, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -110,8 +155,17 @@
 
 /* Subtle Kinetic Animations */
 @keyframes pulseGlow {
-  0%, 100% { opacity: 0.25; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(1.04); }
+
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.5;
+    transform: scale(1.04);
+  }
 }
 
 .animate-pulse-glow {
@@ -125,8 +179,13 @@
 
 /* Spinning Conic Border Animation */
 @keyframes spinBorder {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .animate-spin-border {
@@ -135,8 +194,13 @@
 
 /* Infinite Marquee Ticker */
 @keyframes marquee {
-  0% { transform: translateX(0%); }
-  100% { transform: translateX(-50%); }
+  0% {
+    transform: translateX(0%);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
 .animate-marquee {

@@ -56,15 +56,14 @@ export const Navbar = () => {
         }`}
       >
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 lg:px-12 flex items-center justify-between">
-          {/* Brand Left: Clean Arav Gautam with status dot */}
+          {/* Brand Left: Ꮧ𝓖 Monogram */}
           <button
             onClick={handleLogoClick}
             onMouseEnter={() => soundEngine.playHover()}
-            className="flex items-center gap-2.5 text-white hover:text-blue-400 transition-colors focus:outline-none cursor-pointer group"
+            className="flex items-center text-white hover:text-blue-400 transition-colors focus:outline-none cursor-pointer group"
             aria-label="Home"
           >
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="font-display font-bold text-lg tracking-tight">Arav Gautam</span>
+            <span className="font-display font-bold text-2xl tracking-wide select-none">Ꮧ𝓖</span>
           </button>
 
           {/* Center Floating Island Navbar */}

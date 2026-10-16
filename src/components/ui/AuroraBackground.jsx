@@ -1,5 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, memo } from 'react';
 import { Gradient } from '../webgl/StripeGradient';
+
+const DEFAULT_COLORS = ['#222299', '#0781ff', '#000000', '#000055'];
 
 /**
  * AuroraBackground
@@ -9,7 +11,7 @@ import { Gradient } from '../webgl/StripeGradient';
  * vibrant electric azure highlights, and silky undulating waves across the whole website.
  */
 const AuroraBackground = ({
-  colors = ['#222299', '#0781ff', '#000000', '#000055'],
+  colors = DEFAULT_COLORS,
   speed = 5e-5,
   className = '',
   opacity = 0.95
@@ -26,6 +28,12 @@ const AuroraBackground = ({
       canvas.style.setProperty(`--gradient-color-${idx + 1}`, col);
     });
 
+    // Guard against unhandled WebGL context loss
+    const handleContextLost = (e) => {
+      e.preventDefault();
+    };
+    canvas.addEventListener('webglcontextlost', handleContextLost, false);
+
     let gradientInstance = null;
     try {
       gradientInstance = new Gradient();
@@ -39,6 +47,7 @@ const AuroraBackground = ({
     }
 
     return () => {
+      canvas.removeEventListener('webglcontextlost', handleContextLost);
       if (gradientRef.current) {
         try {
           gradientRef.current.disconnect();
@@ -52,10 +61,10 @@ const AuroraBackground = ({
 
   return (
     <div
-      className={`fixed inset-0 pointer-events-none z-0 overflow-hidden select-none bg-black ${className}`}
+      className={`fixed inset-0 pointer-events-none z-0 overflow-hidden select-none bg-[#030308] ${className}`}
       aria-hidden="true"
     >
-      {/* 3D WebGL Mesh Canvas */}
+      {/* 3D WebGL Mesh Canvas with guaranteed deep dark background fallback */}
       <canvas
         ref={canvasRef}
         id="aurora-mesh-canvas"
@@ -63,6 +72,7 @@ const AuroraBackground = ({
         style={{
           width: '100vw',
           height: '100vh',
+          backgroundColor: '#030308',
           opacity,
           '--gradient-color-1': colors[0] || '#222299',
           '--gradient-color-2': colors[1] || '#0781ff',
@@ -75,11 +85,12 @@ const AuroraBackground = ({
       <div 
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(ellipse 90% 80% at 50% 50%, rgba(0,0,0,0) 30%, rgba(0,0,0,0.35) 75%, rgba(0,0,0,0.7) 100%)'
+          background: 'radial-gradient(ellipse 90% 80% at 50% 50%, rgba(3,3,8,0) 30%, rgba(3,3,8,0.4) 75%, rgba(3,3,8,0.85) 100%)'
         }}
       />
     </div>
   );
 };
 
-export default AuroraBackground;
+export default memo(AuroraBackground);
+

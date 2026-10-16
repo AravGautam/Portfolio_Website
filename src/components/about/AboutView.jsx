@@ -1,22 +1,18 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { portfolioData } from '../../data/portfolioData';
 import WebGLCanvas from '../webgl/WebGLCanvas';
 import { SkillsConstellationScene } from '../webgl/SkillsConstellation3D';
 import Education from './Education';
 import Achievements from './Achievements';
-import { Sparkles, ExternalLink, MapPin, Layers, Database, Code, Brain, Cpu } from 'lucide-react';
+import { Sparkles, ExternalLink, MapPin, Layers, Database, Code, Brain, Cpu, ChevronUp, ChevronDown } from 'lucide-react';
 import MagneticWrapper from '../ui/MagneticWrapper';
 import { soundEngine } from '../../audio/soundEngine';
 
 export const AboutView = () => {
   const [activeCategory, setActiveCategory] = useState('all');
+  const [highlightedSkill, setHighlightedSkill] = useState(null);
   const constellationRef = useRef(null);
-
-  const createScene = useCallback((container) => {
-    const scene = new SkillsConstellationScene(container, portfolioData.skillCategories);
-    constellationRef.current = scene;
-    return scene;
-  }, []);
+  const skillsContainerRef = useRef(null);
 
   const categoryFrequencies = {
     all: 440,
@@ -27,6 +23,79 @@ export const AboutView = () => {
     ai_data: 963
   };
 
+  const handleNodeClick = useCallback((nodeData) => {
+    const { categoryId, skillName } = nodeData;
+
+    soundEngine.playClick();
+    if (typeof soundEngine.playNote === 'function') {
+      soundEngine.playNote(categoryFrequencies[categoryId] || 528);
+    }
+
+    setActiveCategory(categoryId);
+
+    if (constellationRef.current) {
+      constellationRef.current.highlightCategory(categoryId);
+    }
+
+    if (skillName) {
+      setHighlightedSkill(skillName);
+      setTimeout(() => setHighlightedSkill(null), 2500);
+
+      setTimeout(() => {
+        if (skillsContainerRef.current) {
+          const cardId = `skill-card-${skillName.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
+          const cardEl = document.getElementById(cardId);
+          if (cardEl) {
+            cardEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        }
+      }, 70);
+    } else {
+      setTimeout(() => {
+        if (skillsContainerRef.current) {
+          skillsContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }, 50);
+    }
+  }, []);
+
+  const createScene = useCallback((container) => {
+    const scene = new SkillsConstellationScene(
+      container,
+      portfolioData.skillCategories,
+      handleNodeClick
+    );
+    constellationRef.current = scene;
+    return scene;
+  }, [handleNodeClick]);
+
+  // Dedicated uninhibited wheel scroll listener to guarantee smooth scrolling
+  useEffect(() => {
+    const container = skillsContainerRef.current;
+    if (!container) return;
+
+    const onWheel = (e) => {
+      const maxScroll = container.scrollHeight - container.clientHeight;
+      if (maxScroll <= 0) return;
+
+      const isScrollingUp = e.deltaY < 0;
+      const isScrollingDown = e.deltaY > 0;
+      const atTop = container.scrollTop <= 0;
+      const atBottom = container.scrollTop >= maxScroll - 1;
+
+      // Scroll within bounds and isolate from parent Lenis interference
+      if ((isScrollingDown && !atBottom) || (isScrollingUp && !atTop)) {
+        e.stopPropagation();
+        container.scrollTop += e.deltaY;
+      }
+    };
+
+    container.addEventListener('wheel', onWheel, { passive: true });
+    return () => {
+      container.removeEventListener('wheel', onWheel);
+    };
+  }, [activeCategory]);
+
   const handleCategoryClick = (catId) => {
     soundEngine.playClick();
     if (typeof soundEngine.playNote === 'function') {
@@ -35,6 +104,14 @@ export const AboutView = () => {
     setActiveCategory(catId);
     if (constellationRef.current) {
       constellationRef.current.highlightCategory(catId === 'all' ? null : catId);
+      if (catId !== 'all') {
+        constellationRef.current.focusCategory(catId);
+      } else {
+        constellationRef.current.resetFocus();
+      }
+    }
+    if (skillsContainerRef.current) {
+      skillsContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -42,6 +119,12 @@ export const AboutView = () => {
     soundEngine.playClick();
     if (typeof soundEngine.playNote === 'function') {
       soundEngine.playNote(400 + (idx % 8) * 80);
+    }
+    setHighlightedSkill(skill.name);
+    setTimeout(() => setHighlightedSkill(null), 2500);
+
+    if (constellationRef.current) {
+      constellationRef.current.focusSkill(skill.name);
     }
   };
 
@@ -102,7 +185,7 @@ export const AboutView = () => {
                   <div className="text-gray-400 text-xs font-mono mt-0.5">Software Engineer</div>
                 </div>
                 <div className="flex items-center gap-1.5 text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                   <span>Dream Filler</span>
                 </div>
               </div>
@@ -186,14 +269,14 @@ export const AboutView = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
             {/* 3D Constellation Viewport (5 cols) */}
-            <div
-              className="lg:col-span-5 relative rounded-3xl bg-[#0a0a0c] border border-white/10 p-6 flex flex-col justify-between min-h-[380px] shadow-2xl overflow-hidden"
-              data-cursor="NODE"
-            >
+            <div className="lg:col-span-5 relative rounded-3xl bg-[#0a0a0c] border border-white/10 p-6 flex flex-col justify-between min-h-[460px] shadow-2xl overflow-hidden">
               <div className="relative z-10 flex items-center justify-between pointer-events-none">
                 <div className="flex items-center gap-2 text-xs bg-black/70 border border-white/10 px-3.5 py-1.5 rounded-full text-gray-200 backdrop-blur-md font-mono font-medium">
                   <span className="w-2 h-2 rounded-full bg-[#0781ff]" />
                   <span>3D Skills Graph</span>
+                </div>
+                <div className="text-[10px] font-mono text-gray-400 bg-black/60 border border-white/10 px-2.5 py-1 rounded-full backdrop-blur-md">
+                  Click node to inspect
                 </div>
               </div>
 
@@ -202,76 +285,139 @@ export const AboutView = () => {
                 <WebGLCanvas createScene={createScene} className="w-full h-full" />
               </div>
 
-              <div className="relative z-10 text-xs text-gray-300 font-mono bg-black/70 border border-white/10 p-3.5 rounded-2xl backdrop-blur-md pointer-events-none">
-                Select any category to highlight associated skills and connections.
+              <div className="relative z-10 text-xs text-gray-300 font-mono bg-black/70 border border-white/10 p-3.5 rounded-2xl backdrop-blur-md pointer-events-none flex items-center justify-between">
+                <span>Click any 3D node to rotate and scroll to that skill.</span>
               </div>
             </div>
 
             {/* Category Filter Chips & Skills Matrix Grid (7 cols) */}
             <div className="lg:col-span-7 flex flex-col justify-between">
-              {/* Category Filter Chips */}
-              <div className="flex flex-wrap gap-2 mb-6">
-                <MagneticWrapper strength={0.25}>
-                  <button
-                    onClick={() => handleCategoryClick('all')}
-                    className={`text-xs font-mono px-4 py-2.5 rounded-full transition-all duration-200 border font-medium ${activeCategory === 'all'
-                        ? 'bg-[#0781ff] text-white font-bold border-[#0781ff] shadow-md shadow-[#0781ff]/25'
-                        : 'bg-[#0a0a0c] text-gray-300 border-white/10 hover:border-blue-500/40'
-                      }`}
-                  >
-                    All Skills
-                  </button>
-                </MagneticWrapper>
+              <div>
+                {/* Category Filter Chips */}
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <MagneticWrapper strength={0.25}>
+                    <button
+                      onClick={() => handleCategoryClick('all')}
+                      className={`text-xs font-mono px-4 py-2.5 rounded-full transition-all duration-200 border font-medium ${activeCategory === 'all'
+                          ? 'bg-[#0781ff] text-white font-bold border-[#0781ff] shadow-md shadow-[#0781ff]/25'
+                          : 'bg-[#0a0a0c] text-gray-300 border-white/10 hover:border-blue-500/40'
+                        }`}
+                    >
+                      All Skills
+                    </button>
+                  </MagneticWrapper>
 
-                {portfolioData.skillCategories.map((cat) => {
-                  const isActive = activeCategory === cat.id;
-                  return (
-                    <MagneticWrapper key={cat.id} strength={0.25}>
-                      <button
-                        onClick={() => handleCategoryClick(cat.id)}
-                        className={`text-xs font-mono px-4 py-2.5 rounded-full transition-all duration-200 border flex items-center gap-2 font-medium ${isActive
-                            ? 'bg-[#0781ff] text-white font-bold border-[#0781ff] shadow-md shadow-[#0781ff]/25'
-                            : 'bg-[#0a0a0c] text-gray-300 border-white/10 hover:border-blue-500/40'
+                  {portfolioData.skillCategories.map((cat) => {
+                    const isActive = activeCategory === cat.id;
+                    return (
+                      <MagneticWrapper key={cat.id} strength={0.25}>
+                        <button
+                          onClick={() => handleCategoryClick(cat.id)}
+                          className={`text-xs font-mono px-4 py-2.5 rounded-full transition-all duration-200 border flex items-center gap-2 font-medium ${isActive
+                              ? 'bg-[#0781ff] text-white font-bold border-[#0781ff] shadow-md shadow-[#0781ff]/25'
+                              : 'bg-[#0a0a0c] text-gray-300 border-white/10 hover:border-blue-500/40'
+                            }`}
+                        >
+                          {getCategoryIcon(cat.id)}
+                          <span>{cat.name}</span>
+                        </button>
+                      </MagneticWrapper>
+                    );
+                  })}
+                </div>
+
+                {/* Skills Matrix Cards Viewport */}
+                <div
+                  ref={skillsContainerRef}
+                  data-lenis-prevent="true"
+                  tabIndex={0}
+                  role="region"
+                  aria-label="Skills Matrix Cards"
+                  className="h-[390px] overflow-y-auto overscroll-y-contain pr-2 custom-skills-scrollbar relative focus:outline-none"
+                  style={{ scrollBehavior: 'smooth' }}
+                >
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pb-2">
+                    {filteredSkills.map((skill, idx) => {
+                      const isHighlighted = highlightedSkill === skill.name;
+                      const cardId = `skill-card-${skill.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
+                      return (
+                        <div
+                          key={`${skill.name}-${idx}`}
+                          id={cardId}
+                          onClick={() => handleSkillCardClick(skill, idx)}
+                          className={`p-4 rounded-2xl bg-[#0a0a0c] border transition-all duration-300 group cursor-pointer ${
+                            isHighlighted
+                              ? 'border-blue-400 bg-blue-950/40 shadow-[0_0_25px_rgba(7,129,255,0.45)] ring-1 ring-blue-400/50 scale-[1.02]'
+                              : 'border-white/5 hover:border-blue-500/30 hover:bg-white/[0.02]'
                           }`}
-                      >
-                        {getCategoryIcon(cat.id)}
-                        <span>{cat.name}</span>
-                      </button>
-                    </MagneticWrapper>
-                  );
-                })}
+                        >
+                          <div className="flex items-center justify-between mb-1.5">
+                            <h4 className="font-display font-bold text-white group-hover:text-blue-400 transition-colors text-sm flex items-center gap-2">
+                              <span>{skill.name}</span>
+                              {isHighlighted && (
+                                <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                              )}
+                            </h4>
+                            <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-gray-300">
+                              {skill.tag}
+                            </span>
+                          </div>
+
+                          <p className="text-xs text-gray-300 mb-3 leading-relaxed font-normal">
+                            {skill.desc}
+                          </p>
+
+                          {/* Proficiency Meter Bar */}
+                          <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-[#0781ff] rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(7,129,255,0.5)]"
+                              style={{ width: `${skill.level}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
 
-              {/* Skills Matrix Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 max-h-[380px] overflow-y-auto pr-2">
-                {filteredSkills.map((skill, idx) => (
-                  <div
-                    key={idx}
-                    onClick={() => handleSkillCardClick(skill, idx)}
-                    className="p-4 rounded-2xl bg-[#0a0a0c] border border-white/5 hover:border-blue-500/30 transition-all duration-200 group cursor-pointer"
-                  >
-                    <div className="flex items-center justify-between mb-1.5">
-                      <h4 className="font-display font-bold text-white group-hover:text-blue-400 transition-colors text-sm">
-                        {skill.name}
-                      </h4>
-                      <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-gray-300">
-                        {skill.tag}
-                      </span>
-                    </div>
-
-                    <p className="text-xs text-gray-300 mb-3 leading-relaxed font-normal">
-                      {skill.desc}
-                    </p>
-
-                    {/* Proficiency Meter Bar */}
-                    <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-[#0781ff] rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(7,129,255,0.5)]"
-                        style={{ width: `${skill.level}%` }}
-                      />
-                    </div>
+              {/* Status footer with scroll prompt and interactive buttons */}
+              <div className="flex items-center justify-between text-[11px] font-mono text-gray-400 mt-3 pt-2.5 border-t border-white/5">
+                <span className="text-gray-400">
+                  Showing {filteredSkills.length} skills in {activeCategory === 'all' ? 'All Skills' : portfolioData.skillCategories.find(c => c.id === activeCategory)?.name}
+                </span>
+                <div className="flex items-center gap-3">
+                  <span className="text-[#0781ff] flex items-center gap-1.5 font-medium">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#0781ff]" />
+                    Scroll to view all
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => {
+                        if (skillsContainerRef.current) {
+                          skillsContainerRef.current.scrollBy({ top: -140, behavior: 'smooth' });
+                        }
+                      }}
+                      aria-label="Scroll skills up"
+                      className="w-6 h-6 rounded-md bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-colors border border-white/10 cursor-pointer"
+                      title="Scroll Up"
+                    >
+                      <ChevronUp className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (skillsContainerRef.current) {
+                          skillsContainerRef.current.scrollBy({ top: 140, behavior: 'smooth' });
+                        }
+                      }}
+                      aria-label="Scroll skills down"
+                      className="w-6 h-6 rounded-md bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-colors border border-white/10 cursor-pointer"
+                      title="Scroll Down"
+                    >
+                      <ChevronDown className="w-3.5 h-3.5" />
+                    </button>
                   </div>
-                ))}
+                </div>
               </div>
             </div>
           </div>

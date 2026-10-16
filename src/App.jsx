@@ -24,7 +24,7 @@ const ContactView = lazy(() => import('./components/contact/ContactView'));
 const LazyFallback = () => (
   <div className="w-full min-h-[60vh] flex items-center justify-center bg-transparent text-xs font-mono text-gray-500">
     <div className="flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/[0.04] border border-white/10">
-      <span className="w-2 h-2 rounded-full bg-[#0781ff] animate-ping" />
+      <span className="w-2 h-2 rounded-full bg-[#0781ff]" />
       <span>Loading View...</span>
     </div>
   </div>
