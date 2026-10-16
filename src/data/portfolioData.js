@@ -258,7 +258,7 @@ export const portfolioData = {
     },
     {
       id: "twitter",
-      label: "𝕏 (Twitter)",
+      label: "X (Twitter)",
       handle: "@_i_m_arav__",
       href: "https://x.com/_i_m_arav__",
       icon: "Twitter"

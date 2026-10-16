@@ -14,7 +14,7 @@ export const AudioCreditsModal = ({ isOpen, onClose }) => {
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-6">
           <div className="flex items-center gap-2.5">
-            <Volume2 className="w-5 h-5 text-[#b46f32]" />
+            <Volume2 className="w-5 h-5 text-[#0781ff]" />
             <h3 className="font-display font-bold text-lg text-white">Audio & Sound Credits</h3>
           </div>
           <button
@@ -44,14 +44,34 @@ export const AudioCreditsModal = ({ isOpen, onClose }) => {
               href="https://freesound.org/people/zimbot/sounds/122276/"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-[#b46f32] hover:underline pt-1 text-[11px]"
+              className="inline-flex items-center gap-1 text-[#0781ff] hover:underline pt-1 text-[11px]"
             >
               <span>View on Freesound.org</span>
               <ExternalLink className="w-3 h-3" />
             </a>
           </div>
 
-          {/* Item 2 */}
+          {/* Item 2: Default BGM */}
+          <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-white font-semibold">690365__xcreenplay__skyparty-invite.wav</span>
+              <span className="text-[10px] text-gray-400">Default BGM</span>
+            </div>
+            <p className="text-gray-400 text-[11px] font-sans">
+              Authored by <strong className="text-gray-300">xcreenplay</strong> under Creative Commons on Freesound.
+            </p>
+            <a
+              href="https://freesound.org/people/xcreenplay/sounds/690365/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-[#0781ff] hover:underline pt-1 text-[11px]"
+            >
+              <span>View on Freesound.org</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
+
+          {/* Item 3: Projects BGM */}
           <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-white font-semibold">482961__yellowtree__super-strange-synths.wav</span>
@@ -64,18 +84,18 @@ export const AudioCreditsModal = ({ isOpen, onClose }) => {
               href="https://freesound.org/people/yellowtree/sounds/482961/"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-[#b46f32] hover:underline pt-1 text-[11px]"
+              className="inline-flex items-center gap-1 text-[#0781ff] hover:underline pt-1 text-[11px]"
             >
               <span>View on Freesound.org</span>
               <ExternalLink className="w-3 h-3" />
             </a>
           </div>
 
-          {/* Item 3 */}
+          {/* Item 4: Contact BGM */}
           <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-white font-semibold">ambient-bgm.mp3</span>
-              <span className="text-[10px] text-gray-400">Ambient Background Music</span>
+              <span className="text-[10px] text-gray-400">Contact & Connection BGM</span>
             </div>
             <p className="text-gray-400 text-[11px] font-sans">
               Deep space ambient atmospheric soundscape track.

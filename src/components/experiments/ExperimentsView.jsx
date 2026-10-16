@@ -12,7 +12,7 @@ export const ExperimentsView = () => {
   const portraitSceneRef = useRef(null);
 
   const createPortraitScene = useCallback((container) => {
-    const scene = new PortraitParticleScene(container, '/arav-developer-hero.jpg');
+    const scene = new PortraitParticleScene(container, '/arav-portrait-hero.jpg');
     portraitSceneRef.current = scene;
     return scene;
   }, []);
@@ -51,7 +51,7 @@ export const ExperimentsView = () => {
       ctx.fillRect(0, 0, w, h);
 
       if (activeExp === 1) {
-        // Bronze & White Kinetic Particle Flow
+        // Azure & White Kinetic Particle Flow
         const cx = w / 2;
         const cy = h / 2;
         const count = 190;
@@ -63,20 +63,20 @@ export const ExperimentsView = () => {
           const y = cy + Math.sin(angle) * (radius * 0.6);
 
           const alpha = Math.min(i / count, 0.9);
-          ctx.fillStyle = i % 2 === 0 ? `rgba(180, 111, 50, ${alpha})` : `rgba(255, 255, 255, ${alpha * 0.7})`;
+          ctx.fillStyle = i % 2 === 0 ? `rgba(7, 129, 255, ${alpha})` : `rgba(255, 255, 255, ${alpha * 0.7})`;
           ctx.beginPath();
           ctx.arc(x, y, 2 + Math.sin(time * 2 + i) * 1.2, 0, Math.PI * 2);
           ctx.fill();
         }
       } else if (activeExp === 2) {
-        // Procedural Wave Topology (Bronze & White lines)
+        // Procedural Wave Topology (Azure & White lines)
         const lines = 20;
         const step = h / lines;
 
         for (let i = 0; i < lines; i++) {
           ctx.beginPath();
           const yBase = i * step + 20;
-          ctx.strokeStyle = i % 2 === 0 ? 'rgba(180, 111, 50, 0.6)' : 'rgba(255, 255, 255, 0.35)';
+          ctx.strokeStyle = i % 2 === 0 ? 'rgba(7, 129, 255, 0.6)' : 'rgba(255, 255, 255, 0.35)';
           ctx.lineWidth = 1.3;
 
           for (let x = 0; x < w; x += 8) {
@@ -90,7 +90,7 @@ export const ExperimentsView = () => {
           ctx.stroke();
         }
       } else if (activeExp === 3) {
-        // Neural Graph Mesh (Orange & Navy nodes)
+        // Neural Graph Mesh (Azure & Cyan nodes)
         const nodes = [
           { x: w * 0.25, y: h * 0.3 },
           { x: w * 0.45, y: h * 0.65 },
@@ -99,7 +99,7 @@ export const ExperimentsView = () => {
           { x: w * 0.35, y: h * 0.8 }
         ];
 
-        ctx.strokeStyle = 'rgba(29, 78, 216, 0.3)';
+        ctx.strokeStyle = 'rgba(7, 129, 255, 0.3)';
         ctx.lineWidth = 1.5;
         for (let i = 0; i < nodes.length; i++) {
           for (let j = i + 1; j < nodes.length; j++) {
@@ -112,7 +112,7 @@ export const ExperimentsView = () => {
 
         nodes.forEach((n, idx) => {
           const pulse = Math.sin(time * 3 + idx) * 3;
-          ctx.fillStyle = idx % 2 === 0 ? '#b46f32' : '#3b82f6';
+          ctx.fillStyle = idx % 2 === 0 ? '#0781ff' : '#38bdf8';
           ctx.beginPath();
           ctx.arc(n.x, n.y, 6 + pulse, 0, Math.PI * 2);
           ctx.fill();
@@ -131,40 +131,40 @@ export const ExperimentsView = () => {
   }, [activeExp, interactionCount]);
 
   return (
-    <div className="relative min-h-screen pt-32 pb-24 px-6 md:px-12 bg-black flex flex-col justify-between">
+    <div className="relative min-h-screen pt-32 pb-24 px-6 md:px-12 bg-transparent flex flex-col justify-between">
       <div className="max-w-7xl mx-auto w-full relative z-10">
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
           <div>
-            <div className="text-xs font-mono font-bold uppercase tracking-wider text-[#b46f32] mb-3 flex items-center gap-2">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>CREATIVE CODE & GRAPHICS SANDBOX</span>
+            <div className="text-xs font-mono font-bold uppercase tracking-wider text-blue-400 mb-3 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#0781ff]" />
+              <span>Experiments</span>
             </div>
-            <h1 className="text-5xl sm:text-7xl font-display font-extrabold text-white tracking-tight uppercase">
-              TECHNICAL LABORATORY.
+            <h1 className="text-4xl sm:text-6xl font-display font-extrabold text-white tracking-tight">
+              Interactive Prototypes
             </h1>
           </div>
 
           <p className="text-sm text-gray-400 max-w-md leading-relaxed font-normal">
-            Experiments in GPU point-clouds, mathematical wave manifolds, volumetric depth, and real-time graphics.
+            Experiments in GPU point clouds, mathematical wave simulations, and real-time WebGL graphics.
           </p>
         </div>
 
         {/* Experiment Workspace */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
           {/* Big Centerpiece Visualizer (8 cols) */}
-          <div className="lg:col-span-8 relative rounded-3xl bg-[#0a0a0c] border border-white/10 p-6 sm:p-8 flex flex-col justify-between min-h-[500px] sm:min-h-[560px] shadow-2xl overflow-hidden">
+          <div className="lg:col-span-8 relative rounded-3xl bg-[#0a0a0c]/80 border border-white/10 p-6 sm:p-8 flex flex-col justify-between min-h-[500px] sm:min-h-[560px] shadow-2xl overflow-hidden backdrop-blur-md">
             <div className="relative z-10 flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2 text-xs bg-black/80 border border-white/10 px-4 py-1.5 rounded-full text-gray-300 font-mono">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#b46f32]" />
-                <span className="font-bold">EXPERIMENT: {portfolioData.experiments[activeExp].title.toUpperCase()}</span>
+              <div className="flex items-center gap-2 text-xs bg-black/80 border border-white/10 px-4 py-1.5 rounded-full text-gray-200 font-mono">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#0781ff]" />
+                <span className="font-bold">{portfolioData.experiments[activeExp].title}</span>
               </div>
 
               <div className="flex items-center gap-2">
                 {activeExp === 0 && (
                   <button
                     onClick={handleToggleScatter}
-                    className="text-xs font-mono px-3.5 py-1.5 rounded-full bg-[#b46f32]/10 border border-[#b46f32]/40 text-[#b46f32] hover:bg-[#b46f32] hover:text-white transition-all flex items-center gap-1.5"
+                    className="text-xs font-mono px-3.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 hover:bg-[#0781ff] hover:text-white transition-all flex items-center gap-1.5 cursor-pointer"
                   >
                     <Sliders className="w-3.5 h-3.5" />
                     <span>Scatter / Reform</span>
@@ -176,7 +176,7 @@ export const ExperimentsView = () => {
                     soundEngine.playClick();
                     setInteractionCount(prev => prev + 1);
                   }}
-                  className="text-xs p-2.5 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:border-white/30 transition-colors"
+                  className="text-xs p-2.5 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:border-blue-400 transition-colors cursor-pointer"
                   title="Restart simulation"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
@@ -197,10 +197,10 @@ export const ExperimentsView = () => {
 
             <div className="relative z-10 flex items-center justify-between pt-4 border-t border-white/5 text-xs text-gray-400 font-mono">
               <span className="flex items-center gap-1.5">
-                <Move className="w-3.5 h-3.5 text-[#b46f32]" />
+                <Move className="w-3.5 h-3.5 text-blue-400" />
                 <span>Interactive 3D orbit & proximity physics enabled</span>
               </span>
-              <span className="text-[#b46f32] font-bold">60 FPS GLSL</span>
+              <span className="text-blue-400 font-bold bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">60 FPS GLSL</span>
             </div>
           </div>
 
@@ -218,18 +218,18 @@ export const ExperimentsView = () => {
                   onMouseEnter={() => soundEngine.playHover()}
                   className={`cursor-pointer p-4 sm:p-5 rounded-2xl border transition-all duration-300 flex-1 flex flex-col justify-between ${
                     isSelected
-                      ? 'bg-[#0a0a0c] border-[#b46f32]/60 shadow-xl shadow-[#b46f32]/15 scale-[1.01]'
+                      ? 'bg-[#0a0a0c] border-[#0781ff]/60 shadow-xl shadow-[#0781ff]/15 scale-[1.01]'
                       : 'bg-[#0a0a0c]/50 border-white/5 hover:border-white/20 hover:bg-[#0a0a0c]/80'
                   }`}
                 >
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-xs font-mono font-bold text-[#b46f32]">
+                      <span className="text-xs font-mono font-bold text-blue-400">
                         {exp.category}
                       </span>
                       {isSelected && (
-                        <span className="text-[10px] font-mono text-white bg-[#b46f32] px-2.5 py-0.5 rounded-full font-bold">
-                          ACTIVE LAB
+                        <span className="text-[10px] font-mono text-white bg-[#0781ff] px-2.5 py-0.5 rounded-full font-bold">
+                          Active Lab
                         </span>
                       )}
                     </div>

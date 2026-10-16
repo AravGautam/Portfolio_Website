@@ -6,13 +6,13 @@ const Education = () => {
   const { education } = portfolioData;
 
   return (
-    <div className="p-7 sm:p-8 rounded-3xl bg-[#0a0a0c] border border-white/10 shadow-2xl relative overflow-hidden group hover:border-[#b46f32]/40 transition-all duration-300">
+    <div className="p-7 sm:p-8 rounded-3xl bg-[#0a0a0c]/80 border border-white/10 shadow-2xl relative overflow-hidden group hover:border-blue-500/30 transition-all duration-300 backdrop-blur-md">
       <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-2 text-xs font-mono font-semibold text-[#b46f32] uppercase tracking-wider">
+        <div className="flex items-center gap-2 text-xs font-mono font-semibold text-blue-400 uppercase tracking-wider">
           <GraduationCap className="w-4 h-4" />
-          <span>Formal Education</span>
+          <span>Education</span>
         </div>
-        <div className="text-xs font-mono text-[#b46f32] bg-[#b46f32]/10 border border-[#b46f32]/30 px-3 py-1 rounded-full font-semibold">
+        <div className="text-xs font-mono text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full font-semibold">
           CGPA: 7.8 / 10.0
         </div>
       </div>
@@ -33,7 +33,7 @@ const Education = () => {
       <div className="space-y-2.5 pt-4 border-t border-white/5">
         {education.highlights.map((item, idx) => (
           <div key={idx} className="flex items-start gap-2.5">
-            <CheckCircle2 className="w-3.5 h-3.5 text-[#b46f32] shrink-0 mt-0.5" />
+            <CheckCircle2 className="w-3.5 h-3.5 text-blue-400 shrink-0 mt-0.5" />
             <span className="text-xs text-gray-300 leading-relaxed font-normal">
               {item}
             </span>

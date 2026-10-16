@@ -13,7 +13,6 @@ export const RouteLoader = ({ routeName, isVisible, onFinished }) => {
       return;
     }
 
-    soundEngine.playLoadingSound();
     setOpacity(1);
     const target = (routeName || 'HOME').toUpperCase();
     let iteration = 0;
@@ -73,7 +72,7 @@ export const RouteLoader = ({ routeName, isVisible, onFinished }) => {
     >
       <div className="flex flex-col items-center gap-3 select-none">
         <div className="flex items-center gap-2 text-xs font-mono text-gray-400 uppercase tracking-widest">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#b46f32]" />
+          <span className="w-1.5 h-1.5 rounded-full bg-[#0781ff]" />
           <span>LOADING ROUTE</span>
         </div>
 
@@ -82,7 +81,7 @@ export const RouteLoader = ({ routeName, isVisible, onFinished }) => {
         </h2>
 
         <div className="w-32 h-[2px] bg-white/10 rounded-full overflow-hidden mt-2">
-          <div className="w-full h-full bg-[#b46f32]" />
+          <div className="w-full h-full bg-[#0781ff]" />
         </div>
       </div>
     </div>

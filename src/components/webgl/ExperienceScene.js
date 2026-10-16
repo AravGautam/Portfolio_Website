@@ -28,7 +28,7 @@ export class ExperienceScene {
     const ambientLight = new THREE.AmbientLight(0xffffff, 1.1);
     this.scene.add(ambientLight);
 
-    const keyLight = new THREE.DirectionalLight(0xb46f32, 2.8);
+    const keyLight = new THREE.DirectionalLight(0x0781ff, 2.8);
     keyLight.position.set(8, 20, 12);
     this.scene.add(keyLight);
 
@@ -106,11 +106,11 @@ export class ExperienceScene {
     const roadMesh = new THREE.Mesh(roadGeo, roadMat);
     this.group.add(roadMesh);
 
-    // 3. Central Glowing Lane Divider (Dashed Bronze Line)
+    // 3. Central Glowing Lane Divider (Dashed Azure Line)
     const centerPoints = this.curve.getPoints(100);
     const centerGeo = new THREE.BufferGeometry().setFromPoints(centerPoints);
     const centerMat = new THREE.LineDashedMaterial({
-      color: 0xb46f32,
+      color: 0x0781ff,
       dashSize: 1.0,
       gapSize: 0.7,
       linewidth: 3
@@ -120,9 +120,9 @@ export class ExperienceScene {
     centerLine.position.y += 0.05;
     this.group.add(centerLine);
 
-    // 4. Glowing Highway Rails & Edge Conduits (Left & Right Warm Bronze Rails)
+    // 4. Glowing Highway Rails & Edge Conduits (Left & Right Azure Rails)
     const railMat = new THREE.LineBasicMaterial({
-      color: 0xb46f32,
+      color: 0x0781ff,
       transparent: true,
       opacity: 0.85
     });
@@ -168,7 +168,7 @@ export class ExperienceScene {
     this.milestones = [];
     const milestoneConfigs = [
       { t: 0.18, title: '2023 // VITS CSE', color: 0x8892b0, accent: 0xffffff },
-      { t: 0.52, title: '2024 — PRESENT // DREAM FILLER INTERN', color: 0xb46f32, accent: 0xffa44a },
+      { t: 0.52, title: '2024 — PRESENT // DREAM FILLER INTERN', color: 0x0781ff, accent: 0x38bdf8 },
       { t: 0.82, title: 'FUTURE // DISTRIBUTED ARCHITECTURES', color: 0x38bdf8, accent: 0x7dd3fc }
     ];
 
@@ -235,7 +235,7 @@ export class ExperienceScene {
       const isNorthbound = k % 2 === 0;
       const streakMesh = new THREE.Mesh(
         new THREE.BoxGeometry(0.24, 0.16, 0.65),
-        new THREE.MeshBasicMaterial({ color: isNorthbound ? 0xb46f32 : 0xffffff })
+        new THREE.MeshBasicMaterial({ color: isNorthbound ? 0x0781ff : 0xffffff })
       );
       this.group.add(streakMesh);
       this.lightStreaks.push({

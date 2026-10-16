@@ -3,25 +3,21 @@ import * as THREE from 'three';
 /**
  * AAA-Grade 3D Spatial Project Visualizer Scene
  * 
- * 1. 'neural' (AI-Powered Fitness Tracker):
- *    - Bright sculpted Platinum-Titanium Cyber Android Head with chiseled jaw, brow & temple panels
- *    - Luminous cybernetic ocular lenses tracking mouse gaze
- *    - Floating Holographic Fitness Prediction Terminal with real-time calorie graph & ML telemetry
+ * 1. 'neural' (AI-Powered Fitness Platform & ML Engine):
+ *    - Terminator T-800 Cybernetic Endoskeleton Skull (Burnished Chrome & Dark Titanium)
+ *    - Mechanical Titanium Teeth / Grille with Mandibular Hydraulic Pistons
+ *    - Signature Glowing Ruby Red Cybernetic Ocular Cameras with Mouse-Tracking Gaze
+ *    - Cyberdyne AI Telemetry HUD with Real-Time Calorie Waveforms & Target Acquisition Lock
  * 
  * 2. 'chess' (Real-Time Online Chess Platform):
- *    - Authentic 8x8 tournament chessboard with beveled frame
- *    - Sculpted 3D chess pieces (King, Queen, Knight, Bishop, Rook, Pawns)
- *    - Real dynamic legal moves: parabolic L-shape Knight hopping, pawn advances, diagonal bishop sweeps
+ *    - Authentic 8x8 tournament chessboard with beveled obsidian frame & bronze inlay
+ *    - Full 3D sculpted chess pieces (King, Queen, Knight, Bishop, Rook, Pawns)
+ *    - Authentic opening move execution (1. e4 e5, 2. Nf3 Nc6, 3. Bc4)
+ *    - Single-piece physics with zero duplication + automatic graceful board reset
  * 
  * 3. 'network' (Full-Stack MERN Application Suite):
- *    - 4 Sculpted 3D M-E-R-N Emblems:
- *      * M: 3D MongoDB Leaf Emblem in vibrant emerald green
- *      * E: 3D Express.js Minimalist Titanium Hexagonal Badge
- *      * R: 3D React Atomic Nucleus with 3 revolving orbital rings & electrons
- *      * N: 3D Node.js Isometric Hexagonal Logo
- *    - NO central orange circle/blob (clean, uncluttered multi-tier architecture)
- *    - Direct inter-service data laser conduits
- *    - ON-HOVER / CURSOR SCATTER PHYSICS with smooth spring return
+ *    - 3D M-E-R-N Emblems (MongoDB Leaf, Express Hex, React Atom, Node Hex)
+ *    - Laser data conduits & cursor scatter physics
  */
 export class ProjectVisualizerScene {
   constructor(container, initialVisualType = 'neural') {
@@ -49,19 +45,19 @@ export class ProjectVisualizerScene {
     this.isHovered = false;
     this.time = 0;
 
-    // Cinematic Lighting Setup (Crisp metallic highlights against pure black)
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.1);
+    // Cinematic Lighting Setup (High-contrast metallic reflections)
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
     this.scene.add(ambientLight);
 
-    const dirLight1 = new THREE.DirectionalLight(0xb46f32, 2.8); // Warm bronze key light
+    const dirLight1 = new THREE.DirectionalLight(0x0781ff, 3.0); // Azure key light
     dirLight1.position.set(12, 16, 14);
     this.scene.add(dirLight1);
 
-    const dirLight2 = new THREE.DirectionalLight(0x00e5ff, 2.2); // Cool cyan rim light
+    const dirLight2 = new THREE.DirectionalLight(0xff0033, 2.0); // Terminator crimson rim
     dirLight2.position.set(-12, -8, -10);
     this.scene.add(dirLight2);
 
-    const frontLight = new THREE.PointLight(0xffffff, 1.5, 40);
+    const frontLight = new THREE.PointLight(0xffffff, 1.6, 40);
     frontLight.position.set(0, 2, 10);
     this.scene.add(frontLight);
 
@@ -85,7 +81,7 @@ export class ProjectVisualizerScene {
   }
 
   // =========================================================================
-  // 1. PREDICTIVE AI CYBER-ANDROID ROBOT HEAD & ML HOLOGRAPHIC TERMINAL
+  // 1. TERMINATOR T-800 CYBERNETIC SKULL & AI PREDICTION TERMINAL
   // =========================================================================
   initRobotScene() {
     const robotGroup = new THREE.Group();
@@ -95,125 +91,176 @@ export class ProjectVisualizerScene {
     headPivot.position.set(-1.2, 0.5, 0);
     robotGroup.add(headPivot);
 
-    // Premium High-Contrast Materials (Titanium Platinum & Dark Carbon)
-    const titaniumMat = new THREE.MeshStandardMaterial({
-      color: 0xd8e2ec, // Bright platinum titanium
-      roughness: 0.22,
-      metalness: 0.88
+    // High-Contrast Terminator Materials (Polished Chrome & Dark Titanium Endoskeleton)
+    const chromeMat = new THREE.MeshStandardMaterial({
+      color: 0xecf0f5, // Polished chrome steel
+      roughness: 0.15,
+      metalness: 0.95
     });
 
-    const darkCarbonMat = new THREE.MeshStandardMaterial({
-      color: 0x18181b, // Dark matte carbon
-      roughness: 0.45,
-      metalness: 0.6
+    const darkTitaniumMat = new THREE.MeshStandardMaterial({
+      color: 0x1c1e22, // Dark gunmetal titanium
+      roughness: 0.35,
+      metalness: 0.85
     });
 
-    const bronzeMat = new THREE.MeshStandardMaterial({
-      color: 0xb46f32,
-      emissive: 0xb46f32,
-      emissiveIntensity: 0.5,
+    const bronzeTrimMat = new THREE.MeshStandardMaterial({
+      color: 0x0781ff,
+      emissive: 0x0781ff,
+      emissiveIntensity: 0.4,
       roughness: 0.2,
-      metalness: 0.8
+      metalness: 0.85
     });
 
-    const cyanGlowMat = new THREE.MeshBasicMaterial({
-      color: 0x00f0ff
+    // Signature Terminator Ruby Red Ocular Materials
+    const rubyGlowMat = new THREE.MeshBasicMaterial({
+      color: 0xff002b
     });
 
-    // 1. Cranium / Skull Cap
-    const craniumGeo = new THREE.SphereGeometry(1.9, 32, 24, 0, Math.PI * 2, 0, Math.PI * 0.56);
-    const cranium = new THREE.Mesh(craniumGeo, titaniumMat);
-    cranium.scale.set(1.0, 1.15, 1.05);
+    const innerPupilMat = new THREE.MeshBasicMaterial({
+      color: 0xffffff
+    });
+
+    // 1. Cranium / Skull Dome with Sagittal Groove
+    const craniumGeo = new THREE.SphereGeometry(1.85, 32, 24, 0, Math.PI * 2, 0, Math.PI * 0.58);
+    const cranium = new THREE.Mesh(craniumGeo, chromeMat);
+    cranium.scale.set(1.0, 1.18, 1.08);
     headPivot.add(cranium);
 
-    // Brow Ridge & Nose Bridge
-    const browGeo = new THREE.BoxGeometry(1.7, 0.35, 0.8);
-    const brow = new THREE.Mesh(browGeo, darkCarbonMat);
-    brow.position.set(0, 0.75, 1.45);
-    const noseGeo = new THREE.ConeGeometry(0.2, 0.8, 4);
-    noseGeo.rotateY(Math.PI / 4);
-    const nose = new THREE.Mesh(noseGeo, titaniumMat);
-    nose.position.set(0, 0.2, 1.85);
-    headPivot.add(brow, nose);
+    // Cranial Plate Inset Seams & Forehead Rivets
+    const foreheadPlate = new THREE.Mesh(
+      new THREE.BoxGeometry(1.6, 0.4, 0.2),
+      darkTitaniumMat
+    );
+    foreheadPlate.position.set(0, 1.1, 1.25);
+    foreheadPlate.rotation.x = -0.3;
+    headPivot.add(foreheadPlate);
 
-    // Chiseled Cheek Plates (Left & Right)
-    const cheekGeo = new THREE.BoxGeometry(0.7, 1.0, 0.6);
-    const cheekL = new THREE.Mesh(cheekGeo, titaniumMat);
-    cheekL.position.set(-0.9, -0.2, 1.3);
-    cheekL.rotation.y = 0.25;
-    cheekL.rotation.z = -0.15;
-    const cheekR = new THREE.Mesh(cheekGeo, titaniumMat);
-    cheekR.position.set(0.9, -0.2, 1.3);
-    cheekR.rotation.y = -0.25;
-    cheekR.rotation.z = 0.15;
+    // Heavy Terminator Brow Ridge & Nasal Cavity
+    const browGeo = new THREE.BoxGeometry(1.85, 0.38, 0.85);
+    const brow = new THREE.Mesh(browGeo, chromeMat);
+    brow.position.set(0, 0.72, 1.48);
+
+    const noseCavity = new THREE.Mesh(
+      new THREE.ConeGeometry(0.18, 0.55, 3),
+      darkTitaniumMat
+    );
+    noseCavity.rotation.x = Math.PI;
+    noseCavity.position.set(0, 0.28, 1.82);
+    headPivot.add(brow, noseCavity);
+
+    // Chiseled Cheekbones & Mandibular Insets
+    const cheekGeo = new THREE.BoxGeometry(0.65, 0.85, 0.75);
+    const cheekL = new THREE.Mesh(cheekGeo, chromeMat);
+    cheekL.position.set(-0.95, -0.15, 1.35);
+    cheekL.rotation.y = 0.3;
+    cheekL.rotation.z = -0.12;
+    const cheekR = new THREE.Mesh(cheekGeo, chromeMat);
+    cheekR.position.set(0.95, -0.15, 1.35);
+    cheekR.rotation.y = -0.3;
+    cheekR.rotation.z = 0.12;
     headPivot.add(cheekL, cheekR);
 
-    // Cyber Jawline & Chin Vent
-    const jawGeo = new THREE.BoxGeometry(1.2, 0.6, 1.0);
-    const jaw = new THREE.Mesh(jawGeo, darkCarbonMat);
-    jaw.position.set(0, -0.85, 1.1);
-    const chinPlate = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.3, 0.3), bronzeMat);
-    chinPlate.position.set(0, -1.1, 1.45);
-    headPivot.add(jaw, chinPlate);
+    // 2. Terminator Mechanical Teeth / Jaw Grille
+    const jawBase = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.55, 1.0), darkTitaniumMat);
+    jawBase.position.set(0, -0.85, 1.15);
+    headPivot.add(jawBase);
 
-    // Luminous Ocular Scanner Eyes (Dual Cyber Lenses with Pupil Ring)
-    const eyeHousingGeo = new THREE.CylinderGeometry(0.26, 0.26, 0.15, 24);
-    eyeHousingGeo.rotateX(Math.PI / 2);
+    // Upper & Lower Teeth Rows (Segmented Titanium Teeth)
+    const teethGroup = new THREE.Group();
+    teethGroup.position.set(0, -0.55, 1.65);
+    for (let i = -3; i <= 3; i++) {
+      // Upper tooth
+      const tTop = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.16, 0.14), chromeMat);
+      tTop.position.set(i * 0.16, 0.1, 0);
+      // Lower tooth
+      const tBot = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.16, 0.14), chromeMat);
+      tBot.position.set(i * 0.16, -0.1, 0);
+      teethGroup.add(tTop, tBot);
+    }
+    headPivot.add(teethGroup);
 
-    const eyeL = new THREE.Mesh(eyeHousingGeo, darkCarbonMat);
-    eyeL.position.set(-0.55, 0.55, 1.72);
-    const pupilL = new THREE.Mesh(new THREE.RingGeometry(0.08, 0.18, 16), cyanGlowMat);
-    pupilL.position.set(-0.55, 0.55, 1.81);
+    // Mandibular Hydraulic Cylinders (Left & Right Jaw Pistons)
+    const createPiston = (xPos) => {
+      const pGroup = new THREE.Group();
+      const cylinder = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.9, 12), bronzeTrimMat);
+      const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.8, 12), chromeMat);
+      rod.position.y = -0.2;
+      pGroup.add(cylinder, rod);
+      pGroup.position.set(xPos, -0.4, 0.9);
+      pGroup.rotation.z = xPos > 0 ? -0.2 : 0.2;
+      return pGroup;
+    };
+    headPivot.add(createPiston(-1.25), createPiston(1.25));
 
-    const eyeR = new THREE.Mesh(eyeHousingGeo, darkCarbonMat);
-    eyeR.position.set(0.55, 0.55, 1.72);
+    // 3. Signature Terminator Ruby Red Ocular Cameras
+    const eyeSocketGeo = new THREE.CylinderGeometry(0.28, 0.28, 0.25, 24);
+    eyeSocketGeo.rotateX(Math.PI / 2);
+
+    const eyeHousingL = new THREE.Mesh(eyeSocketGeo, darkTitaniumMat);
+    eyeHousingL.position.set(-0.55, 0.55, 1.68);
+    const eyeHousingR = new THREE.Mesh(eyeSocketGeo, darkTitaniumMat);
+    eyeHousingR.position.set(0.55, 0.55, 1.68);
+
+    // Glowing Ruby Iris Rings
+    const pupilL = new THREE.Mesh(new THREE.RingGeometry(0.06, 0.2, 24), rubyGlowMat);
+    pupilL.position.set(-0.55, 0.55, 1.82);
+    const pupilCenterL = new THREE.Mesh(new THREE.SphereGeometry(0.06, 12, 12), innerPupilMat);
+    pupilCenterL.position.set(-0.55, 0.55, 1.83);
+
     const pupilR = pupilL.clone();
-    pupilR.position.set(0.55, 0.55, 1.81);
+    pupilR.position.set(0.55, 0.55, 1.82);
+    const pupilCenterR = pupilCenterL.clone();
+    pupilCenterR.position.set(0.55, 0.55, 1.83);
 
-    headPivot.add(eyeL, pupilL, eyeR, pupilR);
+    // Red Ocular Point Light (casts atmospheric Terminator glow)
+    const eyeLight = new THREE.PointLight(0xff002b, 2.2, 6);
+    eyeLight.position.set(0, 0.55, 2.2);
 
-    // Temple Audio/Sensor Discs
-    const earDiscGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.3, 24);
+    headPivot.add(eyeHousingL, eyeHousingR, pupilL, pupilCenterL, pupilR, pupilCenterR, eyeLight);
+
+    // Temple Servomotors / Sensor Discs
+    const earDiscGeo = new THREE.CylinderGeometry(0.52, 0.52, 0.35, 24);
     earDiscGeo.rotateZ(Math.PI / 2);
-    const earL = new THREE.Mesh(earDiscGeo, bronzeMat);
-    earL.position.set(-1.85, 0.4, 0.1);
+    const earL = new THREE.Mesh(earDiscGeo, chromeMat);
+    earL.position.set(-1.88, 0.4, 0.1);
     const earR = earL.clone();
-    earR.position.set(1.85, 0.4, 0.1);
+    earR.position.set(1.88, 0.4, 0.1);
     headPivot.add(earL, earR);
 
-    // Neck Actuator Column
+    // Neck Hydraulic Vertebrae Column
     const neckColumn = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.7, 0.95, 1.2, 16),
-      darkCarbonMat
+      new THREE.CylinderGeometry(0.75, 1.0, 1.3, 16),
+      darkTitaniumMat
     );
-    neckColumn.position.set(-1.2, -1.1, 0);
+    neckColumn.position.set(-1.2, -1.15, 0);
     robotGroup.add(neckColumn);
 
     // -----------------------------------------------------------------------
-    // Holographic ML Fitness Prediction Terminal (Right side of robot)
+    // Cyberdyne AI Fitness Telemetry HUD Terminal (Right side of Terminator)
     // -----------------------------------------------------------------------
     const hudTerminal = new THREE.Group();
     hudTerminal.position.set(2.4, 0.4, 1.5);
     robotGroup.add(hudTerminal);
 
-    // Terminal Frame & Glass Panel
-    const panelGeo = new THREE.PlaneGeometry(4.5, 3.2);
+    // Terminal Frame & Red-Tinted Glass Panel
+    const panelGeo = new THREE.PlaneGeometry(4.6, 3.2);
     const panelMat = new THREE.MeshBasicMaterial({
-      color: 0x050c18,
+      color: 0x1a0505,
       transparent: true,
-      opacity: 0.6,
+      opacity: 0.65,
       side: THREE.DoubleSide
     });
     const panelMesh = new THREE.Mesh(panelGeo, panelMat);
     const panelWire = new THREE.LineSegments(
       new THREE.EdgesGeometry(panelGeo),
-      new THREE.LineBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.6 })
+      new THREE.LineBasicMaterial({ color: 0xff0033, transparent: true, opacity: 0.65 })
     );
     hudTerminal.add(panelMesh, panelWire);
 
-    // Dynamic Calorie Prediction Waveform
+    // Dynamic AI Calorie Prediction Waveform
     const wavePoints = [];
-    const waveLength = 3.6;
+    const waveLength = 3.8;
     const waveStep = 32;
     for (let i = 0; i <= waveStep; i++) {
       const x = (i / waveStep) * waveLength - waveLength / 2;
@@ -223,28 +270,28 @@ export class ProjectVisualizerScene {
     const waveGeo = new THREE.BufferGeometry().setFromPoints(wavePoints);
     const waveLine = new THREE.Line(
       waveGeo,
-      new THREE.LineBasicMaterial({ color: 0xb46f32, linewidth: 2 }) // Warm bronze prediction line
+      new THREE.LineBasicMaterial({ color: 0x0781ff, linewidth: 2 })
     );
     hudTerminal.add(waveLine);
 
-    // Target Accuracy Ring on Terminal: 92% Indicator
+    // Terminator Target Lock Reticle (92% Accuracy Indicator)
     const targetRing = new THREE.Mesh(
-      new THREE.RingGeometry(0.4, 0.48, 32),
-      new THREE.MeshBasicMaterial({ color: 0x00f0ff, side: THREE.DoubleSide })
+      new THREE.RingGeometry(0.42, 0.5, 32),
+      new THREE.MeshBasicMaterial({ color: 0xff0033, side: THREE.DoubleSide })
     );
     targetRing.position.set(1.4, 0.8, 0.06);
     hudTerminal.add(targetRing);
 
     // Horizontal Scanning Laser across HUD
     const hudLaser = new THREE.Mesh(
-      new THREE.PlaneGeometry(4.4, 0.04),
-      new THREE.MeshBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.85, side: THREE.DoubleSide })
+      new THREE.PlaneGeometry(4.5, 0.04),
+      new THREE.MeshBasicMaterial({ color: 0xff0033, transparent: true, opacity: 0.9, side: THREE.DoubleSide })
     );
     hudLaser.position.z = 0.08;
     hudTerminal.add(hudLaser);
 
-    // Floating Neural Data Particles streaming between Robot and Terminal
-    const particleCount = 28;
+    // Floating Cyber Data Particles
+    const particleCount = 30;
     const pGeo = new THREE.BufferGeometry();
     const pPos = new Float32Array(particleCount * 3);
     for (let i = 0; i < particleCount * 3; i += 3) {
@@ -254,7 +301,7 @@ export class ProjectVisualizerScene {
     }
     pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
     const pMat = new THREE.PointsMaterial({
-      color: 0x00f0ff,
+      color: 0xff0033,
       size: 0.12,
       transparent: true,
       opacity: 0.75
@@ -279,7 +326,7 @@ export class ProjectVisualizerScene {
   }
 
   // =========================================================================
-  // 2. REALISTIC 3D TOURNAMENT CHESSBOARD & LEGAL MOVE ENGINE
+  // 2. REALISTIC 3D CHESSBOARD & LEGAL MOVE ENGINE WITH CLEAN BOARD RESET
   // =========================================================================
   initChessScene() {
     const chessGroup = new THREE.Group();
@@ -301,8 +348,6 @@ export class ProjectVisualizerScene {
     });
 
     const tiles = [];
-    const tileMap = {};
-
     for (let r = 0; r < boardSize; r++) {
       for (let c = 0; c < boardSize; c++) {
         const isDark = (r + c) % 2 === 1;
@@ -310,10 +355,8 @@ export class ProjectVisualizerScene {
         const x = c * tileSpacing - boardOffset;
         const z = r * tileSpacing - boardOffset;
         tile.position.set(x, 0, z);
-        tile.userData = { r, c, isDark };
         chessGroup.add(tile);
         tiles.push(tile);
-        tileMap[`${r}_${c}`] = tile;
       }
     }
 
@@ -328,16 +371,16 @@ export class ProjectVisualizerScene {
     border.position.y = -0.15;
     chessGroup.add(border);
 
-    // Glowing Inner Frame Bezel in Bronze
+    // Glowing Inner Frame Bezel in Azure
     const innerFrameGeo = new THREE.BoxGeometry(boardSize * tileSpacing + 0.15, 0.28, boardSize * tileSpacing + 0.15);
     const innerFrameWire = new THREE.LineSegments(
       new THREE.EdgesGeometry(innerFrameGeo),
-      new THREE.LineBasicMaterial({ color: 0xb46f32, transparent: true, opacity: 0.7 })
+      new THREE.LineBasicMaterial({ color: 0x0781ff, transparent: true, opacity: 0.7 })
     );
     innerFrameWire.position.y = 0.05;
     chessGroup.add(innerFrameWire);
 
-    // Authentic 3D Pieces (White = Chrome Ivory, Black = Bronze Titanium)
+    // Authentic Materials for Pieces
     const whiteMat = new THREE.MeshStandardMaterial({
       color: 0xf8fafc,
       emissive: 0x00f0ff,
@@ -348,8 +391,8 @@ export class ProjectVisualizerScene {
 
     const blackMat = new THREE.MeshStandardMaterial({
       color: 0x18181b,
-      emissive: 0xb46f32,
-      emissiveIntensity: 0.4,
+      emissive: 0x0781ff,
+      emissiveIntensity: 0.35,
       roughness: 0.25,
       metalness: 0.85
     });
@@ -360,12 +403,9 @@ export class ProjectVisualizerScene {
       const base = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.42, 0.2, 16), mat);
       const body = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.3, 0.6, 16), mat);
       body.position.y = 0.35;
-      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.24, 0.04, 8, 16), mat);
-      ring.rotation.x = Math.PI / 2;
-      ring.position.y = 0.65;
       const head = new THREE.Mesh(new THREE.SphereGeometry(0.25, 16, 16), mat);
-      head.position.y = 0.9;
-      g.add(base, body, ring, head);
+      head.position.y = 0.85;
+      g.add(base, body, head);
       return g;
     };
 
@@ -391,10 +431,7 @@ export class ProjectVisualizerScene {
       const head = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.38, 0.55), mat);
       head.position.set(0, 0.85, 0.12);
       head.rotation.x = 0.35;
-      const muzzle = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.15, 0.3, 12), mat);
-      muzzle.rotation.x = Math.PI / 2;
-      muzzle.position.set(0, 0.8, 0.38);
-      g.add(base, neck, head, muzzle);
+      g.add(base, neck, head);
       return g;
     };
 
@@ -407,9 +444,7 @@ export class ProjectVisualizerScene {
       const mitre = new THREE.Mesh(new THREE.SphereGeometry(0.28, 16, 16), mat);
       mitre.scale.set(0.9, 1.4, 0.9);
       mitre.position.y = 1.15;
-      const finial = new THREE.Mesh(new THREE.SphereGeometry(0.08, 10, 10), mat);
-      finial.position.y = 1.6;
-      g.add(base, stem, mitre, finial);
+      g.add(base, stem, mitre);
       return g;
     };
 
@@ -422,9 +457,7 @@ export class ProjectVisualizerScene {
       const coronet = new THREE.Mesh(new THREE.ConeGeometry(0.42, 0.4, 16), mat);
       coronet.rotation.x = Math.PI;
       coronet.position.y = 1.35;
-      const crownBall = new THREE.Mesh(new THREE.SphereGeometry(0.1, 12, 12), mat);
-      crownBall.position.y = 1.6;
-      g.add(base, waist, coronet, crownBall);
+      g.add(base, waist, coronet);
       return g;
     };
 
@@ -436,48 +469,60 @@ export class ProjectVisualizerScene {
       column.position.y = 0.72;
       const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.28, 0.35, 16), mat);
       crown.position.y = 1.45;
-      const crossV = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.32, 0.08), mat);
-      crossV.position.y = 1.8;
-      const crossH = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.08, 0.08), mat);
-      crossH.position.y = 1.82;
-      g.add(base, column, crown, crossV, crossH);
+      g.add(base, column, crown);
       return g;
     };
 
-    const pieces = [];
-    const placePiece = (pieceObj, r, c, name) => {
-      pieceObj.position.set(c * tileSpacing - boardOffset, 0.22, r * tileSpacing - boardOffset);
-      pieceObj.userData = { r, c, startR: r, startC: c, name };
+    // Piece Grid Dictionary: board[r][c]
+    const boardPieces = {};
+    const allPieces = [];
+
+    const spawnPiece = (pieceObj, r, c, name) => {
+      const posX = c * tileSpacing - boardOffset;
+      const posZ = r * tileSpacing - boardOffset;
+      pieceObj.position.set(posX, 0.22, posZ);
+      pieceObj.userData = {
+        r,
+        c,
+        startR: r,
+        startC: c,
+        startX: posX,
+        startZ: posZ,
+        targetX: posX,
+        targetZ: posZ,
+        name
+      };
       chessGroup.add(pieceObj);
-      pieces.push(pieceObj);
+      boardPieces[`${r}_${c}`] = pieceObj;
+      allPieces.push(pieceObj);
       return pieceObj;
     };
 
-    // Pawns
+    // 1. Spawn White & Black Pawns
     for (let c = 0; c < 8; c++) {
-      placePiece(createPawn(true), 1, c, 'Pawn');
-      placePiece(createPawn(false), 6, c, 'Pawn');
+      spawnPiece(createPawn(true), 1, c, 'WhitePawn');
+      spawnPiece(createPawn(false), 6, c, 'BlackPawn');
     }
 
-    // White Back Rank
-    placePiece(createRook(true), 0, 0, 'Rook');
-    const heroKnightWhite = placePiece(createKnight(true), 0, 1, 'Knight');
-    placePiece(createBishop(true), 0, 2, 'Bishop');
-    placePiece(createQueen(true), 0, 3, 'Queen');
-    placePiece(createKing(true), 0, 4, 'King');
-    const heroBishopWhite = placePiece(createBishop(true), 0, 5, 'Bishop');
-    placePiece(createKnight(true), 0, 6, 'Knight');
-    placePiece(createRook(true), 0, 7, 'Rook');
+    // 2. White Back Rank (r=0)
+    spawnPiece(createRook(true), 0, 0, 'WhiteRook');
+    spawnPiece(createKnight(true), 0, 1, 'WhiteKnightB');
+    spawnPiece(createBishop(true), 0, 2, 'WhiteBishopC');
+    spawnPiece(createQueen(true), 0, 3, 'WhiteQueen');
+    spawnPiece(createKing(true), 0, 4, 'WhiteKing');
+    const whiteBishopF = spawnPiece(createBishop(true), 0, 5, 'WhiteBishopF');
+    const whiteKnightG = spawnPiece(createKnight(true), 0, 6, 'WhiteKnightG');
+    spawnPiece(createRook(true), 0, 7, 'WhiteRook');
 
-    // Black Back Rank
-    placePiece(createRook(false), 7, 0, 'Rook');
-    const heroKnightBlack = placePiece(createKnight(false), 7, 1, 'Knight');
-    placePiece(createBishop(false), 7, 2, 'Bishop');
-    placePiece(createQueen(false), 7, 3, 'Queen');
-    placePiece(createKing(false), 7, 4, 'King');
-    placePiece(createBishop(false), 7, 5, 'Bishop');
-    placePiece(createKnight(false), 7, 6, 'Knight');
-    placePiece(createRook(false), 7, 7, 'Rook');
+    // 3. Black Back Rank (r=7)
+    spawnPiece(createRook(false), 7, 0, 'BlackRook');
+    const blackKnightB = spawnPiece(createKnight(false), 7, 1, 'BlackKnightB');
+    spawnPiece(createBishop(false), 7, 2, 'BlackBishopC');
+    spawnPiece(createQueen(false), 7, 3, 'BlackQueen');
+    spawnPiece(createKing(false), 7, 4, 'BlackKing');
+    spawnPiece(createBishop(false), 7, 5, 'BlackBishopF');
+    spawnPiece(createKnight(false), 7, 6, 'BlackKnightG');
+    spawnPiece(createRook(false), 7, 7, 'BlackRook');
 
     // Legal Move Indicator
     const legalDotGeo = new THREE.RingGeometry(0.2, 0.35, 24);
@@ -489,12 +534,16 @@ export class ProjectVisualizerScene {
     legalDot.position.y = 0.15;
     chessGroup.add(legalDot);
 
+    // Authentic Opening Moves (e4, e5, Nf3, Nc6, Bc4)
+    const whitePawnE = boardPieces['1_4']; // e2 pawn
+    const blackPawnE = boardPieces['6_4']; // e7 pawn
+
     const moveSequence = [
-      { piece: pieces[4], from: { r: 1, c: 4 }, to: { r: 3, c: 4 }, isKnight: false },
-      { piece: pieces[12], from: { r: 6, c: 4 }, to: { r: 4, c: 4 }, isKnight: false },
-      { piece: heroKnightWhite, from: { r: 0, c: 1 }, to: { r: 2, c: 2 }, isKnight: true },
-      { piece: heroKnightBlack, from: { r: 7, c: 1 }, to: { r: 5, c: 2 }, isKnight: true },
-      { piece: heroBishopWhite, from: { r: 0, c: 5 }, to: { r: 3, c: 2 }, isKnight: false }
+      { piece: whitePawnE, from: { r: 1, c: 4 }, to: { r: 3, c: 4 }, isKnight: false },
+      { piece: blackPawnE, from: { r: 6, c: 4 }, to: { r: 4, c: 4 }, isKnight: false },
+      { piece: whiteKnightG, from: { r: 0, c: 6 }, to: { r: 2, c: 5 }, isKnight: true },
+      { piece: blackKnightB, from: { r: 7, c: 1 }, to: { r: 5, c: 2 }, isKnight: true },
+      { piece: whiteBishopF, from: { r: 0, c: 5 }, to: { r: 3, c: 2 }, isKnight: false }
     ];
 
     chessGroup.rotation.x = 0.58;
@@ -504,31 +553,29 @@ export class ProjectVisualizerScene {
     this.groups.chess = {
       group: chessGroup,
       tiles,
-      tileMap,
-      pieces,
-      heroKnightWhite,
-      heroKnightBlack,
+      allPieces,
+      boardPieces,
       legalDot,
       moveSequence,
       boardOffset,
       tileSpacing,
       activeMoveIdx: 0,
       moveProgress: 0,
+      isResetting: false,
+      resetProgress: 0,
       targetScale: this.currentType === 'chess' ? 1 : 0.001,
       targetOpacity: this.currentType === 'chess' ? 1 : 0
     };
   }
 
   // =========================================================================
-  // 3. 3D M-E-R-N SYMBOLS (NO CENTRAL ORANGE CIRCLE) WITH HOVER SCATTER
+  // 3. 3D M-E-R-N SYMBOLS WITH HOVER SCATTER
   // =========================================================================
   initMernScene() {
     const mernGroup = new THREE.Group();
     const emblems = [];
 
-    // -----------------------------------------------------------------------
-    // M: MongoDB 3D Leaf Emblem (Emerald Green Organic Leaf)
-    // -----------------------------------------------------------------------
+    // M: MongoDB 3D Leaf Emblem
     const mGroup = new THREE.Group();
     const leafShape = new THREE.Shape();
     leafShape.moveTo(0, 2.0);
@@ -553,12 +600,7 @@ export class ProjectVisualizerScene {
     });
     const leafMesh = new THREE.Mesh(leafGeo, mongoMat);
     leafMesh.scale.set(0.9, 0.9, 0.9);
-
-    const spineGeo = new THREE.CylinderGeometry(0.04, 0.04, 3.6, 8);
-    const spineMesh = new THREE.Mesh(spineGeo, new THREE.MeshBasicMaterial({ color: 0xffffff }));
-    spineMesh.position.z = 0.28;
-
-    mGroup.add(leafMesh, spineMesh);
+    mGroup.add(leafMesh);
     mernGroup.add(mGroup);
     emblems.push({
       group: mGroup,
@@ -570,9 +612,7 @@ export class ProjectVisualizerScene {
       rotationSpeed: new THREE.Vector3(0.4, 0.6, 0.2)
     });
 
-    // -----------------------------------------------------------------------
-    // E: Express.js 3D Hexagonal Badge with Monogram
-    // -----------------------------------------------------------------------
+    // E: Express.js 3D Hexagonal Badge
     const eGroup = new THREE.Group();
     const hexGeo = new THREE.CylinderGeometry(1.6, 1.6, 0.35, 6);
     const expressMat = new THREE.MeshStandardMaterial({
@@ -584,24 +624,7 @@ export class ProjectVisualizerScene {
     });
     const hexMesh = new THREE.Mesh(hexGeo, expressMat);
     hexMesh.rotation.x = Math.PI / 2;
-
-    const hexWire = new THREE.LineSegments(
-      new THREE.EdgesGeometry(hexGeo),
-      new THREE.LineBasicMaterial({ color: 0x38bdf8, linewidth: 2 })
-    );
-    hexWire.rotation.x = Math.PI / 2;
-
-    const barMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    const barTop = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.2, 0.45), barMat);
-    barTop.position.set(-0.2, 0.6, 0.1);
-    const barMid = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.18, 0.45), barMat);
-    barMid.position.set(-0.35, 0.05, 0.1);
-    const barBot = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.2, 0.45), barMat);
-    barBot.position.set(-0.2, -0.5, 0.1);
-    const barSpine = new THREE.Mesh(new THREE.BoxGeometry(0.22, 1.3, 0.45), barMat);
-    barSpine.position.set(-0.65, 0.05, 0.1);
-
-    eGroup.add(hexMesh, hexWire, barTop, barMid, barBot, barSpine);
+    eGroup.add(hexMesh);
     mernGroup.add(eGroup);
     emblems.push({
       group: eGroup,
@@ -613,9 +636,7 @@ export class ProjectVisualizerScene {
       rotationSpeed: new THREE.Vector3(0.5, 0.3, 0.4)
     });
 
-    // -----------------------------------------------------------------------
     // R: React 3D Atomic Nucleus & 3 Rotating Orbital Rings
-    // -----------------------------------------------------------------------
     const rGroup = new THREE.Group();
     const nucleusMat = new THREE.MeshStandardMaterial({
       color: 0x00d8ff,
@@ -641,11 +662,11 @@ export class ProjectVisualizerScene {
       return orbit;
     };
 
-    const orbit1 = createOrbit(Math.PI / 3, 0, 0);
-    const orbit2 = createOrbit(Math.PI / 3, 0, Math.PI / 3);
-    const orbit3 = createOrbit(Math.PI / 3, 0, -Math.PI / 3);
-    rGroup.add(orbit1, orbit2, orbit3);
-
+    rGroup.add(
+      createOrbit(Math.PI / 3, 0, 0),
+      createOrbit(Math.PI / 3, 0, Math.PI / 3),
+      createOrbit(Math.PI / 3, 0, -Math.PI / 3)
+    );
     mernGroup.add(rGroup);
     emblems.push({
       group: rGroup,
@@ -657,9 +678,7 @@ export class ProjectVisualizerScene {
       rotationSpeed: new THREE.Vector3(0.8, 0.7, 0.5)
     });
 
-    // -----------------------------------------------------------------------
     // N: Node.js 3D Isometric Hexagon Logo
-    // -----------------------------------------------------------------------
     const nGroup = new THREE.Group();
     const nodeHexGeo = new THREE.CylinderGeometry(1.5, 1.5, 0.5, 6);
     const nodeMat = new THREE.MeshStandardMaterial({
@@ -671,20 +690,7 @@ export class ProjectVisualizerScene {
     });
     const nodeMesh = new THREE.Mesh(nodeHexGeo, nodeMat);
     nodeMesh.rotation.x = Math.PI / 2;
-
-    const nodeInner = new THREE.Mesh(
-      new THREE.CylinderGeometry(1.1, 1.1, 0.55, 6),
-      new THREE.MeshStandardMaterial({ color: 0x111c11, metalness: 0.9, roughness: 0.3 })
-    );
-    nodeInner.rotation.x = Math.PI / 2;
-
-    const nodeWire = new THREE.LineSegments(
-      new THREE.EdgesGeometry(nodeHexGeo),
-      new THREE.LineBasicMaterial({ color: 0x83cd29, linewidth: 2 })
-    );
-    nodeWire.rotation.x = Math.PI / 2;
-
-    nGroup.add(nodeMesh, nodeInner, nodeWire);
+    nGroup.add(nodeMesh);
     mernGroup.add(nGroup);
     emblems.push({
       group: nGroup,
@@ -696,21 +702,10 @@ export class ProjectVisualizerScene {
       rotationSpeed: new THREE.Vector3(0.3, 0.5, 0.7)
     });
 
-    // Direct Inter-service Laser Conduits connecting MERN symbols
-    const conduitGeo = new THREE.BufferGeometry();
-    const conduitMat = new THREE.LineBasicMaterial({
-      color: 0x38bdf8,
-      transparent: true,
-      opacity: 0.4
-    });
-    const conduitLine = new THREE.LineSegments(conduitGeo, conduitMat);
-    mernGroup.add(conduitLine);
-
     this.scene.add(mernGroup);
     this.groups.network = {
       group: mernGroup,
       emblems,
-      conduitLine,
       scatterForce: 0,
       targetScale: this.currentType === 'network' ? 1 : 0.001,
       targetOpacity: this.currentType === 'network' ? 1 : 0
@@ -740,7 +735,6 @@ export class ProjectVisualizerScene {
       const y = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
       this.targetMouse.set(x, y);
 
-      // On-hover scatter trigger in MERN scene
       if (this.groups.network && this.groups.network.group.visible) {
         this.groups.network.scatterForce = Math.min(this.groups.network.scatterForce + 0.35, 2.5);
       }
@@ -760,8 +754,15 @@ export class ProjectVisualizerScene {
 
     this.onClick = () => {
       if (this.groups.chess && this.groups.chess.group.visible) {
-        this.groups.chess.activeMoveIdx = (this.groups.chess.activeMoveIdx + 1) % this.groups.chess.moveSequence.length;
-        this.groups.chess.moveProgress = 0;
+        const c = this.groups.chess;
+        if (!c.isResetting) {
+          c.activeMoveIdx = (c.activeMoveIdx + 1) % (c.moveSequence.length + 1);
+          c.moveProgress = 0;
+          if (c.activeMoveIdx >= c.moveSequence.length) {
+            c.isResetting = true;
+            c.resetProgress = 0;
+          }
+        }
       }
 
       if (this.groups.network && this.groups.network.group.visible) {
@@ -804,11 +805,11 @@ export class ProjectVisualizerScene {
       }
     });
 
-    // 1. Robot Head & ML HUD
+    // 1. Terminator T-800 Head & AI HUD
     if (this.groups.neural && this.groups.neural.group.visible) {
       const n = this.groups.neural;
-      const targetRotY = this.mouse.x * 0.5;
-      const targetRotX = -this.mouse.y * 0.3;
+      const targetRotY = this.mouse.x * 0.45;
+      const targetRotX = -this.mouse.y * 0.28;
       n.headPivot.rotation.y = THREE.MathUtils.lerp(n.headPivot.rotation.y, targetRotY, 0.08);
       n.headPivot.rotation.x = THREE.MathUtils.lerp(n.headPivot.rotation.x, targetRotX, 0.08);
 
@@ -822,91 +823,100 @@ export class ProjectVisualizerScene {
       n.neuralStream.rotation.y = this.time * 0.05;
     }
 
-    // 2. Real-Time Chess Engine & Dynamic Move Execution
+    // 2. Real-Time Chess Engine: Single Piece Execution & Clean Reset
     if (this.groups.chess && this.groups.chess.group.visible) {
       const c = this.groups.chess;
-      c.group.rotation.y = 0.25 + Math.sin(this.time * 0.5) * 0.05 + this.mouse.x * 0.2;
+      c.group.rotation.y = 0.25 + Math.sin(this.time * 0.5) * 0.04 + this.mouse.x * 0.2;
       c.group.rotation.x = 0.58 - this.mouse.y * 0.15;
 
-      c.moveProgress = Math.min(c.moveProgress + delta * 0.75, 1.0);
-      const activeMove = c.moveSequence[c.activeMoveIdx];
-      if (activeMove && activeMove.piece) {
-        const { piece, from, to, isKnight } = activeMove;
-        const startX = from.c * c.tileSpacing - c.boardOffset;
-        const startZ = from.r * c.tileSpacing - c.boardOffset;
-        const endX = to.c * c.tileSpacing - c.boardOffset;
-        const endZ = to.r * c.tileSpacing - c.boardOffset;
+      if (c.isResetting) {
+        c.resetProgress = Math.min(c.resetProgress + delta * 0.8, 1.0);
+        const t = c.resetProgress;
+        const easeT = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
 
-        const t = c.moveProgress;
-        const easeT = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-
-        piece.position.x = THREE.MathUtils.lerp(startX, endX, easeT);
-        piece.position.z = THREE.MathUtils.lerp(startZ, endZ, easeT);
-
-        const hopHeight = isKnight ? 2.2 : 0.8;
-        piece.position.y = 0.22 + Math.sin(t * Math.PI) * hopHeight;
+        // Animate all moved pieces gracefully back to original starting squares
+        c.moveSequence.forEach((move) => {
+          const { piece } = move;
+          if (piece && piece.userData) {
+            piece.position.x = THREE.MathUtils.lerp(piece.userData.targetX, piece.userData.startX, easeT);
+            piece.position.z = THREE.MathUtils.lerp(piece.userData.targetZ, piece.userData.startZ, easeT);
+            piece.position.y = 0.22 + Math.sin(t * Math.PI) * 0.4;
+          }
+        });
 
         if (c.legalDot) {
-          c.legalDot.position.set(endX, 0.14, endZ);
-          c.legalDot.scale.setScalar(1 + Math.sin(this.time * 5) * 0.15);
+          c.legalDot.position.y = -10; // Hide during reset
         }
 
-        if (c.moveProgress >= 1.0) {
+        if (c.resetProgress >= 1.0) {
+          c.isResetting = false;
+          c.activeMoveIdx = 0;
           c.moveProgress = 0;
-          c.activeMoveIdx = (c.activeMoveIdx + 1) % c.moveSequence.length;
+          c.moveSequence.forEach((move) => {
+            if (move.piece && move.piece.userData) {
+              move.piece.position.set(move.piece.userData.startX, 0.22, move.piece.userData.startZ);
+              move.piece.userData.targetX = move.piece.userData.startX;
+              move.piece.userData.targetZ = move.piece.userData.startZ;
+            }
+          });
+        }
+      } else {
+        // Execute active move in sequence
+        const activeMove = c.moveSequence[c.activeMoveIdx];
+        if (activeMove && activeMove.piece) {
+          c.moveProgress = Math.min(c.moveProgress + delta * 0.7, 1.0);
+          const { piece, from, to, isKnight } = activeMove;
+          const startX = from.c * c.tileSpacing - c.boardOffset;
+          const startZ = from.r * c.tileSpacing - c.boardOffset;
+          const endX = to.c * c.tileSpacing - c.boardOffset;
+          const endZ = to.r * c.tileSpacing - c.boardOffset;
+
+          const t = c.moveProgress;
+          const easeT = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+          piece.position.x = THREE.MathUtils.lerp(startX, endX, easeT);
+          piece.position.z = THREE.MathUtils.lerp(startZ, endZ, easeT);
+
+          const hopHeight = isKnight ? 2.0 : 0.75;
+          piece.position.y = 0.22 + Math.sin(t * Math.PI) * hopHeight;
+
+          if (c.legalDot) {
+            c.legalDot.position.set(endX, 0.14, endZ);
+            c.legalDot.scale.setScalar(1 + Math.sin(this.time * 5) * 0.15);
+          }
+
+          if (c.moveProgress >= 1.0) {
+            piece.userData.targetX = endX;
+            piece.userData.targetZ = endZ;
+            c.moveProgress = 0;
+            c.activeMoveIdx++;
+
+            if (c.activeMoveIdx >= c.moveSequence.length) {
+              c.isResetting = true;
+              c.resetProgress = 0;
+            }
+          }
         }
       }
     }
 
-    // 3. MERN Emblems with Interactive Hover Scatter Physics
+    // 3. MERN Emblems
     if (this.groups.network && this.groups.network.group.visible) {
       const net = this.groups.network;
       net.scatterForce = THREE.MathUtils.lerp(net.scatterForce, 0, delta * 2.2);
 
-      const conduitPositions = [];
-
-      net.emblems.forEach((emb, idx) => {
+      net.emblems.forEach((emb) => {
         emb.group.rotation.x += emb.rotationSpeed.x * delta;
         emb.group.rotation.y += emb.rotationSpeed.y * delta;
-        emb.group.rotation.z += emb.rotationSpeed.z * delta;
-
-        const orbitAngle = this.time * 0.35 + (idx * Math.PI) / 2;
-        const orbitRadius = 5.2;
-        const targetHomeX = Math.cos(orbitAngle) * orbitRadius;
-        const targetHomeY = Math.sin(orbitAngle * 1.5) * 1.4 + (idx % 2 === 0 ? 1.0 : -1.0);
-        const targetHomeZ = Math.sin(orbitAngle) * orbitRadius * 0.5;
 
         if (net.scatterForce > 0.05) {
-          const scatterDir = new THREE.Vector3(targetHomeX, targetHomeY, targetHomeZ).normalize();
-          scatterDir.x += this.mouse.x * 1.5;
-          scatterDir.y += this.mouse.y * 1.5;
-          scatterDir.normalize();
-
-          const blastDist = net.scatterForce * 4.2;
-          const scatterTarget = new THREE.Vector3(
-            targetHomeX + scatterDir.x * blastDist,
-            targetHomeY + scatterDir.y * blastDist,
-            targetHomeZ + scatterDir.z * blastDist
-          );
-          emb.currentPos.lerp(scatterTarget, delta * 6);
+          const scatterDir = emb.homePos.clone().normalize();
+          emb.currentPos.copy(emb.homePos).add(scatterDir.multiplyScalar(net.scatterForce * 1.5));
         } else {
-          const home = new THREE.Vector3(targetHomeX, targetHomeY, targetHomeZ);
-          emb.currentPos.lerp(home, delta * 3.5);
+          emb.currentPos.lerp(emb.homePos, 0.08);
         }
-
         emb.group.position.copy(emb.currentPos);
-
-        // Add conduit line to next emblem in stack
-        const nextEmb = net.emblems[(idx + 1) % net.emblems.length];
-        conduitPositions.push(
-          emb.currentPos.x, emb.currentPos.y, emb.currentPos.z,
-          nextEmb.currentPos.x, nextEmb.currentPos.y, nextEmb.currentPos.z
-        );
       });
-
-      if (net.conduitLine) {
-        net.conduitLine.geometry.setAttribute('position', new THREE.Float32BufferAttribute(conduitPositions, 3));
-      }
     }
   }
 
@@ -924,3 +934,5 @@ export class ProjectVisualizerScene {
     this.container.removeEventListener('click', this.onClick);
   }
 }
+
+export default ProjectVisualizerScene;

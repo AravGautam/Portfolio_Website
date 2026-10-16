@@ -4,7 +4,7 @@ import WebGLCanvas from '../webgl/WebGLCanvas';
 import { SkillsConstellationScene } from '../webgl/SkillsConstellation3D';
 import Education from './Education';
 import Achievements from './Achievements';
-import { Terminal, Shield, Cpu, Code2, Sparkles, ExternalLink, MapPin, CheckCircle2, Layers, Database, Code, Brain } from 'lucide-react';
+import { Sparkles, ExternalLink, MapPin, Layers, Database, Code, Brain, Cpu } from 'lucide-react';
 import MagneticWrapper from '../ui/MagneticWrapper';
 import { soundEngine } from '../../audio/soundEngine';
 
@@ -38,15 +38,21 @@ export const AboutView = () => {
     }
   };
 
+  const handleSkillCardClick = (skill, idx) => {
+    soundEngine.playClick();
+    if (typeof soundEngine.playNote === 'function') {
+      soundEngine.playNote(400 + (idx % 8) * 80);
+    }
+  };
 
   const getCategoryIcon = (id) => {
     switch (id) {
-      case 'languages': return <Code className="w-3.5 h-3.5 text-[#b46f32]" />;
-      case 'frontend': return <Layers className="w-3.5 h-3.5 text-[#c27a3c]" />;
-      case 'backend': return <Cpu className="w-3.5 h-3.5 text-[#3b82f6]" />;
-      case 'database': return <Database className="w-3.5 h-3.5 text-[#60a5fa]" />;
+      case 'languages': return <Code className="w-3.5 h-3.5 text-blue-400" />;
+      case 'frontend': return <Layers className="w-3.5 h-3.5 text-sky-400" />;
+      case 'backend': return <Cpu className="w-3.5 h-3.5 text-indigo-400" />;
+      case 'database': return <Database className="w-3.5 h-3.5 text-cyan-400" />;
       case 'ai_data': return <Brain className="w-3.5 h-3.5 text-emerald-400" />;
-      default: return <Sparkles className="w-3.5 h-3.5 text-[#b46f32]" />;
+      default: return <Sparkles className="w-3.5 h-3.5 text-blue-400" />;
     }
   };
 
@@ -55,147 +61,126 @@ export const AboutView = () => {
     : portfolioData.skillCategories.find(c => c.id === activeCategory)?.skills || [];
 
   return (
-    <div className="relative min-h-screen pt-32 pb-24 px-6 md:px-12 bg-black flex flex-col justify-between">
+    <div className="relative min-h-screen pt-32 pb-24 px-6 md:px-12 bg-transparent flex flex-col justify-between">
       <div className="max-w-7xl mx-auto w-full relative z-10 space-y-16">
-        {/* Header */}
+        {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <div className="text-xs font-mono font-bold uppercase tracking-wider text-[#b46f32] mb-3 flex items-center gap-2">
-              <Terminal className="w-3.5 h-3.5" />
-              <span>TECHNICAL IDENTITY & ARCHITECTURE</span>
+            <div className="text-xs font-mono font-bold uppercase tracking-wider text-blue-400 mb-3 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#0781ff]" />
+              <span>Background</span>
             </div>
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-display font-extrabold text-white tracking-tight uppercase">
-              ABOUT ARAV GAUTAM.
+            <h1 className="text-4xl sm:text-6xl font-display font-extrabold text-white tracking-tight">
+              About Me
             </h1>
           </div>
 
-          <div className="flex items-center gap-2 text-xs font-mono text-gray-300 bg-[#0a0a0c] border border-white/10 px-5 py-3 rounded-2xl backdrop-blur-md">
-            <MapPin className="w-3.5 h-3.5 text-[#b46f32]" />
+          <div className="flex items-center gap-2 text-xs font-mono text-gray-300 bg-[#0a0a0c]/80 border border-white/10 px-5 py-3 rounded-full backdrop-blur-md">
+            <MapPin className="w-3.5 h-3.5 text-blue-400" />
             <span>{portfolioData.personal.location}</span>
           </div>
         </div>
 
-        {/* Profile Dossier + Bio Showcase Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch mb-12">
-          {/* Left Column (5 cols): Clean Developer Profile & Visual Dossier */}
-          <div className="lg:col-span-5 relative rounded-3xl bg-[#0a0a0c] border border-white/10 overflow-hidden flex flex-col justify-between p-6 sm:p-7 shadow-2xl">
-            {/* Top Telemetry Tag */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2 text-xs bg-black border border-white/10 px-3.5 py-1.5 rounded-full text-gray-300 font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#b46f32]" />
-                <span className="font-mono text-[11px]">DEVELOPER DOSSIER</span>
-              </div>
-              <span className="font-mono text-[11px] text-[#b46f32] bg-[#b46f32]/10 px-3 py-1 rounded-full border border-[#b46f32]/25">
-                VITS CSE '27
-              </span>
-            </div>
-
-            {/* Profile Photo Display - Proportionate, Uncropped, Executive Portrait */}
-            <div className="relative my-2 w-full max-w-[280px] sm:max-w-[310px] mx-auto aspect-[4/5] rounded-2xl overflow-hidden flex items-center justify-center bg-black border border-white/10 group shadow-xl">
+        {/* Main Story & Large Editorial Portrait */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+          {/* Left Column: Clean Framed Portrait */}
+          <div className="lg:col-span-5 flex justify-center">
+            <div className="relative w-full max-w-[380px] sm:max-w-[420px] aspect-[4/5] rounded-3xl overflow-hidden bg-[#0a0a0c] border border-white/15 shadow-2xl group">
               <img
-                src="/arav-formal-dark.jpg"
-                alt="Arav Gautam - Backend Engineer"
-                className="w-full h-full object-cover object-top filter brightness-100 contrast-105 transition-transform duration-500 group-hover:scale-105"
+                src="/arav-portrait-hero.jpg"
+                alt="Arav Gautam - Software Engineer"
+                className="w-full h-full object-cover object-[center_20%] filter brightness-100 contrast-105 transition-transform duration-700 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
-            </div>
-
-            {/* Bottom Developer Quick Facts Grid */}
-            <div className="pt-4 border-t border-white/5 grid grid-cols-2 gap-2.5 text-xs font-mono">
-              <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
-                <span className="text-gray-400 block text-[10px] uppercase">Current Role</span>
-                <span className="text-[#b46f32] font-bold text-[11px] mt-0.5 block truncate">Backend Intern</span>
-              </div>
-              <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
-                <span className="text-gray-400 block text-[10px] uppercase">Company</span>
-                <span className="text-emerald-400 font-bold text-[11px] mt-0.5 flex items-center gap-1 truncate">
-                  <CheckCircle2 className="w-3 h-3 shrink-0" /> Dream Filler
-                </span>
-              </div>
-              <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
-                <span className="text-gray-400 block text-[10px] uppercase">Focus</span>
-                <span className="text-gray-200 font-bold text-[11px] mt-0.5 block truncate">Scalable APIs</span>
-              </div>
-              <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
-                <span className="text-gray-400 block text-[10px] uppercase">Specialty</span>
-                <span className="text-sky-400 font-bold text-[11px] mt-0.5 block truncate">Systems & 3D</span>
+              
+              {/* Subtle ambient lighting vignette */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent pointer-events-none" />
+              
+              {/* Floating Profile Badge */}
+              <div className="absolute bottom-5 left-5 right-5 p-4 rounded-2xl bg-black/75 border border-white/10 backdrop-blur-xl flex items-center justify-between shadow-xl">
+                <div>
+                  <div className="text-white font-display font-bold text-sm tracking-wide">Arav Gautam</div>
+                  <div className="text-gray-400 text-xs font-mono mt-0.5">Software Engineer</div>
+                </div>
+                <div className="flex items-center gap-1.5 text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>Dream Filler</span>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Right Column (7 cols): Bio Statement & Trajectory */}
-          <div className="lg:col-span-7 p-6 sm:p-8 rounded-3xl bg-[#0a0a0c] border border-white/10 shadow-2xl flex flex-col justify-between">
-            <div>
-              <div className="flex items-center gap-2 text-xs font-mono font-semibold text-[#b46f32] uppercase tracking-wider mb-3">
-                <Sparkles className="w-4 h-4" />
-                <span>Career Focus & Trajectory</span>
-              </div>
+          {/* Right Column: Clean Editorial Story */}
+          <div className="lg:col-span-7 space-y-6 text-left">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.04] border border-white/10 text-xs font-mono text-blue-400">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Full-Stack & Backend Developer</span>
+            </div>
 
-              <h3 className="font-display font-bold text-2xl sm:text-3xl text-white mb-3">
-                Backend Engineer & Systems Architect
-              </h3>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-extrabold text-white tracking-tight leading-tight">
+              Crafting reliable backends and scalable web systems.
+            </h2>
 
-              <p className="text-gray-300 text-sm sm:text-base leading-relaxed mb-6 font-normal">
-                {portfolioData.personal.bio}
+            <div className="space-y-4 text-gray-300 text-sm sm:text-base leading-relaxed font-normal">
+              <p>
+                I'm a Computer Science student at Vindhya Institute of Technology and Science (VITS) and currently working as a Backend Engineer Intern at Dream Filler Company.
               </p>
+              <p>
+                My engineering focus centers on architecting high-throughput RESTful APIs, designing scalable database schemas, and building backend services that perform smoothly under load. I also enjoy working with real-time WebSockets, distributed queues, and 3D web graphics.
+              </p>
+              <p>
+                Outside of building production features, I consistently practice data structures and algorithms on LeetCode and Codeforces, build prototypes, and keep up with modern software design patterns.
+              </p>
+            </div>
 
-              {/* 3 Metrics Highlight Tiles */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5 mb-6">
-                <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-[#b46f32]/40 transition-colors">
-                  <div className="text-base sm:text-lg font-display font-bold text-[#b46f32]">Dream Filler</div>
-                  <div className="text-xs font-mono text-gray-400 mt-0.5">Backend Intern</div>
-                </div>
-                <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/20 transition-colors">
-                  <div className="text-xl sm:text-2xl font-display font-bold text-white">200+</div>
-                  <div className="text-xs font-mono text-gray-400 mt-0.5">DSA Solved</div>
-                </div>
-                <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 col-span-2 sm:col-span-1 hover:border-blue-500/30 transition-colors">
-                  <div className="text-xl sm:text-2xl font-display font-bold text-[#60a5fa]">7.8</div>
-                  <div className="text-xs font-mono text-gray-400 mt-0.5">CGPA (VITS)</div>
-                </div>
+            {/* Quick Metrics */}
+            <div className="grid grid-cols-3 gap-3.5 pt-2">
+              <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 backdrop-blur-md">
+                <div className="text-2xl sm:text-3xl font-display font-bold text-white">200+</div>
+                <div className="text-xs text-gray-400 font-mono mt-0.5">DSA Solved</div>
               </div>
-
-              {/* Core Architectural Pillars */}
-              <div className="space-y-2 mb-6">
-                <span className="text-[11px] font-mono uppercase tracking-wider text-gray-400 block">Engineering Pillars</span>
-                <div className="flex flex-wrap gap-2">
-                  <span className="text-xs font-mono px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/10 text-gray-200">
-                    ⚡ High-Throughput REST APIs
-                  </span>
-                  <span className="text-xs font-mono px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/10 text-gray-200">
-                    🗄️ Relational & NoSQL Schema Design
-                  </span>
-                  <span className="text-xs font-mono px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/10 text-gray-200">
-                    🌐 Real-Time WebSockets & Three.js
-                  </span>
-                </div>
+              <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 backdrop-blur-md">
+                <div className="text-2xl sm:text-3xl font-display font-bold text-blue-400">7.8</div>
+                <div className="text-xs text-gray-400 font-mono mt-0.5">B.Tech CGPA</div>
+              </div>
+              <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 backdrop-blur-md">
+                <div className="text-2xl sm:text-3xl font-display font-bold text-emerald-400">2027</div>
+                <div className="text-xs text-gray-400 font-mono mt-0.5">Graduation</div>
               </div>
             </div>
 
-            {/* Status Indicator */}
-            <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-white/[0.02] border border-white/5">
-              <span className="w-2 h-2 rounded-full bg-emerald-400" />
-              <span className="text-xs font-mono text-gray-300 font-medium">
-                {portfolioData.personal.status}
-              </span>
+            {/* Quick Actions */}
+            <div className="flex flex-wrap items-center gap-3.5 pt-2">
+              <a
+                href={portfolioData.personal.resumeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs font-mono font-semibold px-6 py-3 rounded-full bg-white text-black hover:bg-gray-200 transition-all flex items-center gap-2 shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <span>View Resume</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+              <div className="flex items-center gap-2 text-xs font-mono text-gray-400 px-4 py-3 rounded-full bg-white/[0.03] border border-white/10 backdrop-blur-md">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                <span>{portfolioData.personal.status}</span>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* 3D Skills Constellation Interactive Matrix */}
-        <div className="space-y-6">
+        {/* 3D Skills Constellation & Interactive Matrix */}
+        <div className="space-y-6 pt-4">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
-              <div className="text-xs font-mono font-bold uppercase tracking-wider text-[#b46f32] mb-2 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#b46f32]" />
-                <span>TECHNICAL EXPERTISE</span>
+              <div className="text-xs font-mono font-bold uppercase tracking-wider text-blue-400 mb-2 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#0781ff]" />
+                <span>MY SKILLSET</span>
               </div>
-              <h2 className="text-3xl sm:text-4xl font-display font-bold text-white">
-                Skills & Technologies
-              </h2>
+              <h3 className="text-3xl sm:text-5xl font-display font-extrabold text-white">
+                The Magic <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-sky-300 to-cyan-400">Behind</span>
+              </h3>
             </div>
             <p className="text-xs font-mono text-gray-400">
-              Interactive 3D map of languages, frameworks, runtime engines, and architectures.
+              Interactive 3D graph and categorized breakdown of tools and languages.
             </p>
           </div>
 
@@ -207,7 +192,7 @@ export const AboutView = () => {
             >
               <div className="relative z-10 flex items-center justify-between pointer-events-none">
                 <div className="flex items-center gap-2 text-xs bg-black/70 border border-white/10 px-3.5 py-1.5 rounded-full text-gray-200 backdrop-blur-md font-mono font-medium">
-                  <span className="w-2 h-2 rounded-full bg-[#b46f32]" />
+                  <span className="w-2 h-2 rounded-full bg-[#0781ff]" />
                   <span>3D Skills Graph</span>
                 </div>
               </div>
@@ -229,9 +214,9 @@ export const AboutView = () => {
                 <MagneticWrapper strength={0.25}>
                   <button
                     onClick={() => handleCategoryClick('all')}
-                    className={`text-xs font-mono px-4 py-2 rounded-full transition-all duration-200 border font-medium ${activeCategory === 'all'
-                        ? 'bg-[#b46f32] text-white font-bold border-[#b46f32] shadow-md shadow-[#b46f32]/20'
-                        : 'bg-[#0a0a0c] text-gray-300 border-white/10 hover:border-[#b46f32]/40'
+                    className={`text-xs font-mono px-4 py-2.5 rounded-full transition-all duration-200 border font-medium ${activeCategory === 'all'
+                        ? 'bg-[#0781ff] text-white font-bold border-[#0781ff] shadow-md shadow-[#0781ff]/25'
+                        : 'bg-[#0a0a0c] text-gray-300 border-white/10 hover:border-blue-500/40'
                       }`}
                   >
                     All Skills
@@ -244,9 +229,9 @@ export const AboutView = () => {
                     <MagneticWrapper key={cat.id} strength={0.25}>
                       <button
                         onClick={() => handleCategoryClick(cat.id)}
-                        className={`text-xs font-mono px-4 py-2 rounded-full transition-all duration-200 border flex items-center gap-2 font-medium ${isActive
-                            ? 'bg-[#b46f32] text-white font-bold border-[#b46f32] shadow-md shadow-[#b46f32]/20'
-                            : 'bg-[#0a0a0c] text-gray-300 border-white/10 hover:border-[#b46f32]/40'
+                        className={`text-xs font-mono px-4 py-2.5 rounded-full transition-all duration-200 border flex items-center gap-2 font-medium ${isActive
+                            ? 'bg-[#0781ff] text-white font-bold border-[#0781ff] shadow-md shadow-[#0781ff]/25'
+                            : 'bg-[#0a0a0c] text-gray-300 border-white/10 hover:border-blue-500/40'
                           }`}
                       >
                         {getCategoryIcon(cat.id)}
@@ -262,10 +247,11 @@ export const AboutView = () => {
                 {filteredSkills.map((skill, idx) => (
                   <div
                     key={idx}
-                    className="p-4 rounded-2xl bg-[#0a0a0c] border border-white/5 hover:border-[#b46f32]/30 transition-all duration-200 group"
+                    onClick={() => handleSkillCardClick(skill, idx)}
+                    className="p-4 rounded-2xl bg-[#0a0a0c] border border-white/5 hover:border-blue-500/30 transition-all duration-200 group cursor-pointer"
                   >
                     <div className="flex items-center justify-between mb-1.5">
-                      <h4 className="font-display font-bold text-white group-hover:text-[#b46f32] transition-colors text-sm">
+                      <h4 className="font-display font-bold text-white group-hover:text-blue-400 transition-colors text-sm">
                         {skill.name}
                       </h4>
                       <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-gray-300">
@@ -280,7 +266,7 @@ export const AboutView = () => {
                     {/* Proficiency Meter Bar */}
                     <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-[#b46f32] rounded-full transition-all duration-500"
+                        className="h-full bg-[#0781ff] rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(7,129,255,0.5)]"
                         style={{ width: `${skill.level}%` }}
                       />
                     </div>
@@ -292,41 +278,13 @@ export const AboutView = () => {
         </div>
 
         {/* Education & Milestones Row - Balanced 6/6 Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-          {/* Left Column (6 cols): Formal Education & Verified Resume */}
-          <div className="lg:col-span-6 flex flex-col justify-between gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch pt-4">
+          {/* Left Column (6 cols): Education */}
+          <div className="lg:col-span-6 flex flex-col justify-between">
             <Education />
-
-            {/* Technical Resume Card */}
-            <div className="p-7 sm:p-8 rounded-3xl bg-[#0a0a0c] border border-white/10 hover:border-[#b46f32]/40 transition-all duration-300 shadow-2xl flex flex-col justify-between h-full">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-mono font-semibold text-[#b46f32] uppercase tracking-wider">
-                    Official Document
-                  </span>
-                  <span className="text-[11px] font-mono text-gray-400">PDF • Verified</span>
-                </div>
-                <h4 className="font-display font-bold text-xl text-white mb-2">
-                  Technical Résumé
-                </h4>
-                <p className="text-xs text-gray-300 mb-6 leading-relaxed font-normal">
-                  Detailed record of academic coursework, backend service repositories, algorithmic certifications, and engineering credentials.
-                </p>
-              </div>
-
-              <a
-                href={portfolioData.personal.resumeUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full text-xs font-mono font-bold py-3.5 px-6 rounded-full bg-white text-black hover:bg-[#b46f32] hover:text-white transition-all flex items-center justify-center gap-2 shadow-lg"
-              >
-                <span>Open Resume (Google Drive)</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-            </div>
           </div>
 
-          {/* Right Column (6 cols): Key Milestones & Leadership */}
+          {/* Right Column (6 cols): Milestones & Leadership */}
           <div className="lg:col-span-6">
             <Achievements />
           </div>

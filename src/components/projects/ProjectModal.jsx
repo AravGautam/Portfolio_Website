@@ -29,7 +29,7 @@ const ProjectModal = ({ project, onClose }) => {
         <div className="p-6 sm:p-8 border-b border-white/10 flex items-start justify-between gap-4 bg-[#0a0a0c]">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <span className="text-xs font-semibold text-[#b46f32] uppercase tracking-wider px-3 py-1 rounded-full bg-[#b46f32]/10 border border-[#b46f32]/30 font-mono">
+              <span className="text-xs font-semibold text-blue-400 uppercase tracking-wider px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 font-mono">
                 {project.category}
               </span>
             </div>
@@ -40,7 +40,7 @@ const ProjectModal = ({ project, onClose }) => {
 
           <button
             onClick={onClose}
-            className="p-2.5 rounded-full bg-white/5 border border-white/10 hover:border-[#b46f32] text-gray-400 hover:text-white transition-colors"
+            className="p-2.5 rounded-full bg-white/5 border border-white/10 hover:border-blue-400 text-gray-400 hover:text-white transition-colors"
             aria-label="Close project modal"
           >
             <X className="w-5 h-5" />
@@ -57,7 +57,7 @@ const ProjectModal = ({ project, onClose }) => {
                   key={idx}
                   className="bg-black/50 border border-white/5 p-4 rounded-2xl text-center"
                 >
-                  <div className="font-display text-xl sm:text-2xl font-bold text-[#b46f32]">
+                  <div className="font-display text-xl sm:text-2xl font-bold text-blue-400">
                     {stat.value}
                   </div>
                   <div className="text-xs font-mono text-gray-400 mt-1">
@@ -70,7 +70,7 @@ const ProjectModal = ({ project, onClose }) => {
 
           {/* Project Summary */}
           <div>
-            <h4 className="text-xs font-semibold text-[#b46f32] uppercase tracking-wider mb-3 font-mono">
+            <h4 className="text-xs font-semibold text-blue-400 uppercase tracking-wider mb-3 font-mono">
               About the Project
             </h4>
             <p className="text-gray-300 text-sm sm:text-base leading-relaxed font-normal">
@@ -82,7 +82,7 @@ const ProjectModal = ({ project, onClose }) => {
           {project.features && (
             <div>
               <h4 className="text-xs font-semibold text-gray-200 uppercase tracking-wider mb-4 font-mono">
-                Key Features & Architecture
+                Key Features
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {project.features.map((feat, fIdx) => (
@@ -90,7 +90,7 @@ const ProjectModal = ({ project, onClose }) => {
                     key={fIdx}
                     className="flex items-start gap-3 p-3.5 rounded-xl bg-white/[0.02] border border-white/5"
                   >
-                    <CheckCircle2 className="w-4 h-4 text-[#b46f32] shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
                     <span className="text-xs text-gray-300 leading-normal">
                       {feat}
                     </span>
@@ -126,7 +126,7 @@ const ProjectModal = ({ project, onClose }) => {
                 href={project.liveLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs font-semibold px-6 py-3 rounded-full bg-[#b46f32] text-white hover:bg-white hover:text-black transition-all flex items-center gap-2 shadow-lg"
+                className="text-xs font-semibold px-6 py-3 rounded-full bg-[#0781ff] text-white hover:bg-white hover:text-black transition-all flex items-center gap-2 shadow-lg"
               >
                 <ExternalLink className="w-4 h-4" />
                 <span>Live Demo</span>
@@ -138,7 +138,7 @@ const ProjectModal = ({ project, onClose }) => {
                 href={project.githubLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs font-medium px-6 py-3 rounded-full border border-white/15 bg-white/5 text-white hover:border-[#b46f32] hover:text-[#b46f32] transition-all flex items-center gap-2 font-mono"
+                className="text-xs font-medium px-6 py-3 rounded-full border border-white/15 bg-white/5 text-white hover:border-blue-400 hover:text-blue-400 transition-all flex items-center gap-2 font-mono"
               >
                 <Github className="w-4 h-4" />
                 <span>GitHub Repository</span>

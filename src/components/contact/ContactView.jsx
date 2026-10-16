@@ -6,6 +6,7 @@ import { Send, Check, Copy, ExternalLink, Radio, Mail, Github, Linkedin, Twitter
 import MagneticWrapper from '../ui/MagneticWrapper';
 import { soundEngine } from '../../audio/soundEngine';
 import AudioCreditsModal from '../ui/AudioCreditsModal';
+import { showToast } from '../ui/Toast';
 
 export const ContactView = () => {
   const [formData, setFormData] = useState({ name: '', email: '', message: '', honeypot: '' });
@@ -21,6 +22,7 @@ export const ContactView = () => {
     soundEngine.playClick();
     navigator.clipboard.writeText(portfolioData.personal.email);
     setCopied(true);
+    showToast('Email copied: working.aravgautam@gmail.com');
     setTimeout(() => setCopied(false), 2500);
   };
 
@@ -56,23 +58,23 @@ export const ContactView = () => {
   };
 
   return (
-    <div className="relative min-h-screen pt-32 pb-24 px-6 md:px-12 bg-black flex flex-col justify-between">
+    <div className="relative min-h-screen pt-32 pb-24 px-6 md:px-12 bg-transparent flex flex-col justify-between">
       <div className="max-w-7xl mx-auto w-full relative z-10">
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
           <div>
-            <div className="text-xs font-mono font-bold uppercase tracking-wider text-[#b46f32] mb-3 flex items-center gap-2">
-              <Radio className="w-3.5 h-3.5" />
-              <span>GLOBAL REACH & DIRECT CONTACT</span>
+            <div className="text-xs font-mono font-bold uppercase tracking-wider text-blue-400 mb-3 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#0781ff]" />
+              <span>Contact</span>
             </div>
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-display font-extrabold text-white tracking-tight uppercase">
-              LET'S BUILD SOMETHING GREAT.
+            <h1 className="text-4xl sm:text-6xl font-display font-extrabold text-white tracking-tight">
+              Get In Touch
             </h1>
           </div>
 
           <div className="font-mono text-xs text-gray-300 bg-[#0a0a0c] border border-white/10 px-5 py-3 rounded-2xl backdrop-blur-md">
-            <span className="text-[#b46f32] font-bold">LOCATION:</span> Madhya Pradesh, India <br />
-            <span className="text-gray-400">STATUS: OPEN FOR NEW OPPORTUNITIES</span>
+            <span className="text-blue-400 font-bold">LOCATION:</span> Madhya Pradesh, India <br />
+            <span className="text-emerald-400">STATUS: OPEN FOR NEW OPPORTUNITIES</span>
           </div>
         </div>
 
@@ -86,7 +88,7 @@ export const ContactView = () => {
             {/* Top Overlay */}
             <div className="relative z-10 flex items-center justify-between pointer-events-none">
               <div className="flex items-center gap-2 text-xs bg-black/80 border border-white/10 px-3.5 py-1.5 rounded-full text-gray-200 font-mono text-[11px]">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#b46f32]" />
+                <span className="w-1.5 h-1.5 rounded-full bg-[#0781ff]" />
                 <span>Madhya Pradesh, India</span>
               </div>
               <span className="font-mono text-xs text-gray-400">3D Earth</span>
@@ -100,17 +102,17 @@ export const ContactView = () => {
             {/* Bottom Geospatial Info */}
             <div className="relative z-10 flex items-center justify-between pt-3 border-t border-white/5 font-mono text-[11px] text-gray-400 pointer-events-none">
               <span>Drag to rotate</span>
-              <span className="text-[#b46f32]">Open for Worldwide Roles</span>
+              <span className="text-blue-400">Open for Worldwide Roles</span>
             </div>
           </div>
 
           {/* Right Column: Contact Action Form + Social Matrix (5 cols) */}
           <div className="lg:col-span-5 space-y-6">
             {/* Contact Form Card */}
-            <div className="p-7 rounded-3xl bg-[#0a0a0c] border border-white/10 backdrop-blur-xl shadow-2xl space-y-4">
+            <div className="p-7 rounded-3xl bg-[#0a0a0c]/80 border border-white/10 backdrop-blur-xl shadow-2xl space-y-4">
               <div className="flex items-center justify-between">
-                <span className="font-mono text-xs text-[#b46f32] uppercase tracking-wider font-bold">
-                  GET IN TOUCH
+                <span className="font-mono text-xs text-blue-400 uppercase tracking-wider font-bold">
+                  Get in Touch
                 </span>
                 <span className="font-mono text-[10px] text-emerald-400 flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
@@ -120,7 +122,7 @@ export const ContactView = () => {
 
               {formStatus === 'success' ? (
                 <div className="py-6 text-center space-y-3 animate-in fade-in duration-300">
-                  <div className="w-10 h-10 rounded-full bg-[#b46f32]/15 border border-[#b46f32]/40 text-[#b46f32] mx-auto flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full bg-blue-500/15 border border-blue-500/30 text-blue-400 mx-auto flex items-center justify-center">
                     <Check className="w-5 h-5" />
                   </div>
                   <h4 className="font-display font-bold text-xl text-white">Message Sent</h4>
@@ -132,7 +134,7 @@ export const ContactView = () => {
                       setFormStatus('idle');
                       setFormData({ name: '', email: '', message: '', honeypot: '' });
                     }}
-                    className="px-5 py-2 rounded-full bg-white/5 border border-white/15 text-xs font-mono text-white hover:border-[#b46f32] transition-colors flex items-center gap-1.5 mx-auto mt-2"
+                    className="px-5 py-2 rounded-full bg-white/5 border border-white/15 text-xs font-mono text-white hover:border-blue-400 transition-colors flex items-center gap-1.5 mx-auto mt-2 cursor-pointer"
                   >
                     <RefreshCw className="w-3 h-3" />
                     <span>Send Another</span>
@@ -161,7 +163,7 @@ export const ContactView = () => {
                       value={formData.name}
                       onChange={handleChange}
                       placeholder="Your name or organization"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/10 focus:border-[#b46f32] focus:outline-none text-white text-xs font-mono placeholder:text-gray-600 transition-colors"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/10 focus:border-blue-400 focus:outline-none text-white text-xs font-mono placeholder:text-gray-600 transition-colors"
                     />
                   </div>
 
@@ -176,7 +178,7 @@ export const ContactView = () => {
                       value={formData.email}
                       onChange={handleChange}
                       placeholder="name@domain.com"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/10 focus:border-[#b46f32] focus:outline-none text-white text-xs font-mono placeholder:text-gray-600 transition-colors"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/10 focus:border-blue-400 focus:outline-none text-white text-xs font-mono placeholder:text-gray-600 transition-colors"
                     />
                   </div>
 
@@ -191,7 +193,7 @@ export const ContactView = () => {
                       value={formData.message}
                       onChange={handleChange}
                       placeholder="Your message or project scope..."
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/10 focus:border-[#b46f32] focus:outline-none text-white text-xs font-mono placeholder:text-gray-600 transition-colors resize-none"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/10 focus:border-blue-400 focus:outline-none text-white text-xs font-mono placeholder:text-gray-600 transition-colors resize-none"
                     />
                   </div>
 
@@ -199,17 +201,17 @@ export const ContactView = () => {
                     <button
                       type="submit"
                       disabled={formStatus === 'sending'}
-                      className="flex-1 py-3 rounded-full bg-[#b46f32] text-white font-mono font-bold text-xs hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2 shadow-lg"
+                      className="flex-1 py-3 rounded-full bg-[#0781ff] text-white font-mono font-bold text-xs hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2 shadow-lg cursor-pointer"
                     >
                       {formStatus === 'sending' ? (
                         <>
                           <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          <span>TRANSMITTING...</span>
+                          <span>Sending...</span>
                         </>
                       ) : (
                         <>
                           <Send className="w-3.5 h-3.5" />
-                          <span>SEND MESSAGE</span>
+                          <span>Send Message</span>
                         </>
                       )}
                     </button>
@@ -217,9 +219,9 @@ export const ContactView = () => {
                     <button
                       type="button"
                       onClick={copyEmail}
-                      className="px-4 py-3 rounded-full border border-white/15 bg-white/5 text-gray-300 hover:border-[#b46f32] hover:text-[#b46f32] transition-all text-xs font-mono flex items-center gap-1.5"
+                      className="px-4 py-3 rounded-full border border-white/15 bg-white/5 text-gray-300 hover:border-blue-400 hover:text-blue-400 transition-all text-xs font-mono flex items-center gap-1.5 cursor-pointer"
                     >
-                      {copied ? <Check className="w-3.5 h-3.5 text-[#b46f32]" /> : <Copy className="w-3.5 h-3.5" />}
+                      {copied ? <Check className="w-3.5 h-3.5 text-blue-400" /> : <Copy className="w-3.5 h-3.5" />}
                       <span>{copied ? 'Copied' : 'Copy'}</span>
                     </button>
                   </div>
@@ -227,10 +229,10 @@ export const ContactView = () => {
               )}
             </div>
 
-            {/* Connected Signal Matrix Channels */}
-            <div className="p-6 rounded-3xl bg-[#0a0a0c] border border-white/10 backdrop-blur-xl shadow-xl space-y-3">
+            {/* Connected Socials */}
+            <div className="p-6 rounded-3xl bg-[#0a0a0c]/80 border border-white/10 backdrop-blur-xl shadow-xl space-y-3">
               <div className="font-mono text-[11px] text-gray-400 uppercase tracking-wider mb-1 font-semibold">
-                CONNECTED SIGNAL CHANNELS
+                Socials & Profiles
               </div>
 
               <div className="space-y-2">
@@ -240,13 +242,13 @@ export const ContactView = () => {
                       href={link.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full p-2.5 rounded-xl bg-white/[0.02] border border-white/5 hover:border-[#b46f32]/40 hover:bg-[#b46f32]/5 transition-all duration-200 flex items-center justify-between group"
+                      className="w-full p-2.5 rounded-xl bg-white/[0.02] border border-white/5 hover:border-blue-500/30 hover:bg-blue-500/5 transition-all duration-200 flex items-center justify-between group"
                     >
                       <div className="flex items-center gap-2.5">
-                        <div className="text-gray-400 group-hover:text-[#b46f32] transition-colors">
+                        <div className="text-gray-400 group-hover:text-blue-400 transition-colors">
                           {getSocialIcon(link.id)}
                         </div>
-                        <span className="font-display font-bold text-xs text-white group-hover:text-[#b46f32] transition-colors">
+                        <span className="font-display font-bold text-xs text-white group-hover:text-blue-400 transition-colors">
                           {link.label}
                         </span>
                       </div>
@@ -255,7 +257,7 @@ export const ContactView = () => {
                         <span className="font-mono text-[10px] text-gray-400">
                           {link.handle}
                         </span>
-                        <ExternalLink className="w-3 h-3 text-gray-400 group-hover:text-[#b46f32] transition-colors" />
+                        <ExternalLink className="w-3 h-3 text-gray-400 group-hover:text-blue-400 transition-colors" />
                       </div>
                     </a>
                   </MagneticWrapper>
@@ -275,7 +277,7 @@ export const ContactView = () => {
               soundEngine.playClick();
               setShowCredits(true);
             }}
-            className="hover:text-[#b46f32] transition-colors flex items-center gap-1.5 underline underline-offset-4 cursor-pointer"
+            className="hover:text-blue-400 transition-colors flex items-center gap-1.5 underline underline-offset-4 cursor-pointer"
           >
             <span>Audio & Asset Credits</span>
             <ExternalLink className="w-3 h-3" />

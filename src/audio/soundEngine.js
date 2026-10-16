@@ -1,8 +1,8 @@
 /**
  * High-Performance Web Audio Synthesizer, Speech Engine & BGM Controller
  * Handles:
- * - Speech synthesis voice greeting ("Namaste. Welcome to Arav Gautam's portfolio")
- * - Default Ambient BGM: /audio/ambient-bgm.mp3 (auto-starts on load / interaction)
+ * - Default BGM: /audio/690365__xcreenplay__skyparty-invite.wav (Home, About, Experience, Experiments, etc.)
+ * - Contact / Connection Section BGM: /audio/ambient-bgm.mp3
  * - Projects Section BGM: /audio/482961__yellowtree__super-strange-synths.wav
  * - Loading Screen SFX: /audio/122276__zimbot__squirble9.wav
  * - Automatic pause/resume on browser tab visibility changes
@@ -12,9 +12,10 @@ class SoundEngine {
   constructor() {
     this.ctx = null;
     this.muted = typeof window !== 'undefined' ? localStorage.getItem('sound_muted') === 'true' : false;
-    this.currentTrack = 'default'; // 'default' | 'projects'
+    this.currentTrack = 'default'; // 'default' | 'projects' | 'contact'
     this.bgmAudio = null;
     this.projectsBgmAudio = null;
+    this.contactBgmAudio = null;
     this.loadingAudio = null;
     this.bgmPlaying = false;
     this.wasPlayingBeforeHidden = false;
@@ -52,13 +53,13 @@ class SoundEngine {
   }
 
   hasAudioStarted() {
-    return this.bgmPlaying || (this.bgmAudio && !this.bgmAudio.paused) || (this.ctx && this.ctx.state === 'running');
+    return this.bgmPlaying || (this.bgmAudio && !this.bgmAudio.paused) || (this.projectsBgmAudio && !this.projectsBgmAudio.paused) || (this.contactBgmAudio && !this.contactBgmAudio.paused) || (this.ctx && this.ctx.state === 'running');
   }
 
   initAudioElements() {
     try {
-      // 1. Default Ambient Background Music (Subtle & Atmospheric)
-      this.bgmAudio = new Audio('/audio/ambient-bgm.mp3');
+      // 1. Default Background Music (Skyparty Invite - for Home, About, Experience, Experiments, etc.)
+      this.bgmAudio = new Audio('/audio/690365__xcreenplay__skyparty-invite.wav');
       this.bgmAudio.loop = true;
       this.bgmAudio.volume = 0.16;
       this.bgmAudio.preload = 'auto';
@@ -69,7 +70,13 @@ class SoundEngine {
       this.projectsBgmAudio.volume = 0.14;
       this.projectsBgmAudio.preload = 'auto';
 
-      // 3. Loading Screen SFX
+      // 3. Contact / Connection Section Ambient Music
+      this.contactBgmAudio = new Audio('/audio/ambient-bgm.mp3');
+      this.contactBgmAudio.loop = true;
+      this.contactBgmAudio.volume = 0.16;
+      this.contactBgmAudio.preload = 'auto';
+
+      // 4. Loading Screen SFX
       this.loadingAudio = new Audio('/audio/122276__zimbot__squirble9.wav');
       this.loadingAudio.volume = 0.75;
       this.loadingAudio.preload = 'auto';
@@ -106,6 +113,9 @@ class SoundEngine {
     if (this.projectsBgmAudio && !this.projectsBgmAudio.paused) {
       this.projectsBgmAudio.pause();
     }
+    if (this.contactBgmAudio && !this.contactBgmAudio.paused) {
+      this.contactBgmAudio.pause();
+    }
     if (this.loadingAudio && !this.loadingAudio.paused) {
       this.loadingAudio.pause();
     }
@@ -125,33 +135,10 @@ class SoundEngine {
   }
 
   /**
-   * Natural Web Speech Voice Greeting
+   * Spoken speech greeting completely disabled per user preference
    */
-  speakGreeting(text = "Namaste. Welcome to Arav Gautam's portfolio.") {
-    if (this.muted || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-    if (this.hasSpokenVoice) return;
-    this.hasSpokenVoice = true;
-
-    try {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 0.95;
-      utterance.pitch = 1.05;
-      utterance.volume = 0.90;
-
-      const voices = window.speechSynthesis.getVoices();
-      if (voices && voices.length > 0) {
-        const selectedVoice =
-          voices.find(v => (v.lang.includes('en') || v.lang.includes('hi')) && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Samantha') || v.name.includes('Alex'))) ||
-          voices.find(v => v.lang.startsWith('en')) ||
-          voices[0];
-        if (selectedVoice) utterance.voice = selectedVoice;
-      }
-
-      window.speechSynthesis.speak(utterance);
-    } catch {
-      // Ignore if speech synthesis is disabled by browser
-    }
+  speakGreeting() {
+    // Disabled - user requested no spoken greeting voice
   }
 
   setupGlobalAutoplay() {
@@ -159,11 +146,6 @@ class SoundEngine {
       this.hasInteracted = true;
       this.initContext();
       if (!this.muted) {
-        // Strictly only play loading sound while loading screen is active
-        if (this.loadingScreenActive) {
-          this.playLoadingSound();
-        }
-        this.speakGreeting();
         this.playBGM(this.currentTrack);
       }
     };
@@ -171,16 +153,9 @@ class SoundEngine {
     if (typeof window !== 'undefined') {
       // Try playing immediately as soon as tab is opened
       this.playBGM(this.currentTrack);
-      if (this.loadingScreenActive) {
-        this.playLoadingSound();
-      }
-      this.speakGreeting();
 
       window.addEventListener('load', () => {
         this.playBGM(this.currentTrack);
-        if (this.loadingScreenActive) {
-          this.playLoadingSound();
-        }
       }, { once: true });
 
       // Immediate unlock on ANY user touch, click, scroll or keypress
@@ -200,52 +175,50 @@ class SoundEngine {
     }
   }
 
+  startLoadingScreen() {
+    this.loadingScreenActive = true;
+  }
+
   playLoadingSound() {
-    // Strictly prevent loading sound from ever playing after loading screen has completed
-    if (!this.loadingScreenActive || this.muted) return;
-    this.initContext();
-
-    if (this.loadingAudio) {
-      try {
-        this.loadingAudio.currentTime = 0;
-        this.loadingAudio.play().catch(() => {});
-      } catch {
-        // Fallback
-      }
-    }
-
-    // Procedural futuristic chime overlay
-    this.playFuturisticChime();
+    // Disabled per user request - silent loading
   }
 
   playFuturisticChime() {
-    if (!this.loadingScreenActive || this.muted) return;
+    if (this.muted) return;
     this.initContext();
     if (!this.ctx) return;
 
-    try {
-      const now = this.ctx.currentTime;
-      const freqs = [440, 660, 880, 1320];
+    const doChime = () => {
+      try {
+        const now = this.ctx.currentTime;
+        const freqs = [440, 660, 880, 1320];
 
-      freqs.forEach((freq, idx) => {
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
+        freqs.forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
 
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.08);
 
-        gain.gain.setValueAtTime(0.001, now + idx * 0.08);
-        gain.gain.exponentialRampToValueAtTime(0.06, now + idx * 0.08 + 0.03);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.08 + 0.5);
+          gain.gain.setValueAtTime(0.001, now + idx * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.06, now + idx * 0.08 + 0.03);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.08 + 0.5);
 
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
 
-        osc.start(now + idx * 0.08);
-        osc.stop(now + idx * 0.08 + 0.52);
-      });
-    } catch {
-      // Ignore
+          osc.start(now + idx * 0.08);
+          osc.stop(now + idx * 0.08 + 0.52);
+        });
+      } catch {
+        // Ignore
+      }
+    };
+
+    if (this.ctx.state === 'suspended') {
+      this.ctx.resume().then(doChime).catch(() => {});
+    } else {
+      doChime();
     }
   }
 
@@ -255,17 +228,24 @@ class SoundEngine {
     this.initContext();
     this.currentTrack = track;
 
-    const activeAudio = track === 'projects' ? this.projectsBgmAudio : this.bgmAudio;
-    const inactiveAudio = track === 'projects' ? this.bgmAudio : this.projectsBgmAudio;
-
-    if (inactiveAudio && !inactiveAudio.paused) {
-      try {
-        inactiveAudio.pause();
-        inactiveAudio.currentTime = 0;
-      } catch {
-        // Ignore
-      }
+    let activeAudio = this.bgmAudio;
+    if (track === 'projects') {
+      activeAudio = this.projectsBgmAudio;
+    } else if (track === 'contact' || track === 'connection') {
+      activeAudio = this.contactBgmAudio;
     }
+
+    const allTracks = [this.bgmAudio, this.projectsBgmAudio, this.contactBgmAudio];
+    allTracks.forEach(audio => {
+      if (audio && audio !== activeAudio && !audio.paused) {
+        try {
+          audio.pause();
+          audio.currentTime = 0;
+        } catch {
+          // Ignore
+        }
+      }
+    });
 
     if (activeAudio) {
       activeAudio.play()
@@ -281,6 +261,7 @@ class SoundEngine {
   pauseBGM() {
     if (this.bgmAudio) this.bgmAudio.pause();
     if (this.projectsBgmAudio) this.projectsBgmAudio.pause();
+    if (this.contactBgmAudio) this.contactBgmAudio.pause();
     this.bgmPlaying = false;
   }
 
@@ -288,6 +269,7 @@ class SoundEngine {
     this.muted = !this.muted;
     if (typeof window !== 'undefined') {
       localStorage.setItem('sound_muted', String(this.muted));
+      window.dispatchEvent(new CustomEvent('sound-mute-change', { detail: { muted: this.muted } }));
     }
     if (this.muted) {
       this.pauseBGM();
