@@ -21,12 +21,14 @@ import * as THREE from 'three';
  *    - Laser data conduits & cursor scatter physics
  */
 export class ProjectVisualizerScene {
-  constructor(container, initialVisualType = 'neural') {
+  constructor(container, initialVisualType = 'neural', renderer = null) {
     this.container = container;
+    this.renderer = renderer;
     this.currentType = initialVisualType;
     this.targetType = initialVisualType;
     this.width = container.clientWidth || 600;
     this.height = container.clientHeight || 400;
+    this.cubeFrameCounter = 0;
 
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(45, this.width / this.height, 0.1, 1000);
@@ -46,20 +48,23 @@ export class ProjectVisualizerScene {
     this.isHovered = false;
     this.time = 0;
 
-    // Cinematic Lighting Setup (High-contrast metallic reflections)
+    // Setup Clean Studio HDR Environment for Natural Glass Reflections
+    this.scene.environment = this.generateStudioEnvironmentMap();
+
+    // Natural Studio Lighting for realistic glass & brain rendering
     const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
     this.scene.add(ambientLight);
 
-    const dirLight1 = new THREE.DirectionalLight(0x0781ff, 3.2); // Azure key light
-    dirLight1.position.set(12, 16, 14);
+    const dirLight1 = new THREE.DirectionalLight(0xffffff, 2.2); // Clean top key light
+    dirLight1.position.set(8, 12, 10);
     this.scene.add(dirLight1);
 
-    const dirLight2 = new THREE.DirectionalLight(0x00f0ff, 2.4); // Electric cyan rim light
-    dirLight2.position.set(-12, -8, -10);
+    const dirLight2 = new THREE.DirectionalLight(0xb0d8ff, 1.4); // Subtle cool rim light
+    dirLight2.position.set(-8, -4, -6);
     this.scene.add(dirLight2);
 
-    const frontLight = new THREE.PointLight(0xffffff, 1.8, 40);
-    frontLight.position.set(0, 2, 12);
+    const frontLight = new THREE.PointLight(0xfff7f0, 1.6, 35); // Warm fill light
+    frontLight.position.set(0, 1.5, 10);
     this.scene.add(frontLight);
 
     this.groups = {};
@@ -653,462 +658,826 @@ export class ProjectVisualizerScene {
     screen.texture.needsUpdate = true;
   }
 
-  createIronManHoloHelmet() {
-    const jarvisGroup = new THREE.Group();
-    jarvisGroup.position.set(0, 0.15, 0.0);
+  generateStudioEnvironmentMap() {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1024;
+    canvas.height = 512;
+    const ctx = canvas.getContext("2d");
 
-    // 1. Professional WebGL Materials matching Iron Man Holographic Reference
-    const cyanWireMat = new THREE.LineBasicMaterial({
-      color: 0x00f0ff,
-      transparent: true,
-      opacity: 0.92,
-      blending: THREE.AdditiveBlending
-    });
+    // Clean neutral studio background
+    const bgGrad = ctx.createLinearGradient(0, 0, 0, 512);
+    bgGrad.addColorStop(0, "#0a0e17");
+    bgGrad.addColorStop(0.5, "#111827");
+    bgGrad.addColorStop(1, "#0a0e17");
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, 1024, 512);
 
-    const brightCyanLineMat = new THREE.LineBasicMaterial({
-      color: 0x38bdf8,
-      transparent: true,
-      opacity: 0.95,
-      blending: THREE.AdditiveBlending
-    });
+    // Overhead white studio softbox
+    const topSoftbox = ctx.createRadialGradient(512, 70, 15, 512, 70, 240);
+    topSoftbox.addColorStop(0, "rgba(255, 255, 255, 1.0)");
+    topSoftbox.addColorStop(0.35, "rgba(240, 249, 255, 0.85)");
+    topSoftbox.addColorStop(0.7, "rgba(186, 230, 253, 0.25)");
+    topSoftbox.addColorStop(1, "rgba(0, 0, 0, 0)");
+    ctx.fillStyle = topSoftbox;
+    ctx.fillRect(200, 0, 624, 200);
 
-    const whiteHotLineMat = new THREE.LineBasicMaterial({
-      color: 0xffffff,
-      transparent: true,
-      opacity: 0.98,
-      blending: THREE.AdditiveBlending
-    });
+    // Soft side fill lights
+    const leftLight = ctx.createLinearGradient(120, 0, 260, 0);
+    leftLight.addColorStop(0, "rgba(0, 0, 0, 0)");
+    leftLight.addColorStop(0.5, "rgba(224, 242, 254, 0.6)");
+    leftLight.addColorStop(1, "rgba(0, 0, 0, 0)");
+    ctx.fillStyle = leftLight;
+    ctx.fillRect(100, 80, 180, 340);
 
-    // Stark Ruby Red Circuit Accent Material (Neck actuators & right telemetry conduit)
-    const redAccentMat = new THREE.LineBasicMaterial({
-      color: 0xff1744,
-      transparent: true,
-      opacity: 0.95,
-      blending: THREE.AdditiveBlending
-    });
+    const rightLight = ctx.createLinearGradient(760, 0, 900, 0);
+    rightLight.addColorStop(0, "rgba(0, 0, 0, 0)");
+    rightLight.addColorStop(0.5, "rgba(224, 242, 254, 0.6)");
+    rightLight.addColorStop(1, "rgba(0, 0, 0, 0)");
+    ctx.fillStyle = rightLight;
+    ctx.fillRect(740, 80, 180, 340);
 
-    const goldAccentMat = new THREE.LineBasicMaterial({
-      color: 0xffb703,
-      transparent: true,
-      opacity: 0.95,
-      blending: THREE.AdditiveBlending
-    });
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.mapping = THREE.EquirectangularReflectionMapping;
+    return texture;
+  }
 
-    // Head Pivot Group (Tracks mouse in 3D)
-    const headGroup = new THREE.Group();
-    jarvisGroup.add(headGroup);
+  setRenderer(renderer) {
+    this.renderer = renderer;
+    if (this.groups.neural && this.cubeCamera) {
+      this.updateCubeReflection();
+    }
+  }
 
-    const addLine = (points, mat = cyanWireMat) => {
-      const geo = new THREE.BufferGeometry().setFromPoints(points);
-      const line = new THREE.Line(geo, mat);
-      headGroup.add(line);
-      return line;
+  updateCubeReflection() {
+    if (!this.renderer || !this.cubeCamera || !this.cubeRenderTarget) return;
+    const n = this.groups.neural;
+    if (!n || !n.neuralOrb) return;
+    const orb = n.neuralOrb;
+
+    if (orb.outerGlassBall) orb.outerGlassBall.visible = false;
+    if (orb.waterVolume) orb.waterVolume.visible = false;
+    if (orb.screenReflections) {
+      orb.screenReflections.forEach((m) => { m.visible = false; });
+    }
+    if (orb.specArc1) orb.specArc1.visible = false;
+    if (orb.specArc2) orb.specArc2.visible = false;
+
+    orb.orbGroup.getWorldPosition(this.cubeCamera.position);
+    this.cubeCamera.update(this.renderer, this.scene);
+
+    if (orb.outerGlassBall) {
+      orb.outerGlassBall.visible = true;
+      if (orb.outerGlassBall.material.envMap !== this.cubeRenderTarget.texture) {
+        orb.outerGlassBall.material.envMap = this.cubeRenderTarget.texture;
+        orb.outerGlassBall.material.needsUpdate = true;
+      }
+    }
+    if (orb.waterVolume) orb.waterVolume.visible = true;
+    if (orb.screenReflections) {
+      orb.screenReflections.forEach((m) => { m.visible = true; });
+    }
+    if (orb.specArc1) orb.specArc1.visible = true;
+    if (orb.specArc2) orb.specArc2.visible = true;
+  }
+
+  generateBrainDiffuseMap() {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1024;
+    canvas.height = 512;
+    const ctx = canvas.getContext("2d");
+
+    // 1. Base anatomical tissue gradient (warm cortical flesh tones)
+    const baseGrad = ctx.createLinearGradient(0, 0, 0, 512);
+    baseGrad.addColorStop(0.0, "#f2c1b6"); // superior crests (parietal dome)
+    baseGrad.addColorStop(0.25, "#e59b8e"); // upper convexity
+    baseGrad.addColorStop(0.55, "#d67e70"); // lateral mid-cortex
+    baseGrad.addColorStop(0.85, "#c46759"); // inferior temporal/occipital base
+    baseGrad.addColorStop(1.0, "#9c3e32"); // deep basal sulcus
+    ctx.fillStyle = baseGrad;
+    ctx.fillRect(0, 0, 1024, 512);
+
+    // 2. Deep Median Longitudinal Fissure (Center vertical divider)
+    const fissureGrad = ctx.createLinearGradient(480, 0, 544, 0);
+    fissureGrad.addColorStop(0.0, "rgba(80, 18, 16, 0)");
+    fissureGrad.addColorStop(0.35, "rgba(70, 15, 13, 0.75)");
+    fissureGrad.addColorStop(0.5, "rgba(45, 10, 8, 0.95)");
+    fissureGrad.addColorStop(0.65, "rgba(70, 15, 13, 0.75)");
+    fissureGrad.addColorStop(1.0, "rgba(80, 18, 16, 0)");
+    ctx.fillStyle = fissureGrad;
+    ctx.fillRect(470, 0, 84, 512);
+
+    // Lateral seams for spherical mapping wrap (0 and 1024)
+    const seamGradL = ctx.createLinearGradient(0, 0, 40, 0);
+    seamGradL.addColorStop(0, "rgba(55, 12, 10, 0.85)");
+    seamGradL.addColorStop(1, "rgba(55, 12, 10, 0)");
+    ctx.fillStyle = seamGradL;
+    ctx.fillRect(0, 0, 40, 512);
+
+    const seamGradR = ctx.createLinearGradient(984, 0, 1024, 0);
+    seamGradR.addColorStop(0, "rgba(55, 12, 10, 0)");
+    seamGradR.addColorStop(1, "rgba(55, 12, 10, 0.85)");
+    ctx.fillStyle = seamGradR;
+    ctx.fillRect(984, 0, 40, 512);
+
+    // 3. Primary Anatomical Sulcal Grooves (Central, Precentral, Lateral, Calcarine)
+    ctx.save();
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+
+    const drawSulcus = (startX, startY, pts, width, color) => {
+      ctx.beginPath();
+      ctx.moveTo(startX, startY);
+      pts.forEach((pt) => ctx.lineTo(pt[0], pt[1]));
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.stroke();
     };
 
-    const addLineLoop = (points, mat = cyanWireMat) => {
-      const geo = new THREE.BufferGeometry().setFromPoints(points);
-      const line = new THREE.LineLoop(geo, mat);
-      headGroup.add(line);
-      return line;
+    // Major sulci on left hemisphere (x: 50 to 460) and right hemisphere (x: 564 to 974)
+    [0, 512].forEach((offset) => {
+      // Central sulcus
+      drawSulcus(offset + 250, 40, [
+        [offset + 235, 120], [offset + 210, 200], [offset + 195, 300], [offset + 220, 390]
+      ], 14, "rgba(85, 20, 18, 0.35)");
+      drawSulcus(offset + 250, 40, [
+        [offset + 235, 120], [offset + 210, 200], [offset + 195, 300], [offset + 220, 390]
+      ], 6, "rgba(50, 12, 10, 0.7)");
+
+      // Precentral sulcus
+      drawSulcus(offset + 170, 70, [
+        [offset + 155, 160], [offset + 140, 260], [offset + 150, 360]
+      ], 10, "rgba(90, 22, 19, 0.3)");
+      drawSulcus(offset + 170, 70, [
+        [offset + 155, 160], [offset + 140, 260], [offset + 150, 360]
+      ], 4, "rgba(55, 14, 12, 0.6)");
+
+      // Postcentral sulcus
+      drawSulcus(offset + 330, 60, [
+        [offset + 320, 160], [offset + 295, 270], [offset + 310, 370]
+      ], 10, "rgba(90, 22, 19, 0.3)");
+      drawSulcus(offset + 330, 60, [
+        [offset + 320, 160], [offset + 295, 270], [offset + 310, 370]
+      ], 4, "rgba(55, 14, 12, 0.6)");
+
+      // Lateral (Sylvian) fissure
+      drawSulcus(offset + 110, 310, [
+        [offset + 220, 280], [offset + 330, 260], [offset + 420, 230]
+      ], 12, "rgba(80, 18, 16, 0.35)");
+      drawSulcus(offset + 110, 310, [
+        [offset + 220, 280], [offset + 330, 260], [offset + 420, 230]
+      ], 5, "rgba(45, 10, 8, 0.75)");
+
+      // Superior temporal sulcus
+      drawSulcus(offset + 130, 370, [
+        [offset + 240, 350], [offset + 350, 340], [offset + 410, 310]
+      ], 8, "rgba(95, 24, 20, 0.28)");
+    });
+    ctx.restore();
+
+    // 4. Pia Mater Vascular Arborization (Arterial trunks & fine capillary networks)
+    const vascularRoots = [
+      // Left hemisphere roots
+      { x: 180, y: 320, angle: -Math.PI * 0.45, length: 110 },
+      { x: 260, y: 310, angle: -Math.PI * 0.52, length: 130 },
+      { x: 340, y: 300, angle: -Math.PI * 0.58, length: 120 },
+      { x: 140, y: 220, angle: -Math.PI * 0.25, length: 95 },
+      { x: 210, y: 150, angle: -Math.PI * 0.65, length: 85 },
+      { x: 300, y: 140, angle: -Math.PI * 0.48, length: 90 },
+      { x: 380, y: 190, angle: -Math.PI * 0.35, length: 95 },
+      { x: 100, y: 390, angle: -Math.PI * 0.15, length: 75 },
+      { x: 260, y: 410, angle: -Math.PI * 0.20, length: 80 },
+      { x: 390, y: 380, angle: -Math.PI * 0.30, length: 75 },
+      // Right hemisphere mirrored roots
+      { x: 692, y: 320, angle: -Math.PI * 0.45, length: 110 },
+      { x: 772, y: 310, angle: -Math.PI * 0.52, length: 130 },
+      { x: 852, y: 300, angle: -Math.PI * 0.58, length: 120 },
+      { x: 652, y: 220, angle: -Math.PI * 0.25, length: 95 },
+      { x: 722, y: 150, angle: -Math.PI * 0.65, length: 85 },
+      { x: 812, y: 140, angle: -Math.PI * 0.48, length: 90 },
+      { x: 892, y: 190, angle: -Math.PI * 0.35, length: 95 },
+      { x: 612, y: 390, angle: -Math.PI * 0.15, length: 75 },
+      { x: 772, y: 410, angle: -Math.PI * 0.20, length: 80 },
+      { x: 902, y: 380, angle: -Math.PI * 0.30, length: 75 }
+    ];
+
+    const drawVesselTree = (x, y, angle, length, depth) => {
+      if (depth > 3 || length < 10) return;
+      const steps = 7;
+      const stepLen = length / steps;
+      let currX = x;
+      let currY = y;
+
+      ctx.beginPath();
+      ctx.moveTo(currX, currY);
+
+      let currAngle = angle;
+      for (let s = 0; s < steps; s++) {
+        currAngle += (Math.sin(s * 1.8 + depth * 2.5) * 0.28) + ((Math.random() - 0.5) * 0.18);
+        currX += Math.cos(currAngle) * stepLen;
+        currY += Math.sin(currAngle) * stepLen;
+        ctx.lineTo(currX, currY);
+      }
+
+      if (depth === 0) {
+        ctx.strokeStyle = "#8b1515"; // Deep arterial feeder
+        ctx.lineWidth = 2.4;
+      } else if (depth === 1) {
+        ctx.strokeStyle = "#a82020"; // Primary arteriole
+        ctx.lineWidth = 1.4;
+      } else if (depth === 2) {
+        ctx.strokeStyle = "#c52e2e"; // Secondary arteriole
+        ctx.lineWidth = 0.85;
+      } else {
+        ctx.strokeStyle = "rgba(225, 55, 55, 0.7)"; // Fine capillary tuft
+        ctx.lineWidth = 0.55;
+      }
+      ctx.stroke();
+
+      const spread = 0.52 + Math.random() * 0.25;
+      drawVesselTree(currX, currY, currAngle - spread, length * 0.68, depth + 1);
+      drawVesselTree(currX, currY, currAngle + spread, length * 0.64, depth + 1);
+      if (depth === 1 && Math.random() > 0.4) {
+        drawVesselTree(currX, currY, currAngle + 0.1, length * 0.52, depth + 1);
+      }
     };
 
-    // 2. Translucent Dark 3D Volumetric Head Mass (Gives physical depth and specular volume inside wireframe)
-    const domeShellGeo = new THREE.SphereGeometry(1.25, 24, 20);
-    domeShellGeo.scale(0.96, 1.28, 0.92);
-    const domeShellMat = new THREE.MeshStandardMaterial({
-      color: 0x040812,
-      roughness: 0.35,
+    ctx.save();
+    ctx.lineCap = "round";
+    vascularRoots.forEach((root) => {
+      drawVesselTree(root.x, root.y, root.angle, root.length, 0);
+    });
+    ctx.restore();
+
+    // 5. Fine Organic Cellular Micro-Stippling (Natural biological tissue noise)
+    const imgData = ctx.getImageData(0, 0, 1024, 512);
+    const data = imgData.data;
+    for (let i = 0; i < data.length; i += 4) {
+      const noise = ((Math.random() - 0.5) * 14);
+      data[i] = Math.min(255, Math.max(0, data[i] + noise));
+      data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + noise * 0.7));
+      data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + noise * 0.6));
+    }
+    ctx.putImageData(imgData, 0, 0);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.ClampToEdgeWrapping;
+    return texture;
+  }
+
+  generateBrainNormalMap() {
+    const width = 512;
+    const height = 256;
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+
+    const imgData = ctx.createImageData(width, height);
+    const data = imgData.data;
+
+    const hMap = new Float32Array(width * height);
+    for (let y = 0; y < height; y++) {
+      const v = y / height;
+      const ny = v * Math.PI * 2.0;
+
+      for (let x = 0; x < width; x++) {
+        const u = x / width;
+        const nx = u * Math.PI * 4.0;
+
+        const f1 = Math.sin(nx * 3.5 + Math.cos(ny * 4.2)) * Math.cos(ny * 3.8 + Math.sin(nx * 3.2));
+        const f2 = Math.sin(nx * 7.5 - ny * 6.5) * Math.cos(ny * 7.0 + nx * 5.0) * 0.45;
+        const f3 = Math.cos(nx * 15.0 + ny * 13.0) * 0.20;
+        const gyri = f1 + f2 + f3;
+
+        const distToFissure = Math.abs(u - 0.5);
+        const fissure = Math.exp(-distToFissure * 32.0) * 1.6;
+
+        const distToSeam = Math.min(u, 1.0 - u);
+        const seamCrevice = Math.exp(-distToSeam * 32.0) * 1.2;
+
+        hMap[y * width + x] = (gyri - fissure - seamCrevice);
+      }
+    }
+
+    const strength = 1.8;
+    for (let y = 0; y < height; y++) {
+      const yPrev = (y - 1 + height) % height;
+      const yNext = (y + 1) % height;
+
+      for (let x = 0; x < width; x++) {
+        const xPrev = (x - 1 + width) % width;
+        const xNext = (x + 1) % width;
+
+        const hL = hMap[y * width + xPrev];
+        const hR = hMap[y * width + xNext];
+        const hU = hMap[yPrev * width + x];
+        const hD = hMap[yNext * width + x];
+
+        let dx = (hR - hL) * strength;
+        let dy = (hD - hU) * strength;
+        let dz = 1.0;
+
+        const len = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        dx /= len;
+        dy /= len;
+        dz /= len;
+
+        const idx = (y * width + x) * 4;
+        data[idx] = Math.floor((dx * 0.5 + 0.5) * 255);
+        data[idx + 1] = Math.floor((-dy * 0.5 + 0.5) * 255);
+        data[idx + 2] = Math.floor((dz * 0.5 + 0.5) * 255);
+        data[idx + 3] = 255;
+      }
+    }
+
+    ctx.putImageData(imgData, 0, 0);
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.ClampToEdgeWrapping;
+    return texture;
+  }
+
+  generateBrainRoughnessMap() {
+    const width = 512;
+    const height = 256;
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+
+    const imgData = ctx.createImageData(width, height);
+    const data = imgData.data;
+
+    for (let y = 0; y < height; y++) {
+      const v = y / height;
+      const ny = v * Math.PI * 2.0;
+
+      for (let x = 0; x < width; x++) {
+        const u = x / width;
+        const nx = u * Math.PI * 4.0;
+
+        const fold = Math.sin(nx * 3.5 + Math.cos(ny * 4.2)) * Math.cos(ny * 3.8);
+        const distToFissure = Math.abs(u - 0.5);
+
+        let rVal = 75 + fold * 25;
+        if (distToFissure < 0.05) {
+          rVal = 35; // Wet longitudinal fissure
+        }
+        rVal = Math.min(255, Math.max(25, rVal));
+
+        const idx = (y * width + x) * 4;
+        data[idx] = rVal;
+        data[idx + 1] = rVal;
+        data[idx + 2] = rVal;
+        data[idx + 3] = 255;
+      }
+    }
+
+    ctx.putImageData(imgData, 0, 0);
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.ClampToEdgeWrapping;
+    return texture;
+  }
+
+  createBrainGeometry() {
+    const geo = new THREE.SphereGeometry(1.0, 112, 84);
+    const pos = geo.attributes.position;
+    const colors = new Float32Array(pos.count * 3);
+
+    // Natural human brain tissue color palette
+    const colDeep = new THREE.Color(0x78231c);    // deep vascular sulcus crevice
+    const colMid = new THREE.Color(0xd6796c);     // healthy cortex tissue
+    const colCrest = new THREE.Color(0xefa598);   // soft warm peach crest
+    const colHighlight = new THREE.Color(0xfde5df); // illuminated tissue highlight
+
+    for (let i = 0; i < pos.count; i++) {
+      let x = pos.getX(i);
+      let y = pos.getY(i);
+      let z = pos.getZ(i);
+
+      // Anatomical brain proportions: elongated along Z, vaulted dome, flatter base
+      x *= 0.88;
+      y *= 0.80;
+      z *= 1.12;
+
+      const absX = Math.abs(x);
+      // Clean deep longitudinal fissure separating left and right hemispheres
+      const fissure = Math.exp(-absX * 6.8) * 0.32;
+
+      // Temporal lobe lateral curvature
+      let temporal = 0;
+      if (y < 0.08 && z > -0.25 && z < 0.42 && absX > 0.30) {
+        temporal = 0.14 * Math.sin((z + 0.25) * Math.PI / 0.67);
+      }
+
+      // Sylvian fissure groove separating frontal/parietal from temporal
+      let sylvian = 0;
+      if (y > 0.0 && y < 0.18 && z > -0.12 && z < 0.38 && absX > 0.32) {
+        sylvian = 0.12 * Math.exp(-Math.pow((y - 0.09) * 9.5, 2));
+      }
+
+      // Frontal vs occipital pole curvature
+      let poleCurve = 0;
+      if (z > 0.2) poleCurve += 0.07 * Math.sin(z * 2.2);
+      if (z < -0.2) poleCurve += 0.09 * Math.cos(z * 1.8);
+
+      // Organic winding gyri and sulci convolutions (tapered at midline fissure)
+      const f1 = Math.sin(x * 8.2 + Math.cos(z * 6.8)) * Math.cos(y * 7.8 + Math.sin(x * 5.8));
+      const f2 = Math.sin(x * 15.5 - z * 12.5) * Math.cos(y * 13.5 + z * 9.2) * 0.42;
+      const f3 = Math.cos(x * 23.0 + y * 19.0) * 0.18;
+      const foldMask = THREE.MathUtils.clamp((absX - 0.04) / 0.15, 0.0, 1.0);
+      const gyri = (f1 + f2 + f3) * 0.078 * foldMask;
+
+      const rBase = Math.sqrt(x * x + y * y + z * z);
+      const rFactor = 1.0 + (gyri - fissure + temporal - sylvian + poleCurve) / Math.max(0.01, rBase);
+
+      pos.setXYZ(i, x * rFactor, y * rFactor, z * rFactor);
+
+      // Realistic tissue color interpolation based on fold depth
+      const tFold = THREE.MathUtils.clamp((gyri + 0.09) / 0.18, 0, 1);
+      const c = new THREE.Color();
+      if (tFold < 0.45) {
+        c.lerpColors(colDeep, colMid, tFold / 0.45);
+      } else {
+        c.lerpColors(colMid, colCrest, (tFold - 0.45) / 0.55);
+        if (tFold > 0.85) {
+          c.lerp(colHighlight, (tFold - 0.85) / 0.15);
+        }
+      }
+      colors[i * 3] = c.r;
+      colors[i * 3 + 1] = c.g;
+      colors[i * 3 + 2] = c.b;
+    }
+
+    geo.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+    geo.computeVertexNormals();
+    return geo;
+  }
+
+  createCerebellumGeometry() {
+    const geo = new THREE.SphereGeometry(0.38, 48, 36);
+    const pos = geo.attributes.position;
+    for (let i = 0; i < pos.count; i++) {
+      let x = pos.getX(i);
+      let y = pos.getY(i);
+      let z = pos.getZ(i);
+      const striation = Math.sin(y * 45.0) * 0.016 + Math.cos(x * 12.0) * 0.008;
+      pos.setXYZ(i, x * 1.28, (y + striation) * 0.68, z * 0.88);
+    }
+    geo.computeVertexNormals();
+    return geo;
+  }
+
+  createBrainstemGeometry() {
+    const geo = new THREE.CylinderGeometry(0.13, 0.075, 0.55, 32, 24);
+    const pos = geo.attributes.position;
+    for (let i = 0; i < pos.count; i++) {
+      let x = pos.getX(i);
+      let y = pos.getY(i);
+      let z = pos.getZ(i);
+      if (y > 0.0) {
+        z += 0.05 * Math.cos(y * Math.PI);
+        x *= 1.25;
+        z += Math.sin(y * 36.0) * 0.006;
+      } else {
+        if (z > 0.02) {
+          z -= Math.exp(-Math.pow(x * 16.0, 2)) * 0.02;
+        }
+      }
+      pos.setXYZ(i, x, y, z);
+    }
+    geo.computeVertexNormals();
+    return geo;
+  }
+
+  createNeuralBrainOrb(screens = null) {
+    const orbGroup = new THREE.Group();
+    orbGroup.position.set(0, 0.15, 0.0);
+
+    // Initialize Real-Time Dynamic Reflection CubeCamera
+    if (!this.cubeRenderTarget) {
+      this.cubeRenderTarget = new THREE.WebGLCubeRenderTarget(256, {
+        generateMipmaps: true,
+        minFilter: THREE.LinearMipmapLinearFilter,
+        magFilter: THREE.LinearFilter,
+        format: THREE.RGBAFormat,
+        colorSpace: THREE.SRGBColorSpace
+      });
+      this.cubeCamera = new THREE.CubeCamera(0.15, 80, this.cubeRenderTarget);
+      this.scene.add(this.cubeCamera);
+    }
+
+    // 1. Sleek, Minimal Circular Base Collar (Clean brushed metal, zero clutter)
+    const pedestalGroup = new THREE.Group();
+    pedestalGroup.position.set(0, -1.48, 0);
+    orbGroup.add(pedestalGroup);
+
+    const metalMat = new THREE.MeshStandardMaterial({
+      color: 0x1e293b,
+      metalness: 0.85,
+      roughness: 0.22
+    });
+
+    const basePlate = new THREE.Mesh(new THREE.CylinderGeometry(1.35, 1.48, 0.14, 48), metalMat);
+    pedestalGroup.add(basePlate);
+
+    const rimMat = new THREE.MeshStandardMaterial({
+      color: 0x94a3b8,
       metalness: 0.9,
+      roughness: 0.15
+    });
+    const rimRing = new THREE.Mesh(new THREE.RingGeometry(1.32, 1.42, 48), rimMat);
+    rimRing.rotation.x = -Math.PI / 2;
+    rimRing.position.y = 0.075;
+    pedestalGroup.add(rimRing);
+
+    // 2. Suspended Natural 3D Human Brain (Floating in Water)
+    const brainGroup = new THREE.Group();
+    brainGroup.position.set(0, 0.06, 0);
+    brainGroup.rotation.y = 0.45; // Natural slight 3/4 angle
+    orbGroup.add(brainGroup);
+
+    // Generate Rich Anatomical Biological Textures
+    if (!this.brainDiffuseMap) {
+      this.brainDiffuseMap = this.generateBrainDiffuseMap();
+    }
+    if (!this.brainNormalMap) {
+      this.brainNormalMap = this.generateBrainNormalMap();
+    }
+    if (!this.brainRoughnessMap) {
+      this.brainRoughnessMap = this.generateBrainRoughnessMap();
+    }
+
+    // Main Cerebral Hemispheres (Natural cortical tissue with pia mater vascular network)
+    const brainGeo = this.createBrainGeometry();
+    const brainMat = new THREE.MeshPhysicalMaterial({
+      map: this.brainDiffuseMap,
+      normalMap: this.brainNormalMap,
+      normalScale: new THREE.Vector2(1.35, 1.35),
+      roughnessMap: this.brainRoughnessMap,
+      roughness: 0.26,
+      metalness: 0.02,
+      clearcoat: 0.78,
+      clearcoatRoughness: 0.08,
+      transmission: 0.12,
+      ior: 1.42,
+      envMap: this.cubeRenderTarget ? this.cubeRenderTarget.texture : this.scene.environment,
+      envMapIntensity: 1.5
+    });
+    const brainMesh = new THREE.Mesh(brainGeo, brainMat);
+    brainMesh.renderOrder = 2;
+    brainGroup.add(brainMesh);
+
+    // Natural Foliate Cerebellum (Tucked neatly at posterior-inferior base)
+    const cerebellumGeo = this.createCerebellumGeometry();
+    const cerebellumMat = new THREE.MeshPhysicalMaterial({
+      color: 0xc96d5e,
+      roughness: 0.28,
+      metalness: 0.02,
+      clearcoat: 0.65,
+      clearcoatRoughness: 0.10,
+      transmission: 0.10,
+      ior: 1.40,
+      envMap: this.cubeRenderTarget ? this.cubeRenderTarget.texture : this.scene.environment,
+      envMapIntensity: 1.3
+    });
+    const cbmMesh = new THREE.Mesh(cerebellumGeo, cerebellumMat);
+    cbmMesh.position.set(0, -0.42, -0.40);
+    cbmMesh.scale.set(0.75, 0.38, 0.52);
+    cbmMesh.renderOrder = 2;
+    brainGroup.add(cbmMesh);
+
+    // Natural Brainstem Trunk (Creamy-pink neural tract tissue)
+    const stemGeo = this.createBrainstemGeometry();
+    const stemMat = new THREE.MeshPhysicalMaterial({
+      color: 0xead9d4,
+      roughness: 0.24,
+      metalness: 0.02,
+      clearcoat: 0.70,
+      clearcoatRoughness: 0.08,
+      transmission: 0.08,
+      ior: 1.40,
+      envMap: this.cubeRenderTarget ? this.cubeRenderTarget.texture : this.scene.environment,
+      envMapIntensity: 1.3
+    });
+    const brainStem = new THREE.Mesh(stemGeo, stemMat);
+    brainStem.position.set(0, -0.62, -0.15);
+    brainStem.rotation.x = -0.18;
+    brainStem.renderOrder = 2;
+    brainGroup.add(brainStem);
+
+    // 3. Clear Water Bubbles System (Occasional Rising Bubbles in Liquid)
+    const bubbles = [];
+    const bubbleGeo = new THREE.SphereGeometry(1, 16, 16);
+    const bubbleMat = new THREE.MeshPhysicalMaterial({
+      color: 0xffffff,
+      transmission: 0.98,
       transparent: true,
-      opacity: 0.92,
+      opacity: 0.85,
+      roughness: 0.015,
+      metalness: 0.0,
+      ior: 1.15,
+      reflectivity: 0.95,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.02,
+      depthWrite: false,
+      envMap: this.cubeRenderTarget ? this.cubeRenderTarget.texture : this.scene.environment,
+      envMapIntensity: 2.2
+    });
+
+    for (let i = 0; i < 28; i++) {
+      const bubbleMesh = new THREE.Mesh(bubbleGeo, bubbleMat);
+      const radius = 0.024 + Math.random() * 0.048;
+      bubbleMesh.scale.setScalar(radius);
+      bubbleMesh.renderOrder = 5;
+
+      const angle = Math.random() * Math.PI * 2;
+      const dist = Math.random() * 1.05;
+      const x = Math.cos(angle) * dist;
+      const z = Math.sin(angle) * dist;
+      const y = -1.2 + Math.random() * 2.4;
+
+      bubbleMesh.position.set(x, y, z);
+      orbGroup.add(bubbleMesh);
+
+      bubbles.push({
+        mesh: bubbleMesh,
+        baseX: x,
+        baseZ: z,
+        radius,
+        speed: 0.22 + Math.random() * 0.35,
+        wobbleSpeed: 2.2 + Math.random() * 3.0,
+        wobbleAmp: 0.025 + Math.random() * 0.035,
+        phase: Math.random() * Math.PI * 2
+      });
+    }
+
+    // 4. Inner Clear Water Fluid Volume (Refractive Index of Water 1.333)
+    const waterGeo = new THREE.SphereGeometry(1.54, 48, 48);
+    const waterMat = new THREE.MeshPhysicalMaterial({
+      color: 0xebf8ff,
+      transmission: 0.94,
+      transparent: true,
+      opacity: 0.18,
+      roughness: 0.02,
+      metalness: 0.0,
+      ior: 1.333,
+      side: THREE.BackSide,
       depthWrite: false
     });
-    const domeShell = new THREE.Mesh(domeShellGeo, domeShellMat);
-    domeShell.position.set(0, 0.25, -0.12);
-    headGroup.add(domeShell);
+    const waterVolume = new THREE.Mesh(waterGeo, waterMat);
+    waterVolume.renderOrder = 1;
+    orbGroup.add(waterVolume);
 
-    // 3. Central Vertical Centerline (Top of forehead all the way down to chin)
-    addLine([
-      new THREE.Vector3(0, 1.58, 0.50),
-      new THREE.Vector3(0, -1.24, 0.72)
-    ], cyanWireMat);
-
-    // 4. Outer Cranium Silhouette Dome
-    addLine([
-      new THREE.Vector3(-1.18, 0.22, 0.05),
-      new THREE.Vector3(-1.12, 0.92, 0.25),
-      new THREE.Vector3(-0.85, 1.38, 0.42),
-      new THREE.Vector3(0, 1.62, 0.52),
-      new THREE.Vector3(0.85, 1.38, 0.42),
-      new THREE.Vector3(1.12, 0.92, 0.25),
-      new THREE.Vector3(1.18, 0.22, 0.05)
-    ], cyanWireMat);
-
-    // 5. Forehead Facet Seams (Matching User Reference Image)
-    // Upper horizontal line extending past cranium on left
-    addLine([
-      new THREE.Vector3(-1.42, 1.32, 0.38),
-      new THREE.Vector3(0.88, 1.32, 0.40)
-    ], cyanWireMat);
-
-    // Mid-forehead horizontal line
-    addLine([
-      new THREE.Vector3(-0.92, 0.98, 0.52),
-      new THREE.Vector3(0.92, 0.98, 0.52)
-    ], cyanWireMat);
-
-    // Diagonal forehead facet lines
-    addLine([new THREE.Vector3(0, 1.62, 0.52), new THREE.Vector3(-0.92, 0.98, 0.52)], cyanWireMat);
-    addLine([new THREE.Vector3(0, 1.62, 0.52), new THREE.Vector3(0.92, 0.98, 0.52)], cyanWireMat);
-    addLine([new THREE.Vector3(-0.92, 0.98, 0.52), new THREE.Vector3(-0.45, 0.68, 0.68)], cyanWireMat);
-    addLine([new THREE.Vector3(0.92, 0.98, 0.52), new THREE.Vector3(0.45, 0.68, 0.68)], cyanWireMat);
-    addLine([new THREE.Vector3(0, 0.98, 0.58), new THREE.Vector3(-0.45, 0.68, 0.68)], cyanWireMat);
-    addLine([new THREE.Vector3(0, 0.98, 0.58), new THREE.Vector3(0.45, 0.68, 0.68)], cyanWireMat);
-
-    // 6. Crisp White Brow Line
-    addLine([
-      new THREE.Vector3(-0.96, 0.68, 0.65),
-      new THREE.Vector3(0.96, 0.68, 0.65)
-    ], whiteHotLineMat);
-
-    // 7. Signature Slanted Luminous Dual-Segment Visor Eyes (Exact Reference Match)
-    const eyeVisorMat = new THREE.MeshBasicMaterial({
-      color: 0x00f0ff,
+    // 5. Outer Crystal Optical Glass Ball (Physical Crown Glass IOR 1.52)
+    const glassGeo = new THREE.SphereGeometry(1.58, 64, 48);
+    const glassMat = new THREE.MeshPhysicalMaterial({
+      color: 0xffffff,
+      transmission: 0.98,
       transparent: true,
-      opacity: 0.95,
-      blending: THREE.AdditiveBlending,
-      side: THREE.DoubleSide
+      opacity: 1.0,
+      roughness: 0.02,
+      metalness: 0.0,
+      ior: 1.52,
+      reflectivity: 0.96,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.02,
+      thickness: 0.45,
+      envMap: this.cubeRenderTarget ? this.cubeRenderTarget.texture : this.scene.environment,
+      envMapIntensity: 2.5,
+      depthWrite: false
     });
+    const glassBall = new THREE.Mesh(glassGeo, glassMat);
+    glassBall.renderOrder = 10;
+    orbGroup.add(glassBall);
 
-    const createEyeVisor = (p0, p1, p2, p3, underlineStart, underlineEnd) => {
-      const geo = new THREE.BufferGeometry();
-      const vertices = new Float32Array([
-        p0.x, p0.y, p0.z,
-        p1.x, p1.y, p1.z,
-        p2.x, p2.y, p2.z,
-
-        p0.x, p0.y, p0.z,
-        p2.x, p2.y, p2.z,
-        p3.x, p3.y, p3.z
-      ]);
-      geo.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
-      geo.computeVertexNormals();
-
-      const mesh = new THREE.Mesh(geo, eyeVisorMat);
-      headGroup.add(mesh);
-
-      // White perimeter outline loop
-      addLineLoop([p0, p1, p2, p3], whiteHotLineMat);
-
-      // Horizontal white underline directly beneath visor (exact match to picture)
-      addLine([underlineStart, underlineEnd], whiteHotLineMat);
-    };
-
-    // Left Eye Visor + Underline
-    createEyeVisor(
-      new THREE.Vector3(-0.24, 0.54, 0.78),
-      new THREE.Vector3(-0.78, 0.60, 0.70),
-      new THREE.Vector3(-0.74, 0.48, 0.72),
-      new THREE.Vector3(-0.26, 0.44, 0.78),
-      new THREE.Vector3(-0.76, 0.36, 0.72),
-      new THREE.Vector3(-0.25, 0.36, 0.78)
-    );
-
-    // Right Eye Visor + Underline
-    createEyeVisor(
-      new THREE.Vector3(0.24, 0.54, 0.78),
-      new THREE.Vector3(0.78, 0.60, 0.70),
-      new THREE.Vector3(0.74, 0.48, 0.72),
-      new THREE.Vector3(0.26, 0.44, 0.78),
-      new THREE.Vector3(0.25, 0.36, 0.78),
-      new THREE.Vector3(0.76, 0.36, 0.72)
-    );
-
-    // 8. Cheekbones & Outer Jaw Contours
-    // Left outer jaw
-    addLine([
-      new THREE.Vector3(-1.18, 0.22, 0.05),
-      new THREE.Vector3(-0.88, -0.62, 0.45),
-      new THREE.Vector3(-0.35, -1.24, 0.68)
-    ], cyanWireMat);
-
-    // Right outer jaw
-    addLine([
-      new THREE.Vector3(1.18, 0.22, 0.05),
-      new THREE.Vector3(0.88, -0.62, 0.45),
-      new THREE.Vector3(0.35, -1.24, 0.68)
-    ], cyanWireMat);
-
-    // Left inner cheek diagonal facet
-    addLine([
-      new THREE.Vector3(-0.88, 0.68, 0.65),
-      new THREE.Vector3(-0.62, -0.22, 0.72),
-      new THREE.Vector3(-0.35, -1.24, 0.68)
-    ], cyanWireMat);
-
-    // Right inner cheek diagonal facet
-    addLine([
-      new THREE.Vector3(0.88, 0.68, 0.65),
-      new THREE.Vector3(0.62, -0.22, 0.72),
-      new THREE.Vector3(0.35, -1.24, 0.68)
-    ], cyanWireMat);
-
-    // 9. Mouth Vent & White Chin Box (Exact Reference Match)
-    // Clean horizontal mouth line
-    addLine([
-      new THREE.Vector3(-0.36, -0.42, 0.80),
-      new THREE.Vector3(0.36, -0.42, 0.80)
-    ], cyanWireMat);
-
-    // Small vertical micro-notch on center line
-    addLine([
-      new THREE.Vector3(0, -0.42, 0.80),
-      new THREE.Vector3(0, -0.50, 0.78)
-    ], brightCyanLineMat);
-
-    // White rectangular box right on the chin
-    addLineLoop([
-      new THREE.Vector3(-0.20, -0.92, 0.74),
-      new THREE.Vector3(0.20, -0.92, 0.74),
-      new THREE.Vector3(0.20, -1.18, 0.72),
-      new THREE.Vector3(-0.20, -1.18, 0.72)
-    ], whiteHotLineMat);
-
-    // 10. Ear Transceiver Loops with Golden Dots
-    [-1.18, 1.18].forEach((sideX) => {
-      const earLoopGeo = new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(sideX, 0.35, 0.05),
-        new THREE.Vector3(sideX + (sideX > 0 ? 0.08 : -0.08), 0.22, 0.05),
-        new THREE.Vector3(sideX, 0.08, 0.05),
-        new THREE.Vector3(sideX - (sideX > 0 ? 0.06 : -0.06), 0.22, 0.05)
-      ]);
-      headGroup.add(new THREE.LineLoop(earLoopGeo, cyanWireMat));
-
-      const earDot = new THREE.Mesh(
-        new THREE.SphereGeometry(0.045, 8, 8),
-        new THREE.MeshBasicMaterial({ color: 0xffb703 })
+    // 6. Real-Time Optical Screen Reflections on Curved Glass Surface
+    const screenReflections = [];
+    if (screens) {
+      // Left Screen Curved Reflection (Cyan Matrix Screen)
+      const leftReflectGeo = new THREE.SphereGeometry(
+        1.585,
+        28,
+        28,
+        Math.PI * 0.65,
+        Math.PI * 0.36,
+        Math.PI * 0.30,
+        Math.PI * 0.38
       );
-      earDot.position.set(sideX, 0.22, 0.05);
-      headGroup.add(earDot);
-    });
+      const leftReflectMat = new THREE.MeshBasicMaterial({
+        map: screens.screenLeft.texture,
+        transparent: true,
+        opacity: 0.72,
+        blending: THREE.AdditiveBlending,
+        side: THREE.DoubleSide,
+        depthWrite: false
+      });
+      const leftReflectMesh = new THREE.Mesh(leftReflectGeo, leftReflectMat);
+      leftReflectMesh.renderOrder = 11;
+      orbGroup.add(leftReflectMesh);
+      screenReflections.push(leftReflectMesh);
 
-    // 11. Cybernetic Neck, Red Actuator Blocks & Collar Arcs
-    // Diagonal neck boundaries
-    addLine([new THREE.Vector3(-0.55, -1.24, 0.65), new THREE.Vector3(-0.85, -1.75, 0.35)], cyanWireMat);
-    addLine([new THREE.Vector3(0.55, -1.24, 0.65), new THREE.Vector3(0.85, -1.75, 0.35)], cyanWireMat);
+      // Right Screen Curved Reflection (Ruby Telemetry Screen & ECG Heartbeat)
+      const rightReflectGeo = new THREE.SphereGeometry(
+        1.585,
+        28,
+        28,
+        Math.PI * 0.00,
+        Math.PI * 0.36,
+        Math.PI * 0.30,
+        Math.PI * 0.38
+      );
+      const rightReflectMat = new THREE.MeshBasicMaterial({
+        map: screens.screenRight.texture,
+        transparent: true,
+        opacity: 0.72,
+        blending: THREE.AdditiveBlending,
+        side: THREE.DoubleSide,
+        depthWrite: false
+      });
+      const rightReflectMesh = new THREE.Mesh(rightReflectGeo, rightReflectMat);
+      rightReflectMesh.renderOrder = 11;
+      orbGroup.add(rightReflectMesh);
+      screenReflections.push(rightReflectMesh);
 
-    // Curved collar arcs under chin
-    addLine([
-      new THREE.Vector3(-0.68, -1.30, 0.58),
-      new THREE.Vector3(0, -1.38, 0.62),
-      new THREE.Vector3(0.68, -1.30, 0.58)
-    ], cyanWireMat);
+      // Top Screen Curved Reflection (Stark Gold Banner Screen)
+      const topReflectGeo = new THREE.SphereGeometry(
+        1.585,
+        28,
+        16,
+        Math.PI * 0.28,
+        Math.PI * 0.44,
+        Math.PI * 0.12,
+        Math.PI * 0.22
+      );
+      const topReflectMat = new THREE.MeshBasicMaterial({
+        map: screens.screenTop.texture,
+        transparent: true,
+        opacity: 0.60,
+        blending: THREE.AdditiveBlending,
+        side: THREE.DoubleSide,
+        depthWrite: false
+      });
+      const topReflectMesh = new THREE.Mesh(topReflectGeo, topReflectMat);
+      topReflectMesh.renderOrder = 11;
+      orbGroup.add(topReflectMesh);
+      screenReflections.push(topReflectMesh);
+    }
 
-    addLine([
-      new THREE.Vector3(-0.82, -1.48, 0.50),
-      new THREE.Vector3(0, -1.56, 0.54),
-      new THREE.Vector3(0.82, -1.48, 0.50)
-    ], cyanWireMat);
-
-    // Center neck parallel bars
-    addLine([new THREE.Vector3(-0.35, -1.68, 0.48), new THREE.Vector3(0.35, -1.68, 0.48)], cyanWireMat);
-    addLine([new THREE.Vector3(-0.30, -1.75, 0.46), new THREE.Vector3(0.30, -1.75, 0.46)], cyanWireMat);
-
-    // Left Red Actuator Block
-    const redLeftGeo = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(-0.55, -1.32, 0.50),
-      new THREE.Vector3(-0.85, -1.32, 0.40),
-      new THREE.Vector3(-0.95, -1.72, 0.30),
-      new THREE.Vector3(-0.65, -1.72, 0.40)
-    ]);
-    jarvisGroup.add(new THREE.LineLoop(redLeftGeo, redAccentMat));
-    jarvisGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(-0.60, -1.52, 0.45),
-      new THREE.Vector3(-0.90, -1.52, 0.35)
-    ]), redAccentMat));
-
-    // Right Red Actuator Block
-    const redRightGeo = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(0.55, -1.32, 0.50),
-      new THREE.Vector3(0.85, -1.32, 0.40),
-      new THREE.Vector3(0.95, -1.72, 0.30),
-      new THREE.Vector3(0.65, -1.72, 0.40)
-    ]);
-    jarvisGroup.add(new THREE.LineLoop(redRightGeo, redAccentMat));
-    jarvisGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(0.60, -1.52, 0.45),
-      new THREE.Vector3(0.90, -1.52, 0.35)
-    ]), redAccentMat));
-
-    // 8 Red Corner Node Spheres
-    const redNodeMat = new THREE.MeshBasicMaterial({ color: 0xff1744 });
-    const redNodeGeo = new THREE.SphereGeometry(0.045, 8, 8);
-    [
-      new THREE.Vector3(-0.55, -1.32, 0.50),
-      new THREE.Vector3(-0.85, -1.32, 0.40),
-      new THREE.Vector3(-0.95, -1.72, 0.30),
-      new THREE.Vector3(-0.65, -1.72, 0.40),
-      new THREE.Vector3(0.55, -1.32, 0.50),
-      new THREE.Vector3(0.85, -1.32, 0.40),
-      new THREE.Vector3(0.95, -1.72, 0.30),
-      new THREE.Vector3(0.65, -1.72, 0.40)
-    ].forEach((pos) => {
-      const redNode = new THREE.Mesh(redNodeGeo, redNodeMat);
-      redNode.position.copy(pos);
-      jarvisGroup.add(redNode);
-    });
-
-    // 12. Upper Torso Shoulders & Chest Stark Arc Reactor
-    // Collar / Shoulder Line
-    const clavicleGeo = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(-3.2, -1.95, 0.05),
-      new THREE.Vector3(-1.25, -1.82, 0.28),
-      new THREE.Vector3(1.25, -1.82, 0.28),
-      new THREE.Vector3(3.2, -1.95, 0.05)
-    ]);
-    jarvisGroup.add(new THREE.Line(clavicleGeo, cyanWireMat));
-
-    // Left and Right Pectoral Boxes
-    const leftPecGeo = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(-1.25, -1.85, 0.30),
-      new THREE.Vector3(-1.18, -2.45, 0.35),
-      new THREE.Vector3(-0.35, -2.45, 0.45),
-      new THREE.Vector3(-0.35, -1.88, 0.42)
-    ]);
-    jarvisGroup.add(new THREE.LineLoop(leftPecGeo, cyanWireMat));
-
-    const rightPecGeo = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(1.25, -1.85, 0.30),
-      new THREE.Vector3(1.18, -2.45, 0.35),
-      new THREE.Vector3(0.35, -2.45, 0.45),
-      new THREE.Vector3(0.35, -1.88, 0.42)
-    ]);
-    jarvisGroup.add(new THREE.LineLoop(rightPecGeo, cyanWireMat));
-
-    // Stark Arc Reactor in Center of Chest
-    const chestReactorGroup = new THREE.Group();
-    chestReactorGroup.position.set(0, -2.15, 0.45);
-
-    const chestReactorOuter = new THREE.Mesh(
-      new THREE.RingGeometry(0.34, 0.42, 36),
-      new THREE.MeshBasicMaterial({ color: 0x00f0ff, side: THREE.DoubleSide })
-    );
-    chestReactorGroup.add(chestReactorOuter);
-
-    const chestReactorInner = new THREE.Mesh(
-      new THREE.RingGeometry(0.20, 0.28, 32),
-      new THREE.MeshBasicMaterial({ color: 0xffb703, side: THREE.DoubleSide })
-    );
-    chestReactorGroup.add(chestReactorInner);
-
-    const chestReactorCoreDisc = new THREE.Mesh(
-      new THREE.CircleGeometry(0.20, 32),
-      new THREE.MeshBasicMaterial({ color: 0x020610, side: THREE.DoubleSide })
-    );
-    chestReactorCoreDisc.position.z = 0.01;
-    chestReactorGroup.add(chestReactorCoreDisc);
-
-    // Stark Equilateral White Triangle pointing UP
-    const triRadius = 0.16;
-    const triPts = [
-      new THREE.Vector3(0, triRadius, 0.02),
-      new THREE.Vector3(Math.cos(Math.PI * 7 / 6) * triRadius, Math.sin(Math.PI * 7 / 6) * triRadius, 0.02),
-      new THREE.Vector3(Math.cos(Math.PI * 11 / 6) * triRadius, Math.sin(Math.PI * 11 / 6) * triRadius, 0.02),
-      new THREE.Vector3(0, triRadius, 0.02)
-    ];
-    chestReactorGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(triPts), whiteHotLineMat));
-
-    // Glowing cyan center dot inside triangle
-    const chestCoreSphere = new THREE.Mesh(
-      new THREE.SphereGeometry(0.045, 12, 12),
-      new THREE.MeshBasicMaterial({ color: 0x00f0ff })
-    );
-    chestCoreSphere.position.z = 0.03;
-    chestReactorGroup.add(chestCoreSphere);
-
-    const chestLight = new THREE.PointLight(0x00f0ff, 2.5, 8);
-    chestReactorGroup.add(chestLight);
-    jarvisGroup.add(chestReactorGroup);
-
-    // 13. Enclosing Concentric Circles, Nodes, and Telemetry Conduits (Exact Reference Feature)
-    const framingRingsGroup = new THREE.Group();
-    framingRingsGroup.position.set(0, 0.25, 0.02);
-    jarvisGroup.add(framingRingsGroup);
-
-    // Large Outer Teal Circle
-    const outerTealRing = new THREE.Mesh(
-      new THREE.RingGeometry(2.14, 2.18, 64),
-      new THREE.MeshBasicMaterial({ color: 0x00f0ff, side: THREE.DoubleSide, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending })
-    );
-    framingRingsGroup.add(outerTealRing);
-
-    // Inner Golden Circle
-    const innerGoldRing = new THREE.Mesh(
-      new THREE.RingGeometry(1.76, 1.80, 64),
-      new THREE.MeshBasicMaterial({ color: 0xffb703, side: THREE.DoubleSide, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending })
-    );
-    framingRingsGroup.add(innerGoldRing);
-
-    // Top Vertical Line & Gold Node Sphere
-    const topPinGeo = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(0, 1.78, 0),
-      new THREE.Vector3(0, 2.16, 0)
-    ]);
-    framingRingsGroup.add(new THREE.Line(topPinGeo, goldAccentMat));
-
-    const topGoldDot = new THREE.Mesh(
-      new THREE.SphereGeometry(0.05, 12, 12),
-      new THREE.MeshBasicMaterial({ color: 0xffb703 })
-    );
-    topGoldDot.position.set(0, 2.16, 0);
-    framingRingsGroup.add(topGoldDot);
-
-    // Left Horizontal Node on Circle
-    const leftCircleDot = new THREE.Mesh(
-      new THREE.SphereGeometry(0.055, 12, 12),
-      new THREE.MeshBasicMaterial({ color: 0x00f0ff })
-    );
-    leftCircleDot.position.set(-2.16, -0.03, 0);
-    framingRingsGroup.add(leftCircleDot);
-
-    // Right Horizontal Node on Circle & Target Reticle
-    const rightCircleDot = new THREE.Mesh(
-      new THREE.SphereGeometry(0.055, 12, 12),
-      new THREE.MeshBasicMaterial({ color: 0xff1744 })
-    );
-    rightCircleDot.position.set(2.16, -0.03, 0);
-    framingRingsGroup.add(rightCircleDot);
-
-    const rightTargetReticle = new THREE.Mesh(
-      new THREE.RingGeometry(0.08, 0.11, 24),
-      new THREE.MeshBasicMaterial({ color: 0xff1744, side: THREE.DoubleSide, transparent: true, opacity: 0.95 })
-    );
-    rightTargetReticle.position.set(2.46, -0.03, 0);
-    framingRingsGroup.add(rightTargetReticle);
-
-    // 14. Animated Diagnostic Horizontal Laser Scanline
-    const scanlineGeo = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(-1.35, 0, 0.82),
-      new THREE.Vector3(1.35, 0, 0.82)
-    ]);
-    const scanlineMat = new THREE.LineBasicMaterial({
-      color: 0x00f0ff,
+    // Natural Curved Specular Glints on Optical Glass Surface
+    const specHighlightMat = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
       transparent: true,
-      opacity: 0.9,
-      blending: THREE.AdditiveBlending
+      opacity: 0.85,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
     });
-    const scanline = new THREE.Line(scanlineGeo, scanlineMat);
-    headGroup.add(scanline);
+    const specArc1 = new THREE.Mesh(new THREE.TorusGeometry(1.59, 0.014, 16, 48, Math.PI * 0.45), specHighlightMat);
+    specArc1.rotation.set(0.42, 0.48, 0.78);
+    specArc1.renderOrder = 12;
+    orbGroup.add(specArc1);
+
+    const specArc2 = new THREE.Mesh(new THREE.TorusGeometry(1.59, 0.009, 16, 40, Math.PI * 0.32), specHighlightMat);
+    specArc2.rotation.set(-0.55, -0.62, -0.35);
+    specArc2.renderOrder = 12;
+    orbGroup.add(specArc2);
+
+    // 7. Docking Conduit Collar Ports (Left, Right, Top) connecting to HUD screens
+    const collarMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, metalness: 0.8, roughness: 0.2 });
+    const collarRingGeo = new THREE.RingGeometry(0.12, 0.18, 24);
+
+    const collarLeft = new THREE.Mesh(collarRingGeo, collarMat);
+    collarLeft.position.set(-1.54, 0.15, 0);
+    collarLeft.rotation.y = Math.PI / 2;
+    orbGroup.add(collarLeft);
+
+    const collarRight = new THREE.Mesh(collarRingGeo, collarMat);
+    collarRight.position.set(1.54, 0.15, 0);
+    collarRight.rotation.y = -Math.PI / 2;
+    orbGroup.add(collarRight);
+
+    const collarTop = new THREE.Mesh(collarRingGeo, new THREE.MeshBasicMaterial({ color: 0xffb703, side: THREE.DoubleSide }));
+    collarTop.position.set(0, 1.58, 0);
+    collarTop.rotation.x = Math.PI / 2;
+    orbGroup.add(collarTop);
 
     return {
-      jarvisGroup,
-      headGroup,
-      eyeVisorMat,
-      scanline,
-      chestReactorGroup,
-      chestCoreSphere,
-      outerReticle: outerTealRing,
-      innerReticle: innerGoldRing
+      orbGroup,
+      jarvisGroup: orbGroup,
+      brainGroup,
+      brainMesh,
+      brainStem,
+      cbmMesh,
+      specArc1,
+      specArc2,
+      bubbles,
+      outerGlassBall: glassBall,
+      waterVolume,
+      screenReflections,
+      pedestalGroup,
+      headGroup: brainGroup
     };
   }
 
@@ -1128,9 +1497,9 @@ export class ProjectVisualizerScene {
     mainPivot.add(screenRight.meshGroup);
     mainPivot.add(screenTop.meshGroup);
 
-    // 2. Central Holographic Iron Man / J.A.R.V.I.S. AI Core (Image 1)
-    const holoHelmet = this.createIronManHoloHelmet();
-    mainPivot.add(holoHelmet.jarvisGroup);
+    // 2. Central 3D Glass Water Orb with Bioluminescent Neural Brain & Rising Bubbles
+    const neuralOrb = this.createNeuralBrainOrb({ screenLeft, screenRight, screenTop });
+    mainPivot.add(neuralOrb.orbGroup);
 
     // 3. Holographic Conduits Linking Center Helmet to Screens
     const conduitsGroup = new THREE.Group();
@@ -1195,7 +1564,8 @@ export class ProjectVisualizerScene {
     this.groups.neural = {
       group: neuralGroup,
       mainPivot,
-      holoHelmet,
+      neuralOrb,
+      holoHelmet: neuralOrb,
       leftConduit,
       rightConduit,
       topConduit,
@@ -1698,40 +2068,57 @@ export class ProjectVisualizerScene {
       }
     });
 
-    // 1. J.A.R.V.I.S. Iron Man Holographic Interface Animation Loop
+    // 1. Natural Brain in Glass Water Orb Animation Loop
     if (this.groups.neural && this.groups.neural.group.visible) {
       const n = this.groups.neural;
-      const h = n.holoHelmet;
+      const orb = n.neuralOrb || n.holoHelmet;
 
-      // 1. Real-Time 3D Head Tracking (Iron Man looks directly at cursor with weighted inertia)
-      if (h && h.headGroup) {
-        const targetRotY = this.mouse.x * 0.45;
-        const targetRotX = -this.mouse.y * 0.32;
-        const targetRotZ = -this.mouse.x * 0.08;
+      if (orb && orb.brainGroup) {
+        // Brain tracks cursor smoothly with natural buoyancy
+        const targetRotY = 0.45 + this.mouse.x * 0.40;
+        const targetRotX = -0.05 - this.mouse.y * 0.26;
+        const targetRotZ = -this.mouse.x * 0.06;
 
-        h.headGroup.rotation.y = THREE.MathUtils.lerp(h.headGroup.rotation.y, targetRotY, 0.08);
-        h.headGroup.rotation.x = THREE.MathUtils.lerp(h.headGroup.rotation.x, targetRotX, 0.08);
-        h.headGroup.rotation.z = THREE.MathUtils.lerp(h.headGroup.rotation.z, targetRotZ, 0.08);
+        orb.brainGroup.rotation.y = THREE.MathUtils.lerp(orb.brainGroup.rotation.y, targetRotY, 0.08);
+        orb.brainGroup.rotation.x = THREE.MathUtils.lerp(orb.brainGroup.rotation.x, targetRotX, 0.08);
+        orb.brainGroup.rotation.z = THREE.MathUtils.lerp(orb.brainGroup.rotation.z, targetRotZ, 0.08);
 
-        // Holographic Diagnostic Scanline Sweeping Vertically Across Faceplate
-        if (h.scanline) {
-          h.scanline.position.y = 0.55 + Math.sin(this.time * 2.8) * 1.35;
+        // Gentle floating buoyancy drift inside fluid
+        orb.brainGroup.position.y = 0.06 + Math.sin(this.time * 1.4) * 0.035;
+
+        // Subtle specular highlight parallax
+        if (orb.specArc1) {
+          orb.specArc1.rotation.z = 0.78 + this.mouse.x * 0.12;
+          orb.specArc1.rotation.y = 0.48 + this.mouse.y * 0.10;
+        }
+        if (orb.specArc2) {
+          orb.specArc2.rotation.z = -0.35 + this.mouse.x * 0.12;
+          orb.specArc2.rotation.y = -0.62 + this.mouse.y * 0.10;
         }
 
-        // Slender Eye Visor Shimmer and Flare
-        if (h.eyeVisorMat) {
-          const breath = 0.85 + Math.sin(this.time * 3.5) * 0.12 + (n.pulseEnergy * 0.45);
-          h.eyeVisorMat.opacity = Math.min(1.0, breath);
-        }
+        // Natural Rising Water Bubbles with fluid wobble & pop/respawn physics
+        if (orb.bubbles && orb.bubbles.length > 0) {
+          for (let i = 0; i < orb.bubbles.length; i++) {
+            const b = orb.bubbles[i];
+            b.mesh.position.y += b.speed * delta;
+            b.mesh.position.x = b.baseX + Math.sin(this.time * b.wobbleSpeed + b.phase) * b.wobbleAmp;
+            b.mesh.position.z = b.baseZ + Math.cos(this.time * b.wobbleSpeed + b.phase) * b.wobbleAmp;
 
-        // Concentric Reticle Dials Rotation
-        if (h.outerReticle) h.outerReticle.rotation.z += delta * 0.22;
-        if (h.innerReticle) h.innerReticle.rotation.z -= delta * 0.18;
+            const distSq = b.mesh.position.x * b.mesh.position.x +
+                           b.mesh.position.y * b.mesh.position.y +
+                           b.mesh.position.z * b.mesh.position.z;
 
-        // Chest Stark Arc Reactor Breathing
-        if (h.chestReactorGroup) {
-          const cBreath = 1.0 + Math.sin(this.time * 2.4) * 0.04 + (n.pulseEnergy * 0.15);
-          h.chestReactorGroup.scale.set(cBreath, cBreath, 1);
+            // When bubble reaches top of liquid or exits sphere boundary, pop and respawn at bottom
+            if (b.mesh.position.y > 1.30 || distSq > 2.1) {
+              b.mesh.position.y = -1.20 - Math.random() * 0.28;
+              const angle = Math.random() * Math.PI * 2;
+              const dist = Math.random() * 0.95;
+              b.baseX = Math.cos(angle) * dist;
+              b.baseZ = Math.sin(angle) * dist;
+              b.mesh.position.x = b.baseX;
+              b.mesh.position.z = b.baseZ;
+            }
+          }
         }
       }
 
@@ -1750,7 +2137,7 @@ export class ProjectVisualizerScene {
 
       n.screenTop.meshGroup.position.y = n.screenTop.basePos.y + Math.sin(this.time * 0.9) * 0.04 + this.mouse.y * 0.1;
 
-      // Dynamic Holographic Conduits Connecting Iron Man Ear Hubs / Crown to Screens
+      // Dynamic Holographic Conduits Connecting Orb Hubs to Screens
       const leftDock = new THREE.Vector3(n.screenLeft.width / 2, 0, 0)
         .applyEuler(n.screenLeft.meshGroup.rotation)
         .add(n.screenLeft.meshGroup.position);
@@ -1763,9 +2150,9 @@ export class ProjectVisualizerScene {
         .applyEuler(n.screenTop.meshGroup.rotation)
         .add(n.screenTop.meshGroup.position);
 
-      const leftExit = new THREE.Vector3(-1.18, 0.22, 0.05);
-      const rightExit = new THREE.Vector3(1.18, 0.22, 0.05);
-      const topExit = new THREE.Vector3(0, 2.4, 0.05);
+      const leftExit = new THREE.Vector3(-1.54, 0.15, 0.0);
+      const rightExit = new THREE.Vector3(1.54, 0.15, 0.0);
+      const topExit = new THREE.Vector3(0, 1.58, 0.0);
 
       // Update Left Conduit Line
       if (n.leftConduit) {
@@ -1817,6 +2204,22 @@ export class ProjectVisualizerScene {
       this.drawJarvisMatrixCanvas(n.screenLeft, this.time, this.isHovered, n.pulseEnergy);
       this.drawJarvisTelemetryCanvas(n.screenRight, this.time, this.isHovered, n.pulseEnergy);
       this.drawJarvisBannerCanvas(n.screenTop, this.time, this.isHovered, n.pulseEnergy);
+
+      // Real-Time Optical Screen Reflections Parallax & Energy Pulse
+      if (orb && orb.screenReflections && orb.screenReflections.length === 3) {
+        const pulse = 1.0 + n.pulseEnergy * 0.35;
+        orb.screenReflections[0].material.opacity = 0.72 * pulse;
+        orb.screenReflections[1].material.opacity = 0.72 * pulse;
+        orb.screenReflections[2].material.opacity = 0.60 * pulse;
+      }
+
+      // Update Dynamic Cube Camera Reflections (Throttled to maintain smooth 120 FPS)
+      if (this.renderer && this.cubeCamera) {
+        this.cubeFrameCounter = (this.cubeFrameCounter || 0) + 1;
+        if (this.cubeFrameCounter % 2 === 0) {
+          this.updateCubeReflection();
+        }
+      }
 
       // Energy Pulse Dissipation
       n.pulseEnergy = Math.max(0, n.pulseEnergy - delta * 2.2);
@@ -1931,6 +2334,23 @@ export class ProjectVisualizerScene {
     this.container.removeEventListener('mouseenter', this.onMouseEnter);
     this.container.removeEventListener('mouseleave', this.onMouseLeave);
     this.container.removeEventListener('click', this.onClick);
+
+    if (this.cubeRenderTarget) {
+      this.cubeRenderTarget.dispose();
+      this.cubeRenderTarget = null;
+    }
+    if (this.brainDiffuseMap) {
+      this.brainDiffuseMap.dispose();
+      this.brainDiffuseMap = null;
+    }
+    if (this.brainNormalMap) {
+      this.brainNormalMap.dispose();
+      this.brainNormalMap = null;
+    }
+    if (this.brainRoughnessMap) {
+      this.brainRoughnessMap.dispose();
+      this.brainRoughnessMap = null;
+    }
 
     if (this.groups.neural) {
       if (this.groups.neural.screenLeft && this.groups.neural.screenLeft.texture) {

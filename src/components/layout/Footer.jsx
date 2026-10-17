@@ -23,7 +23,6 @@ const Footer = () => {
 
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2 text-gray-300 font-mono text-xs">
-            <span className="w-2 h-2 rounded-full bg-[#0781ff]" />
             <span>Designed & Engineered by Arav</span>
           </div>
 

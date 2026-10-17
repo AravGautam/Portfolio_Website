@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { X, ExternalLink, Github, CheckCircle2 } from 'lucide-react';
-import { soundEngine } from '../../audio/soundEngine';
 
 const ProjectModal = ({ project, onClose }) => {
   useEffect(() => {
@@ -8,20 +7,28 @@ const ProjectModal = ({ project, onClose }) => {
       if (e.key === 'Escape') onClose();
     };
     window.addEventListener('keydown', handleKeyDown);
+    window.__lenis?.stop();
+    const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = prevOverflow || 'unset';
+      window.__lenis?.start();
     };
   }, [onClose]);
 
   if (!project) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/90 backdrop-blur-2xl animate-fadeInUp">
+    <div
+      data-lenis-prevent="true"
+      onWheel={(e) => e.stopPropagation()}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/90 backdrop-blur-2xl animate-fadeInUp"
+    >
       {/* Modal Container */}
       <div
+        data-lenis-prevent="true"
         className="relative w-full max-w-4xl max-h-[90vh] bg-[#0a0f1d] border border-white/15 rounded-3xl overflow-hidden shadow-2xl flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
@@ -48,7 +55,11 @@ const ProjectModal = ({ project, onClose }) => {
         </div>
 
         {/* Modal Content Body */}
-        <div className="p-6 sm:p-8 overflow-y-auto space-y-8">
+        <div
+          data-lenis-prevent="true"
+          onWheel={(e) => e.stopPropagation()}
+          className="p-6 sm:p-8 overflow-y-auto overscroll-contain space-y-8"
+        >
           {/* Key Metric Highlights */}
           {project.stats && (
             <div className="grid grid-cols-3 gap-4">
@@ -126,9 +137,9 @@ const ProjectModal = ({ project, onClose }) => {
                 href={project.liveLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs font-semibold px-6 py-3 rounded-full bg-[#0781ff] text-white hover:bg-white hover:text-black transition-all flex items-center gap-2 shadow-lg"
+                className="pill-btn-3d text-xs font-semibold px-6 py-3 text-white flex items-center gap-2 cursor-pointer shadow-lg"
               >
-                <ExternalLink className="w-4 h-4" />
+                <ExternalLink className="w-4 h-4 text-cyan-400" />
                 <span>Live Demo</span>
               </a>
             )}
@@ -138,7 +149,7 @@ const ProjectModal = ({ project, onClose }) => {
                 href={project.githubLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs font-medium px-6 py-3 rounded-full border border-white/15 bg-white/5 text-white hover:border-blue-400 hover:text-blue-400 transition-all flex items-center gap-2 font-mono"
+                className="pill-btn-3d text-xs font-medium px-6 py-3 text-white font-mono flex items-center gap-2 cursor-pointer"
               >
                 <Github className="w-4 h-4" />
                 <span>GitHub Repository</span>
@@ -148,7 +159,7 @@ const ProjectModal = ({ project, onClose }) => {
 
           <button
             onClick={onClose}
-            className="text-xs font-mono text-gray-400 hover:text-white transition-colors"
+            className="pill-btn-3d text-xs font-mono px-5 py-2.5 text-gray-300 hover:text-white cursor-pointer"
           >
             Close Window
           </button>

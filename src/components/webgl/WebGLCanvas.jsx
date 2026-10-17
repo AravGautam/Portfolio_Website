@@ -32,10 +32,15 @@ export const WebGLCanvas = ({
     renderer.setPixelRatio(dpr);
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.15;
     container.appendChild(renderer.domElement);
 
-    // Initialize custom scene instance
-    const sceneInstance = createScene(container);
+    // Initialize custom scene instance with renderer access for dynamic reflections
+    const sceneInstance = createScene(container, renderer);
+    if (sceneInstance && typeof sceneInstance.setRenderer === 'function') {
+      sceneInstance.setRenderer(renderer);
+    }
     if (sceneRef) {
       sceneRef.current = sceneInstance;
     }

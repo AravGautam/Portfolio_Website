@@ -1,13 +1,30 @@
-import React, { useState } from 'react';
-import { Volume2, ExternalLink, X, Info } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { Volume2, ExternalLink, X } from 'lucide-react';
 import { soundEngine } from '../../audio/soundEngine';
 
 export const AudioCreditsModal = ({ isOpen, onClose }) => {
+  useEffect(() => {
+    if (isOpen) {
+      window.__lenis?.stop();
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = prev || 'unset';
+        window.__lenis?.start();
+      };
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[99999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div
+      data-lenis-prevent="true"
+      onWheel={(e) => e.stopPropagation()}
+      className="fixed inset-0 z-[99999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
+    >
       <div
+        data-lenis-prevent="true"
         className="relative w-full max-w-lg rounded-2xl bg-[#0a0a0c] border border-white/10 p-6 sm:p-8 shadow-2xl text-left"
         onClick={(e) => e.stopPropagation()}
       >

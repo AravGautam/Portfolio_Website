@@ -41,7 +41,7 @@ const RubiksCube3D = () => {
     renderer.setClearColor(0x000000, 0); // 100% transparent
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.5;
-    renderer.domElement.setAttribute('data-cursor', 'drag');
+    renderer.domElement.setAttribute('data-cursor', 'cube');
     container.appendChild(renderer.domElement);
 
     // Studio RectAreaLight from top-right: casts broad sheen across top facets
@@ -257,7 +257,7 @@ const RubiksCube3D = () => {
       {/* 100% Transparent WebGL Canvas */}
       <div
         ref={mountRef}
-        data-cursor="drag"
+        data-cursor="cube"
         className="relative z-10 w-full h-full flex items-center justify-center cursor-none select-none"
       />
     </div>

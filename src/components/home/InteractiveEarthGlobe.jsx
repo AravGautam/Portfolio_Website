@@ -362,8 +362,8 @@ const InteractiveEarthGlobe = ({ activeLocation = 'india', onLocationSelect }) =
   return (
     <div
       ref={mountRef}
-      data-cursor="drag"
-      className="relative w-full h-full cursor-grab active:cursor-grabbing select-none overflow-hidden"
+      data-cursor="explore"
+      className="relative w-full h-full select-none overflow-hidden"
     />
   );
 };

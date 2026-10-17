@@ -137,7 +137,6 @@ export const ExperimentsView = () => {
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
           <div>
             <div className="text-xs font-mono font-bold uppercase tracking-wider text-blue-400 mb-3 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#0781ff]" />
               <span>Experiments</span>
             </div>
             <h1 className="text-4xl sm:text-6xl font-display font-extrabold text-white tracking-tight">
@@ -156,7 +155,6 @@ export const ExperimentsView = () => {
           <div className="lg:col-span-8 relative rounded-3xl bg-[#0a0a0c]/80 border border-white/10 p-6 sm:p-8 flex flex-col justify-between min-h-[500px] sm:min-h-[560px] shadow-2xl overflow-hidden backdrop-blur-md">
             <div className="relative z-10 flex items-center justify-between mb-4">
               <div className="flex items-center gap-2 text-xs bg-black/80 border border-white/10 px-4 py-1.5 rounded-full text-gray-200 font-mono">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#0781ff]" />
                 <span className="font-bold">{portfolioData.experiments[activeExp].title}</span>
               </div>
 
@@ -164,9 +162,9 @@ export const ExperimentsView = () => {
                 {activeExp === 0 && (
                   <button
                     onClick={handleToggleScatter}
-                    className="text-xs font-mono px-3.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 hover:bg-[#0781ff] hover:text-white transition-all flex items-center gap-1.5 cursor-pointer"
+                    className="px-4 py-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-xs font-mono text-white flex items-center gap-1.5 transition-all cursor-pointer"
                   >
-                    <Sliders className="w-3.5 h-3.5" />
+                    <Sliders className="w-3.5 h-3.5 text-blue-400" />
                     <span>Scatter / Reform</span>
                   </button>
                 )}
@@ -176,7 +174,7 @@ export const ExperimentsView = () => {
                     soundEngine.playClick();
                     setInteractionCount(prev => prev + 1);
                   }}
-                  className="text-xs p-2.5 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:border-blue-400 transition-colors cursor-pointer"
+                  className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 flex items-center justify-center text-gray-300 hover:text-white transition-all cursor-pointer"
                   title="Restart simulation"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
@@ -187,7 +185,7 @@ export const ExperimentsView = () => {
             {/* Big Interactive Viewport */}
             <div className="relative w-full h-[360px] sm:h-[420px] rounded-2xl overflow-hidden border border-white/5 flex items-center justify-center bg-black">
               {activeExp === 0 ? (
-                <div className="w-full h-full" data-cursor="DRAG">
+                <div className="w-full h-full" data-cursor="interact">
                   <WebGLCanvas createScene={createPortraitScene} className="w-full h-full" />
                 </div>
               ) : (
@@ -205,7 +203,7 @@ export const ExperimentsView = () => {
           </div>
 
           {/* Experiment Selectors (4 cols) */}
-          <div className="lg:col-span-4 flex flex-col gap-3.5 justify-between">
+          <div className="lg:col-span-4 flex flex-col gap-3 justify-between">
             {portfolioData.experiments.map((exp, idx) => {
               const isSelected = activeExp === idx;
               return (
@@ -216,25 +214,25 @@ export const ExperimentsView = () => {
                     setActiveExp(idx);
                   }}
                   onMouseEnter={() => soundEngine.playHover()}
-                  className={`cursor-pointer p-4 sm:p-5 rounded-2xl border transition-all duration-300 flex-1 flex flex-col justify-between ${
+                  className={`cursor-pointer p-4 sm:p-5 rounded-2xl transition-all duration-300 flex-1 flex flex-col justify-between backdrop-blur-md ${
                     isSelected
-                      ? 'bg-[#0a0a0c] border-[#0781ff]/60 shadow-xl shadow-[#0781ff]/15 scale-[1.01]'
-                      : 'bg-[#0a0a0c]/50 border-white/5 hover:border-white/20 hover:bg-[#0a0a0c]/80'
+                      ? 'bg-[#0f1422] border border-blue-500/50 shadow-[0_4px_20px_rgba(7,129,255,0.14)] ring-1 ring-blue-500/30'
+                      : 'bg-[#0a0a0f]/80 border border-white/[0.07] hover:border-white/20 hover:bg-[#12131c]'
                   }`}
                 >
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-xs font-mono font-bold text-blue-400">
+                      <span className="text-xs font-mono font-semibold text-blue-400">
                         {exp.category}
                       </span>
                       {isSelected && (
-                        <span className="text-[10px] font-mono text-white bg-[#0781ff] px-2.5 py-0.5 rounded-full font-bold">
+                        <span className="text-[10px] font-mono text-blue-300 bg-blue-500/15 border border-blue-500/30 px-2 py-0.5 rounded-md font-medium">
                           Active Lab
                         </span>
                       )}
                     </div>
 
-                    <h4 className="font-display font-bold text-white text-base mb-1">
+                    <h4 className="font-display font-bold text-white text-base mb-1 tracking-tight">
                       {exp.title}
                     </h4>
 
@@ -243,11 +241,11 @@ export const ExperimentsView = () => {
                     </p>
                   </div>
 
-                  <div className="flex flex-wrap gap-1.5 pt-2">
+                  <div className="flex flex-wrap gap-1.5 pt-2 border-t border-white/5">
                     {exp.tags.map((tag, tIdx) => (
                       <span
                         key={tIdx}
-                        className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-gray-300"
+                        className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-white/[0.04] border border-white/[0.08] text-gray-400"
                       >
                         {tag}
                       </span>

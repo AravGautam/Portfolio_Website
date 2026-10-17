@@ -1,37 +1,44 @@
 import * as THREE from 'three';
+import { soundEngine } from '../../audio/soundEngine';
 
 /**
  * 3D Scenic Pacific Coast Highway Experience Scene
- * Authentic Recreation of Big Sur / California Route 1:
+ * Scenic Serpentine Mountain Highway Experience Scene:
  * - Serpentine asphalt coastal highway hugging cliffs
  * - Pacific Ocean on the LEFT with animated rolling swells, sea stacks & crashing white surf
  * - Dramatic sunlit mountain bluffs on the RIGHT with golden rock & green cypress groves
  * - Roadway with double solid yellow center lines & white shoulder stripes
  * - Galvanized silver W-beam guardrail on wooden posts along the ocean edge
- * - Tasteful, proportional California Route 1 turnout milestone markers
+ * - Tasteful, proportional roadside turnout milestone markers
  * - Coastal cruisers traveling along scenic lanes with headlights & taillights
  * - Golden hour sunset lighting casting warm radiance across cliffs & ocean
  */
 export class ExperienceScene {
-  constructor(container) {
+  constructor(container, options = {}) {
     this.container = container;
+    this.options = options;
+    this.onSelectMilestone = options.onSelectMilestone || null;
+    this.selectedMilestoneId = null;
+    this.hoveredMilestoneId = null;
+    this.hitboxes = [];
     this.width = container.clientWidth || 800;
     this.height = container.clientHeight || 800;
 
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x0d1a2d);
-    this.scene.fog = new THREE.FogExp2(0x132238, 0.015);
+    this.scene.background = new THREE.Color(0x0a1526);
+    this.scene.fog = new THREE.FogExp2(0x102034, 0.009);
 
-    // Camera perspective overlooking the coastal highway from a scenic bluff
+    // Camera perspective overlooking the full-length coastal highway vista
     const aspect = this.width / this.height;
     const fov = aspect < 1.0 ? 52 : 46;
     this.camera = new THREE.PerspectiveCamera(fov, aspect, 0.1, 1000);
-    this.camera.position.set(0.4, 7.2, 23.0);
-    this.camera.lookAt(0, 2.4, -14.0);
+    this.camera.position.set(0.4, 7.8, 25.0);
+    this.camera.lookAt(0, 2.8, -16.0);
 
     this.mouse = new THREE.Vector2(0, 0);
     this.targetMouse = new THREE.Vector2(0, 0);
     this.time = 0;
+    this.worldUp = new THREE.Vector3(0, 1, 0);
 
     // Golden Hour Sunset Lighting Setup
     const ambientLight = new THREE.AmbientLight(0xffecd2, 1.3);
@@ -59,80 +66,147 @@ export class ExperienceScene {
 
   createTurnoutSign(milestone) {
     const canvas = document.createElement('canvas');
-    canvas.width = 440;
-    canvas.height = 200;
+    canvas.width = 512;
+    canvas.height = 256;
     const ctx = canvas.getContext('2d');
 
-    // California Scenic Highway Forest Green Sign
+    // California Scenic Highway Forest Green signboard base
     ctx.fillStyle = '#064e3b';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Crisp reflective white border
+    // Subtle horizontal extruded aluminum highway panel seams
+    ctx.strokeStyle = '#043e2f';
+    ctx.lineWidth = 1.5;
+    for (let y = 16; y < canvas.height - 16; y += 16) {
+      ctx.beginPath();
+      ctx.moveTo(16, y);
+      ctx.lineTo(canvas.width - 16, y);
+      ctx.stroke();
+    }
+
+    // Crisp reflective highway white border
     ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 4;
-    ctx.strokeRect(6, 6, canvas.width - 12, canvas.height - 12);
+    ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
 
-    // Route 1 Highway Shield Badge
-    ctx.fillStyle = '#ffffff';
+    // Silver / chrome mounting bolt details in corners
+    ctx.fillStyle = '#f1f5f9';
+    [[18, 18], [canvas.width - 18, 18], [18, canvas.height - 18], [canvas.width - 18, canvas.height - 18]].forEach(([rx, ry]) => {
+      ctx.beginPath();
+      ctx.arc(rx, ry, 4, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    // California Route Marker Shield Badge: Green box with crisp white border and white lettering
+    const bX = 24;
+    const bY = 18;
+    const bW = 68;
+    const bH = 50;
+    const bR = 8;
+
+    // Dark green badge background
+    ctx.fillStyle = '#033b2c';
     ctx.beginPath();
-    ctx.roundRect(18, 16, 72, 34, 6);
+    ctx.roundRect(bX, bY, bW, bH, bR);
     ctx.fill();
 
-    ctx.fillStyle = '#064e3b';
-    ctx.font = 'bold 15px sans-serif';
-    ctx.fillText('CA-1', 32, 39);
+    // Crisp white outer border
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 3;
+    ctx.stroke();
 
-    // Milestone Category
-    ctx.fillStyle = '#34d399';
-    ctx.font = 'bold 13px monospace';
-    ctx.fillText(milestone.epoch, 104, 38);
-
-    // Destination / Role Title
+    // White text inside: Top = EDU / EXP, Center = 1 / 2 (Matching California 1 shield structure)
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 20px sans-serif';
-    ctx.fillText(milestone.title, 20, 88);
+    ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(milestone.badgeTop || 'EDU', bX + bW / 2, bY + 18);
 
-    // Description / Technologies
-    ctx.fillStyle = '#cbd5e1';
+    ctx.font = 'bold 24px sans-serif';
+    ctx.fillText(milestone.badgeNum || '1', bX + bW / 2, bY + 42);
+    ctx.textAlign = 'start';
+
+    // Milestone Category Header (Emerald / mint highway text)
+    ctx.fillStyle = '#34d399';
+    ctx.font = 'bold 14px monospace';
+    ctx.fillText(milestone.epoch, 108, 47);
+
+    // Destination / Company Title (Highway Gothic bold white)
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 24px sans-serif';
+    ctx.fillText(milestone.title, 26, 106);
+
+    // Role / Subtitle Highlight (Mint highlight)
+    ctx.fillStyle = '#6ee7b7';
+    ctx.font = 'bold 16px sans-serif';
+    ctx.fillText(milestone.subtitle || '', 26, 142);
+
+    // Description / Core Technologies (Reflective silver-white)
+    ctx.fillStyle = '#e2e8f0';
     ctx.font = '13px monospace';
-    ctx.fillText(milestone.desc, 20, 124);
+    ctx.fillText(milestone.desc, 26, 178);
 
-    // Amber reflective turnout strip
-    ctx.fillStyle = '#fbbf24';
-    ctx.fillRect(20, 148, 120, 3.5);
+    // Lower amber hazard reflector bar
+    ctx.fillStyle = '#f59e0b';
+    ctx.fillRect(26, 206, 140, 4.5);
 
     const texture = new THREE.CanvasTexture(canvas);
-    texture.minFilter = THREE.LinearFilter;
+    texture.minFilter = THREE.LinearMipmapLinearFilter;
     texture.magFilter = THREE.LinearFilter;
+    texture.generateMipmaps = true;
 
     const planeMat = new THREE.MeshStandardMaterial({
       map: texture,
       roughness: 0.35,
-      metalness: 0.3,
+      metalness: 0.25,
       side: THREE.DoubleSide
     });
 
-    // Proportional, elegant sign scale (no oversized billboard)
-    const planeGeo = new THREE.PlaneGeometry(1.65, 0.85);
-    return new THREE.Mesh(planeGeo, planeMat);
+    const signGroup = new THREE.Group();
+
+    // High-resolution front signboard face
+    const planeGeo = new THREE.PlaneGeometry(1.9, 0.95);
+    const frontFace = new THREE.Mesh(planeGeo, planeMat);
+    frontFace.position.z = 0.035;
+    signGroup.add(frontFace);
+
+    // Physical dark galvanized aluminum / redwood backing board
+    const backGeo = new THREE.BoxGeometry(1.94, 0.99, 0.06);
+    const backMat = new THREE.MeshStandardMaterial({
+      color: 0x063327,
+      roughness: 0.88,
+      metalness: 0.2
+    });
+    const backBoard = new THREE.Mesh(backGeo, backMat);
+    signGroup.add(backBoard);
+
+    return signGroup;
   }
 
   initBigSurScene() {
     this.group = new THREE.Group();
     this.scene.add(this.group);
 
-    // 1. Serpentine Spline Curve (Matches the Big Sur coastal photo S-curves)
+    // 1. Serpentine Spline Curve spanning the full coastal panoramic vista (z = +56 to z = -110)
     const curvePoints = [
-      new THREE.Vector3(1.8, 8.5, -50),      // Distant mountain pass (High headland)
-      new THREE.Vector3(3.8, 5.8, -32),      // Curve 1: Inland curve around mountain bluff
-      new THREE.Vector3(-1.2, 3.6, -14),     // Curve 2: Dramatic ocean bluff curve (Left)
-      new THREE.Vector3(2.4, 1.6, 6),        // Curve 3: Headland turn (Right)
-      new THREE.Vector3(-0.6, -0.4, 28)      // Descending oceanfront curve (Foreground)
+      new THREE.Vector3(16.0, 15.0, -110), // Distant mountain pass winding behind headland
+      new THREE.Vector3(9.5, 12.0, -82),   // High coastal cliff turn
+      new THREE.Vector3(3.2, 9.0, -58),    // Upper mountain pass bluff
+      new THREE.Vector3(4.8, 6.2, -36),    // S-Curve: inland bend around promontory
+      new THREE.Vector3(-1.6, 3.8, -16),   // S-Curve: dramatic ocean bluff turn
+      new THREE.Vector3(2.6, 1.8, 8),      // Middle coastal headland sweep
+      new THREE.Vector3(-0.4, -0.2, 32),   // Oceanfront curve entering foreground
+      new THREE.Vector3(1.6, -2.2, 56)     // Foreground coastal stretch continuing past camera
     ];
 
     this.curve = new THREE.CatmullRomCurve3(curvePoints);
-    const numPoints = 180;
+    const numPoints = 260;
     const pathPoints = this.curve.getPoints(numPoints);
+
+    // Deterministic pseudo-random noise generator for rugged rock fractures
+    const pseudoNoise = (x, y) => {
+      const n = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
+      return n - Math.floor(n);
+    };
 
     // 2. Asphalt Highway Roadbed
     const roadWidth = 3.2;
@@ -141,17 +215,13 @@ export class ExperienceScene {
     const roadUvs = [];
     const roadIndices = [];
 
-    // Note: Tangent points +Z. Normal = Cross(Tangent, Up) points -X (LEFT / OCEAN).
-    // Therefore:
-    // +normal is LEFT (OCEAN SIDE)
-    // -normal is RIGHT (MOUNTAIN SIDE)
     for (let i = 0; i <= numPoints; i++) {
       const pt = pathPoints[i];
-      const tangent = this.curve.getTangent(i / numPoints);
+      const tangent = this.curve.getTangent(i / numPoints).normalize();
       const up = new THREE.Vector3(0, 1, 0);
       const normal = new THREE.Vector3().crossVectors(tangent, up).normalize();
 
-      // Left edge (ocean side) to right edge (mountain side)
+      // Road cross section: left edge (ocean) to right edge (mountain)
       const leftEdge = new THREE.Vector3().copy(pt).addScaledVector(normal, roadWidth / 2);
       const centerRoad = new THREE.Vector3().copy(pt).add(new THREE.Vector3(0, 0.03, 0));
       const rightEdge = new THREE.Vector3().copy(pt).addScaledVector(normal, -roadWidth / 2);
@@ -171,7 +241,7 @@ export class ExperienceScene {
         0, 1, 0
       );
 
-      const v = (i / numPoints) * 16;
+      const v = (i / numPoints) * 24;
       roadUvs.push(
         0, v,
         0.5, v,
@@ -226,7 +296,7 @@ export class ExperienceScene {
 
     for (let i = 0; i <= numPoints; i++) {
       const pt = pathPoints[i];
-      const tangent = this.curve.getTangent(i / numPoints);
+      const tangent = this.curve.getTangent(i / numPoints).normalize();
       const normal = new THREE.Vector3().crossVectors(tangent, new THREE.Vector3(0, 1, 0)).normalize();
 
       // Double yellow lines in the center (separated by 0.08)
@@ -260,15 +330,15 @@ export class ExperienceScene {
 
     for (let i = 0; i <= numPoints; i++) {
       const pt = pathPoints[i];
-      const tangent = this.curve.getTangent(i / numPoints);
+      const tangent = this.curve.getTangent(i / numPoints).normalize();
       const normal = new THREE.Vector3().crossVectors(tangent, new THREE.Vector3(0, 1, 0)).normalize();
 
       // Guardrail sits on the ocean side (+normal)
       const railPt = new THREE.Vector3().copy(pt).addScaledVector(normal, roadWidth / 2 + 0.14).add(new THREE.Vector3(0, 0.36, 0));
       guardrailPts.push(railPt);
 
-      // Wooden post every 5 points
-      if (i % 5 === 0) {
+      // Wooden post every 4 points
+      if (i % 4 === 0) {
         const post = new THREE.Mesh(postGeo, postMat);
         post.position.copy(railPt).add(new THREE.Vector3(0, -0.2, 0));
         this.group.add(post);
@@ -286,155 +356,264 @@ export class ExperienceScene {
     const railGeo = new THREE.TubeGeometry(railCurve, numPoints, 0.06, 8, false);
     this.group.add(new THREE.Mesh(railGeo, guardrailMat));
 
-    // 5. Majestic Sunlit Mountain Bluffs & Ridges (Right Side / -normal)
-    const mountainVerts = [];
-    const mountainColors = [];
-    const mountainIndices = [];
-
-    const rockGold = new THREE.Color(0xb86937);   // Warm golden-amber sandstone
-    const rockDark = new THREE.Color(0x6e3e20);   // Shaded cliff earth
-    const grassAmber = new THREE.Color(0xc9944d); // Sunlit hillside grass
-    const cypressGreen = new THREE.Color(0x274a22); // Coastal cypress foliage
+    // 5. Majestic Sunlit Rocky Mountain Bluffs & Crags (Right Side / -normal)
+    // Multi-tier faceted rock geometry with geological strata and carved milestone turnouts
+    const mVerts = [];
+    const mColors = [];
+    const mIndices = [];
+    const numMountainStrips = 8;
 
     for (let i = 0; i <= numPoints; i++) {
       const pt = pathPoints[i];
-      const tangent = this.curve.getTangent(i / numPoints);
-      const normal = new THREE.Vector3().crossVectors(tangent, new THREE.Vector3(0, 1, 0)).normalize();
+      const tangent = this.curve.getTangent(i / numPoints).normalize();
+      const up = new THREE.Vector3(0, 1, 0);
+      const normal = new THREE.Vector3().crossVectors(tangent, up).normalize();
+      const tNorm = i / numPoints;
 
-      // Right-hand mountain side (-normal)
-      const roadRight = new THREE.Vector3().copy(pt).addScaledVector(normal, -roadWidth / 2 - 0.45);
-      const midSlope = new THREE.Vector3().copy(pt).addScaledVector(normal, -roadWidth / 2 - 4.5).add(new THREE.Vector3(0, 3.2 + Math.sin(i * 0.14) * 1.4, 0));
-      const highRidge = new THREE.Vector3().copy(pt).addScaledVector(normal, -roadWidth / 2 - 10.5).add(new THREE.Vector3(0, 8.4 + Math.cos(i * 0.11) * 2.6, 0));
-      const peak = new THREE.Vector3().copy(pt).addScaledVector(normal, -roadWidth / 2 - 16.5).add(new THREE.Vector3(0, 14.5 + Math.sin(i * 0.09) * 3.2, 0));
+      // Turnout alcove carve-outs for the 2 milestone monuments (Back: 0.54, Front: 0.65)
+      let turnoutIndent = 0;
+      [0.54, 0.65].forEach((mT) => {
+        const d = Math.abs(tNorm - mT);
+        if (d < 0.040) {
+          const w = 1.0 - (d / 0.040);
+          turnoutIndent = Math.max(turnoutIndent, w * w * 2.4);
+        }
+      });
 
-      mountainVerts.push(
-        roadRight.x, roadRight.y, roadRight.z,
-        midSlope.x, midSlope.y, midSlope.z,
-        highRidge.x, highRidge.y, highRidge.z,
-        peak.x, peak.y, peak.z
-      );
+      // Procedural multi-frequency rock fractures
+      const rFracture1 = (pseudoNoise(i * 0.28, 1) - 0.5) * 1.5;
+      const rFracture2 = (pseudoNoise(i * 0.22, 2) - 0.5) * 2.4;
+      const rFracture3 = (pseudoNoise(i * 0.16, 3) - 0.5) * 3.5;
+      const rFracture4 = (pseudoNoise(i * 0.12, 4) - 0.5) * 4.6;
 
-      const blend = (Math.sin(i * 0.22) + 1) * 0.5;
-      const c1 = rockGold.clone().lerp(rockDark, blend * 0.3);
-      const c2 = rockGold.clone().lerp(grassAmber, 0.7);
-      const c3 = cypressGreen.clone().lerp(grassAmber, blend);
-      const c4 = rockGold.clone().lerp(grassAmber, 0.85);
+      const profileStrips = [
+        // Strip 0: Roadside stone shoulder & gravel ditch
+        { dist: -roadWidth / 2 - 0.40, h: -0.04, c: [0.42, 0.36, 0.32] },
+        // Strip 1: Turnout terrace level ledge
+        { dist: -roadWidth / 2 - 1.40 - turnoutIndent * 0.9, h: 0.10, c: [0.52, 0.42, 0.35] },
+        // Strip 2: Lower rocky escarpment / sheer cliff base
+        { dist: -roadWidth / 2 - 3.40 - turnoutIndent * 1.5, h: 2.6 + rFracture1, c: [0.38, 0.32, 0.28] },
+        // Strip 3: Stepped rock bench with coastal sage scrub
+        { dist: -roadWidth / 2 - 6.80 - turnoutIndent, h: 5.8 + rFracture2, c: [0.26, 0.38, 0.22] },
+        // Strip 4: Golden sandstone crags & rock buttresses
+        { dist: -roadWidth / 2 - 11.80, h: 10.6 + rFracture3, c: [0.66, 0.44, 0.28] },
+        // Strip 5: Sunlit granite promontory ridge
+        { dist: -roadWidth / 2 - 17.80, h: 16.8 + rFracture4, c: [0.76, 0.52, 0.32] },
+        // Strip 6: Towering coastal mountain peaks
+        { dist: -roadWidth / 2 - 25.50, h: 23.8 + rFracture3 * 0.8, c: [0.70, 0.46, 0.29] },
+        // Strip 7: Backslope descending toward inland canyon
+        { dist: -roadWidth / 2 - 35.00, h: 12.0, c: [0.26, 0.20, 0.16] }
+      ];
 
-      mountainColors.push(
-        c1.r, c1.g, c1.b,
-        c2.r, c2.g, c2.b,
-        c3.r, c3.g, c3.b,
-        c4.r, c4.g, c4.b
-      );
+      for (let s = 0; s < numMountainStrips; s++) {
+        const strip = profileStrips[s];
+        const vPos = pt.clone().addScaledVector(normal, strip.dist).add(new THREE.Vector3(0, strip.h, 0));
+        mVerts.push(vPos.x, vPos.y, vPos.z);
+        mColors.push(strip.c[0], strip.c[1], strip.c[2]);
+      }
 
       if (i < numPoints) {
-        const r1 = i * 4;
-        const r2 = (i + 1) * 4;
-        for (let s = 0; s < 3; s++) {
-          mountainIndices.push(r1 + s, r2 + s, r1 + s + 1);
-          mountainIndices.push(r1 + s + 1, r2 + s, r2 + s + 1);
+        const r1 = i * numMountainStrips;
+        const r2 = (i + 1) * numMountainStrips;
+        for (let s = 0; s < numMountainStrips - 1; s++) {
+          mIndices.push(r1 + s, r2 + s, r1 + s + 1);
+          mIndices.push(r1 + s + 1, r2 + s, r2 + s + 1);
         }
       }
     }
 
-    const mountainGeo = new THREE.BufferGeometry();
-    mountainGeo.setAttribute('position', new THREE.Float32BufferAttribute(mountainVerts, 3));
-    mountainGeo.setAttribute('color', new THREE.Float32BufferAttribute(mountainColors, 3));
+    const baseMountainGeo = new THREE.BufferGeometry();
+    baseMountainGeo.setAttribute('position', new THREE.Float32BufferAttribute(mVerts, 3));
+    baseMountainGeo.setAttribute('color', new THREE.Float32BufferAttribute(mColors, 3));
+    baseMountainGeo.setIndex(mIndices);
+    // Non-indexed flat-shaded geometry gives authentic chiseled rock facets
+    const mountainGeo = baseMountainGeo.toNonIndexed();
     mountainGeo.computeVertexNormals();
-    mountainGeo.setIndex(mountainIndices);
 
     const mountainMat = new THREE.MeshStandardMaterial({
       vertexColors: true,
+      flatShading: true,
       roughness: 0.94,
-      metalness: 0.1,
+      metalness: 0.12,
       side: THREE.DoubleSide
     });
     this.group.add(new THREE.Mesh(mountainGeo, mountainMat));
 
-    // 6. Coastal Cypress Trees on the Mountain Ridge (Matches photo cypress grove)
-    const treeTrunkGeo = new THREE.CylinderGeometry(0.08, 0.12, 0.8, 6);
+    // 6. Coastal Cypress Trees on Rocky Ledges
+    const treeTrunkGeo = new THREE.CylinderGeometry(0.08, 0.12, 0.85, 6);
     const treeTrunkMat = new THREE.MeshStandardMaterial({ color: 0x3b2f2f, roughness: 0.9 });
     const foliageMat = new THREE.MeshStandardMaterial({ color: 0x1f4621, roughness: 0.85 });
 
-    for (let tIdx = 10; tIdx < numPoints; tIdx += 12) {
+    for (let tIdx = 18; tIdx < numPoints - 10; tIdx += 16) {
       const pt = pathPoints[tIdx];
-      const tangent = this.curve.getTangent(tIdx / numPoints);
+      const tangent = this.curve.getTangent(tIdx / numPoints).normalize();
       const normal = new THREE.Vector3().crossVectors(tangent, new THREE.Vector3(0, 1, 0)).normalize();
 
-      const treePos = pt.clone().addScaledVector(normal, -roadWidth / 2 - 5.5 - Math.random() * 4.0)
-        .add(new THREE.Vector3(0, 3.8 + Math.random() * 2.2, 0));
+      const treePos = pt.clone().addScaledVector(normal, -roadWidth / 2 - 5.8 - Math.random() * 3.5)
+        .add(new THREE.Vector3(0, 4.6 + Math.random() * 2.2, 0));
 
       const trunk = new THREE.Mesh(treeTrunkGeo, treeTrunkMat);
       trunk.position.copy(treePos);
       this.group.add(trunk);
 
-      // Canopy layers (flat, wind-swept coastal Monterey cypress canopy)
-      const canopy1 = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 1.2, 0.35, 8), foliageMat);
-      canopy1.position.copy(treePos).add(new THREE.Vector3(0, 0.5, 0));
+      // Wind-swept flat coastal cypress canopy
+      const canopy1 = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 1.25, 0.35, 8), foliageMat);
+      canopy1.position.copy(treePos).add(new THREE.Vector3(0, 0.55, 0));
       this.group.add(canopy1);
 
-      const canopy2 = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.9, 0.3, 8), foliageMat);
-      canopy2.position.copy(treePos).add(new THREE.Vector3(0, 0.8, 0));
+      const canopy2 = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.95, 0.3, 8), foliageMat);
+      canopy2.position.copy(treePos).add(new THREE.Vector3(0, 0.85, 0));
       this.group.add(canopy2);
     }
 
-    // 7. Plunging Ocean Cliffs directly beneath Road (Left Side / +normal)
-    const oceanCliffVerts = [];
-    const oceanCliffColors = [];
-    const oceanCliffIndices = [];
+    // 7. Plunging Rocky Ocean Cliffs beneath Road (Left Side / +normal)
+    const oVerts = [];
+    const oColors = [];
+    const oIndices = [];
     const seaLevelY = -3.8;
+    const numOceanStrips = 5;
 
     for (let i = 0; i <= numPoints; i++) {
       const pt = pathPoints[i];
-      const tangent = this.curve.getTangent(i / numPoints);
-      const normal = new THREE.Vector3().crossVectors(tangent, new THREE.Vector3(0, 1, 0)).normalize();
+      const tangent = this.curve.getTangent(i / numPoints).normalize();
+      const up = new THREE.Vector3(0, 1, 0);
+      const normal = new THREE.Vector3().crossVectors(tangent, up).normalize();
 
-      // Drops from road left edge (+normal) down into the surf
-      const roadLeft = new THREE.Vector3().copy(pt).addScaledVector(normal, roadWidth / 2 + 0.14);
-      const midCliff = new THREE.Vector3().copy(pt).addScaledVector(normal, roadWidth / 2 + 3.4).add(new THREE.Vector3(0, (seaLevelY - pt.y) * 0.55, 0));
-      const seaShore = new THREE.Vector3().copy(pt).addScaledVector(normal, roadWidth / 2 + 7.8).setY(seaLevelY);
+      const oFracture = (pseudoNoise(i * 0.35, 7) - 0.5) * 1.3;
 
-      oceanCliffVerts.push(
-        roadLeft.x, roadLeft.y, roadLeft.z,
-        midCliff.x, midCliff.y, midCliff.z,
-        seaShore.x, seaShore.y, seaShore.z
-      );
+      const oceanProfile = [
+        // Road outer edge under guardrail
+        { dist: roadWidth / 2 + 0.14, y: pt.y, c: [0.46, 0.38, 0.32] },
+        // Rocky cliff brow
+        { dist: roadWidth / 2 + 1.80, y: pt.y - 0.9 + oFracture * 0.5, c: [0.42, 0.34, 0.28] },
+        // Sheer sea-cliff face
+        { dist: roadWidth / 2 + 4.20, y: (seaLevelY + pt.y) * 0.48 + oFracture, c: [0.28, 0.22, 0.18] },
+        // Rocky wave-cut bench
+        { dist: roadWidth / 2 + 7.80, y: seaLevelY + 0.6 + Math.abs(oFracture) * 0.4, c: [0.18, 0.16, 0.14] },
+        // Submerged tide reef at sea level
+        { dist: roadWidth / 2 + 12.50, y: seaLevelY, c: [0.10, 0.12, 0.14] }
+      ];
 
-      const sunlitSand = new THREE.Color(0xa8673a);
-      const darkWetRock = new THREE.Color(0x241d18);
-
-      oceanCliffColors.push(
-        sunlitSand.r, sunlitSand.g, sunlitSand.b,
-        darkWetRock.r, darkWetRock.g, darkWetRock.b,
-        darkWetRock.r * 0.7, darkWetRock.g * 0.7, darkWetRock.b * 0.7
-      );
+      for (let s = 0; s < numOceanStrips; s++) {
+        const strip = oceanProfile[s];
+        const vPos = pt.clone().addScaledVector(normal, strip.dist).setY(strip.y);
+        oVerts.push(vPos.x, vPos.y, vPos.z);
+        oColors.push(strip.c[0], strip.c[1], strip.c[2]);
+      }
 
       if (i < numPoints) {
-        const r1 = i * 3;
-        const r2 = (i + 1) * 3;
-        oceanCliffIndices.push(r1, r2, r1 + 1);
-        oceanCliffIndices.push(r1 + 1, r2, r2 + 1);
-        oceanCliffIndices.push(r1 + 1, r2 + 1, r1 + 2);
-        oceanCliffIndices.push(r1 + 2, r2 + 1, r2 + 2);
+        const r1 = i * numOceanStrips;
+        const r2 = (i + 1) * numOceanStrips;
+        for (let s = 0; s < numOceanStrips - 1; s++) {
+          oIndices.push(r1 + s, r2 + s, r1 + s + 1);
+          oIndices.push(r1 + s + 1, r2 + s, r2 + s + 1);
+        }
       }
     }
 
-    const oceanCliffGeo = new THREE.BufferGeometry();
-    oceanCliffGeo.setAttribute('position', new THREE.Float32BufferAttribute(oceanCliffVerts, 3));
-    oceanCliffGeo.setAttribute('color', new THREE.Float32BufferAttribute(oceanCliffColors, 3));
+    const baseOceanCliffGeo = new THREE.BufferGeometry();
+    baseOceanCliffGeo.setAttribute('position', new THREE.Float32BufferAttribute(oVerts, 3));
+    baseOceanCliffGeo.setAttribute('color', new THREE.Float32BufferAttribute(oColors, 3));
+    baseOceanCliffGeo.setIndex(oIndices);
+    const oceanCliffGeo = baseOceanCliffGeo.toNonIndexed();
     oceanCliffGeo.computeVertexNormals();
-    oceanCliffGeo.setIndex(oceanCliffIndices);
 
     const oceanCliffMat = new THREE.MeshStandardMaterial({
       vertexColors: true,
-      roughness: 0.92,
+      flatShading: true,
+      roughness: 0.95,
       metalness: 0.1,
       side: THREE.DoubleSide
     });
     this.group.add(new THREE.Mesh(oceanCliffGeo, oceanCliffMat));
 
-    // 8. The Vast Pacific Ocean (Left / West Plane with Specular Sunset Highlight)
-    const oceanGeo = new THREE.PlaneGeometry(140, 140, 32, 32);
+    // 8. Distant Coastal Mountain Headland Range (Prevents empty cut-off in the distance)
+    const backdropGeo = new THREE.BufferGeometry();
+    const bgVerts = [];
+    const bgColors = [];
+    const bgIndices = [];
+    const bgSteps = 24;
+
+    for (let j = 0; j <= bgSteps; j++) {
+      const u = j / bgSteps;
+      const x = -45 + u * 110;
+      const z = -120 - Math.sin(u * Math.PI) * 24;
+      const peakH = 15 + Math.sin(u * 5.2) * 5.0 + Math.cos(u * 8.4) * 3.5 + Math.sin(u * Math.PI) * 19.0;
+
+      // Base at sea level
+      bgVerts.push(x, seaLevelY - 1.0, z);
+      bgColors.push(0.12, 0.16, 0.22);
+
+      // Mid-mountain shoulder
+      bgVerts.push(x, peakH * 0.52, z - 4.0);
+      bgColors.push(0.24, 0.25, 0.28);
+
+      // Craggy mountain crest
+      bgVerts.push(x, peakH, z - 8.0);
+      bgColors.push(0.48, 0.36, 0.28);
+
+      if (j < bgSteps) {
+        const c1 = j * 3;
+        const c2 = (j + 1) * 3;
+        bgIndices.push(c1, c2, c1 + 1);
+        bgIndices.push(c1 + 1, c2, c2 + 1);
+        bgIndices.push(c1 + 1, c2 + 1, c1 + 2);
+        bgIndices.push(c1 + 2, c2 + 1, c2 + 2);
+      }
+    }
+
+    backdropGeo.setAttribute('position', new THREE.Float32BufferAttribute(bgVerts, 3));
+    backdropGeo.setAttribute('color', new THREE.Float32BufferAttribute(bgColors, 3));
+    backdropGeo.setIndex(bgIndices);
+    const nonIndexedBg = backdropGeo.toNonIndexed();
+    nonIndexedBg.computeVertexNormals();
+
+    const backdropMat = new THREE.MeshStandardMaterial({
+      vertexColors: true,
+      flatShading: true,
+      roughness: 0.98,
+      metalness: 0.08,
+      side: THREE.DoubleSide
+    });
+    this.group.add(new THREE.Mesh(nonIndexedBg, backdropMat));
+
+    // 9. Scattered 3D Faceted Rock Boulders along the Highway
+    const boulderGeo = new THREE.DodecahedronGeometry(1.0, 0);
+    const boulderMat = new THREE.MeshStandardMaterial({
+      color: 0x4d4239,
+      roughness: 0.95,
+      metalness: 0.1,
+      flatShading: true
+    });
+
+    const boulderLocations = [
+      { t: 0.22, offset: -roadWidth / 2 - 2.8, scale: 1.6 },
+      { t: 0.33, offset: -roadWidth / 2 - 3.8, scale: 1.4 },
+      { t: 0.44, offset: -roadWidth / 2 - 3.8, scale: 1.3 },
+      { t: 0.58, offset: -roadWidth / 2 - 3.6, scale: 1.4 },
+      { t: 0.72, offset: -roadWidth / 2 - 3.4, scale: 1.3 },
+      { t: 0.78, offset: -roadWidth / 2 - 2.6, scale: 1.5 },
+      { t: 0.88, offset: -roadWidth / 2 - 2.8, scale: 1.7 }
+    ];
+
+    boulderLocations.forEach((bCfg) => {
+      const bPt = this.curve.getPoint(bCfg.t);
+      const bTan = this.curve.getTangent(bCfg.t).normalize();
+      const bNorm = new THREE.Vector3().crossVectors(bTan, this.worldUp).normalize();
+
+      const boulder = new THREE.Mesh(boulderGeo, boulderMat);
+      boulder.position.copy(bPt).addScaledVector(bNorm, bCfg.offset).add(new THREE.Vector3(0, 0.35 * bCfg.scale, 0));
+      boulder.scale.set(
+        bCfg.scale * (0.8 + Math.random() * 0.4),
+        bCfg.scale * (0.7 + Math.random() * 0.5),
+        bCfg.scale * (0.8 + Math.random() * 0.4)
+      );
+      boulder.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+      this.group.add(boulder);
+    });
+
+    // 10. The Vast Pacific Ocean (Left / West Plane with Specular Sunset Highlight)
+    const oceanGeo = new THREE.PlaneGeometry(220, 240, 32, 32);
     const oceanMat = new THREE.MeshStandardMaterial({
       color: 0x094875,
       roughness: 0.14,
@@ -443,29 +622,30 @@ export class ExperienceScene {
     });
     this.oceanMesh = new THREE.Mesh(oceanGeo, oceanMat);
     this.oceanMesh.rotation.x = -Math.PI / 2;
-    // Positioned across the entire left ocean view
-    this.oceanMesh.position.set(-35, seaLevelY, -10);
+    this.oceanMesh.position.set(-55, seaLevelY, -30);
     this.group.add(this.oceanMesh);
 
-    // 9. Offshore Sea Stack Rocks with Crashing White Foam (Pfeiffer Beach aesthetic)
-    const rockMat = new THREE.MeshStandardMaterial({
+    // 11. Offshore Sea Stack Rocks with Crashing White Foam (Pfeiffer Beach aesthetic)
+    const seaRockMat = new THREE.MeshStandardMaterial({
       color: 0x3d3126,
       roughness: 0.95,
-      metalness: 0.08
+      metalness: 0.08,
+      flatShading: true
     });
 
     const seaStackConfigs = [
-      { pos: new THREE.Vector3(-8.5, seaLevelY + 1.2, -32), scale: new THREE.Vector3(3.2, 4.4, 2.8) },
-      { pos: new THREE.Vector3(-12.0, seaLevelY + 0.9, -14), scale: new THREE.Vector3(2.6, 3.6, 2.4) },
-      { pos: new THREE.Vector3(-7.5, seaLevelY + 0.8, 6), scale: new THREE.Vector3(2.4, 3.2, 2.0) },
-      { pos: new THREE.Vector3(-11.5, seaLevelY + 0.6, 20), scale: new THREE.Vector3(3.0, 2.8, 2.6) }
+      { pos: new THREE.Vector3(-14.0, seaLevelY + 1.6, -75), scale: new THREE.Vector3(3.6, 5.2, 3.2) },
+      { pos: new THREE.Vector3(-10.5, seaLevelY + 1.2, -42), scale: new THREE.Vector3(3.2, 4.4, 2.8) },
+      { pos: new THREE.Vector3(-13.0, seaLevelY + 0.9, -16), scale: new THREE.Vector3(2.6, 3.6, 2.4) },
+      { pos: new THREE.Vector3(-9.5, seaLevelY + 0.8, 10), scale: new THREE.Vector3(2.4, 3.2, 2.0) },
+      { pos: new THREE.Vector3(-12.5, seaLevelY + 0.6, 35), scale: new THREE.Vector3(3.0, 2.8, 2.6) }
     ];
 
     this.seaStacks = [];
     seaStackConfigs.forEach((cfg) => {
       const rockGeo = new THREE.DodecahedronGeometry(1.0, 1);
       rockGeo.scale(cfg.scale.x, cfg.scale.y, cfg.scale.z);
-      const rock = new THREE.Mesh(rockGeo, rockMat);
+      const rock = new THREE.Mesh(rockGeo, seaRockMat);
       rock.position.copy(cfg.pos);
       rock.rotation.set(0.18, Math.random() * Math.PI, 0.1);
       this.group.add(rock);
@@ -486,70 +666,165 @@ export class ExperienceScene {
       this.seaStacks.push({ rock, foam });
     });
 
-    // 10. Tasteful California Route 1 Scenic Turnout Milestone Markers
+    // 12. Architectural Milestone Overlook Monuments Anchored in Stone Turnouts
     this.milestones = [];
+    this.hitboxes = [];
+
     const milestoneConfigs = [
       {
-        t: 0.26,
-        epoch: 'MILESTONE // 2023',
-        title: 'VITS CSE FOUNDATIONS',
-        desc: 'ALGORITHMS // SYSTEMS ARCHITECTURE'
-      },
-      {
+        id: 'vits-cse',
         t: 0.54,
-        epoch: 'ACTIVE // 2024 — PRESENT',
-        title: 'DREAM FILLER COMPANY',
-        desc: 'BACKEND SERVICES // REST APIS // DB ARCH'
+        badgeTop: 'EDU',
+        badgeNum: '1',
+        epoch: 'VITS CSE // 2023 — 2027',
+        title: 'VITS CSE FOUNDATIONS',
+        subtitle: 'B.TECH COMPUTER SCIENCE & ENGINEERING',
+        desc: '200+ DSA SOLVED // CORE CS // SYSTEMS',
+        details: {
+          role: 'Bachelor of Technology in Computer Science & Engineering',
+          institution: 'Vindhya Institute of Technology and Science (VITS), RGPV',
+          period: '2023 — 2027',
+          cgpa: '7.85',
+          summary: 'Four-year comprehensive Computer Science & Engineering degree focusing on core algorithmic problem-solving, operating systems, distributed architectures, database engineering, and applied software development.',
+          bullets: [
+            'Data Structures & Algorithms: Solved 200+ competitive programming problems across LeetCode, Codeforces, and GeeksforGeeks (Dynamic Programming, Trees, Graphs, Greedy Algorithms)',
+            'Operating Systems & Concurrency: Process scheduling, multi-threading in Java and C++, memory virtualization, concurrency synchronization, and Linux file systems',
+            'Database Management Systems (DBMS): Relational schema design, SQL querying, normalization (1NF-BCNF), indexing strategies, and ACID transaction guarantees',
+            'Computer Networks: Deep dive into the OSI model, TCP/IP stack, HTTP/HTTPS protocols, socket programming, and client-server architecture',
+            'Object-Oriented Software Design: Enterprise OOP principles, design patterns, clean architecture, and systems programming with Java, C++, and Python',
+            'Hackathon Team Leadership: Led 4-member developer teams in fast-paced 24-hour hackathons to architect and deploy functional prototypes',
+            'Technical Workshop Coordination: Served as Class Coordinator organizing collegiate coding symposiums and technical workshops for 100+ students (CGPA 7.85)'
+          ],
+          tags: ['Data Structures', 'Algorithms', 'C++', 'Java', 'Python', 'DBMS', 'Operating Systems', 'Computer Networks', 'OOP', 'SQL', 'System Design']
+        }
       },
       {
-        t: 0.78,
-        epoch: 'PACIFIC HORIZONS',
-        title: 'DISTRIBUTED SYSTEMS',
-        desc: 'HIGH CONCURRENCY // EVENT CLOUD'
+        id: 'dream-filler',
+        t: 0.65,
+        badgeTop: 'EXP',
+        badgeNum: '2',
+        epoch: 'DREAM FILLER // 2024 — PRESENT',
+        title: 'DREAM FILLER COMPANY',
+        subtitle: 'BACKEND ENGINEER INTERN',
+        desc: 'REST APIS // NODE.JS // MONGODB // JWT',
+        details: {
+          role: 'Backend Engineer Intern',
+          company: 'Dream Filler Company',
+          period: '2024 — Present',
+          summary: 'Engineering scalable backend architectures, high-performance RESTful APIs, and robust data management layers.',
+          bullets: [
+            'Architecting and optimizing high-throughput RESTful backend endpoints and API microservices',
+            'Designing scalable database schemas, indexing strategies, and aggregation pipelines with Node.js, Express, and MongoDB',
+            'Implementing JWT authentication, authorization, request validation, and resilient error-handling middleware',
+            'Optimizing API query performance, reducing response latency, and database query tuning',
+            'Collaborating on distributed system designs, architectural code reviews, and production stability'
+          ],
+          tags: ['Node.js', 'Express.js', 'MongoDB', 'REST APIs', 'System Design', 'JWT Auth', 'Backend Engineering']
+        }
       }
     ];
 
+    // Shared materials for architectural milestone monuments
+    const stoneTerraceMat = new THREE.MeshStandardMaterial({
+      color: 0x3d352e,
+      roughness: 0.95,
+      metalness: 0.08,
+      flatShading: true
+    });
+
+    const stonePlinthMat = new THREE.MeshStandardMaterial({
+      color: 0x483e35,
+      roughness: 0.92,
+      metalness: 0.1,
+      flatShading: true
+    });
+
+    const timberPostMat = new THREE.MeshStandardMaterial({
+      color: 0x24160e,
+      roughness: 0.88,
+      metalness: 0.12
+    });
+
     milestoneConfigs.forEach((cfg) => {
       const pt = this.curve.getPoint(cfg.t);
-      const tangent = this.curve.getTangent(cfg.t);
+      const tangent = this.curve.getTangent(cfg.t).normalize();
       const normal = new THREE.Vector3().crossVectors(tangent, new THREE.Vector3(0, 1, 0)).normalize();
 
       const mGroup = new THREE.Group();
-      // Position sign neatly on the mountain shoulder turnout (-normal)
-      const signPos = pt.clone().addScaledVector(normal, -roadWidth / 2 - 1.1).add(new THREE.Vector3(0, 0.1, 0));
-      mGroup.position.copy(signPos);
 
-      // Orient sign naturally toward approaching drivers
-      const lookPt = pt.clone().add(tangent.clone().multiplyScalar(4));
-      mGroup.lookAt(lookPt);
+      // Paved stone overlook terrace platform (sits cleanly on mountain shoulder)
+      const terraceGeo = new THREE.BoxGeometry(4.0, 0.18, 3.0);
+      const terraceMesh = new THREE.Mesh(terraceGeo, stoneTerraceMat);
+      terraceMesh.position.set(0, 0.09, 0);
+      mGroup.add(terraceMesh);
 
-      // Wooden Signposts
-      const signPostGeo = new THREE.CylinderGeometry(0.045, 0.055, 1.4, 8);
-      const signPostMat = new THREE.MeshStandardMaterial({ color: 0x3d3228, roughness: 0.9 });
+      // Stacked stone foundation plinths anchored into terrace
+      [-0.72, 0.72].forEach((pX) => {
+        const plinth = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.36, 0.44), stonePlinthMat);
+        plinth.position.set(pX, 0.27, 0);
+        mGroup.add(plinth);
 
-      const post1 = new THREE.Mesh(signPostGeo, signPostMat);
-      post1.position.set(-0.55, 0.7, 0);
-      mGroup.add(post1);
+        // Heavy rustic redwood upright timber posts
+        const post = new THREE.Mesh(new THREE.BoxGeometry(0.12, 1.55, 0.12), timberPostMat);
+        post.position.set(pX, 1.05, 0);
+        mGroup.add(post);
+      });
 
-      const post2 = new THREE.Mesh(signPostGeo, signPostMat);
-      post2.position.set(0.55, 0.7, 0);
-      mGroup.add(post2);
+      // Horizontal redwood timber header beam
+      const headerBeam = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.12, 0.12), timberPostMat);
+      headerBeam.position.set(0, 1.84, 0);
+      mGroup.add(headerBeam);
 
-      // Highway Turnout Signboard Panel
+      // Flanking natural rock boulders framing the monument into the rock face (hug back of terrace so face is 100% visible)
+      [-1.9, 1.9].forEach((bX, bIdx) => {
+        const fBoulder = new THREE.Mesh(new THREE.DodecahedronGeometry(0.50 + bIdx * 0.10, 0), boulderMat);
+        fBoulder.position.set(bX, 0.38, -0.45);
+        fBoulder.rotation.set(Math.random(), Math.random(), Math.random());
+        mGroup.add(fBoulder);
+      });
+
+      // High-resolution milestone signboard mounted securely between timber posts
       const signboard = this.createTurnoutSign(cfg);
       signboard.position.set(0, 1.25, 0.04);
       mGroup.add(signboard);
 
-      // Amber Solar Reflector Beacon
+      // Amber Solar Reflector Beacon atop monument
       const solarBeacon = new THREE.Mesh(
-        new THREE.SphereGeometry(0.045, 8, 8),
+        new THREE.SphereGeometry(0.05, 8, 8),
         new THREE.MeshBasicMaterial({ color: 0xf59e0b })
       );
-      solarBeacon.position.set(0, 1.76, 0.04);
+      solarBeacon.position.set(0, 1.96, 0.04);
       mGroup.add(solarBeacon);
 
+      // Generous invisible touch hitbox for effortless interaction
+      const hitboxGeo = new THREE.BoxGeometry(2.8, 2.4, 1.4);
+      const hitboxMat = new THREE.MeshBasicMaterial({ visible: false });
+      const hitbox = new THREE.Mesh(hitboxGeo, hitboxMat);
+      hitbox.position.set(0, 1.25, 0.1);
+      hitbox.userData = { milestoneId: cfg.id, config: cfg };
+      mGroup.add(hitbox);
+      this.hitboxes.push(hitbox);
+
+      // Position monument neatly on the carved turnout terrace
+      const terracePos = pt.clone().addScaledVector(normal, -roadWidth / 2 - 1.8).add(new THREE.Vector3(0, 0.08, 0));
+      mGroup.position.copy(terracePos);
+
+      // Orient monument naturally toward approaching drivers along the highway
+      const signLookTarget = terracePos.clone().add(tangent.clone().multiplyScalar(2.6)).addScaledVector(normal, 1.2);
+      mGroup.lookAt(signLookTarget);
+
       this.group.add(mGroup);
-      this.milestones.push({ group: mGroup, solarBeacon });
+      this.milestones.push({
+        id: cfg.id,
+        config: cfg,
+        group: mGroup,
+        signboard,
+        solarBeacon,
+        hitbox,
+        currentScale: 1.0,
+        targetScale: 1.0,
+        baseY: 1.25
+      });
     });
 
     this.initCruisers();
@@ -694,26 +969,31 @@ export class ExperienceScene {
     ];
 
     wheelPositions.forEach((pos) => {
-      const wGroup = new THREE.Group();
-      wGroup.position.set(pos.x, pos.y, pos.z);
+      const assembly = new THREE.Group();
+      assembly.position.set(pos.x, pos.y, pos.z);
+
+      // Rotating Wheel Hub (Rubber Tire + Multi-Spoke Rim)
+      const spinner = new THREE.Group();
 
       // Rubber Tire
       const tire = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.075, 16), tireMat);
       tire.rotation.z = Math.PI / 2;
-      wGroup.add(tire);
+      spinner.add(tire);
 
       // Multi-Spoke Alloy Rim
       const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.08, 12), rimMat);
       rim.rotation.z = Math.PI / 2;
-      wGroup.add(rim);
+      spinner.add(rim);
 
-      // Red Sport Brake Caliper
+      assembly.add(spinner);
+
+      // Stationary Red Sport Brake Caliper (mounted to suspension)
       const caliper = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.05, 0.035), new THREE.MeshBasicMaterial({ color: 0xdc2626 }));
       caliper.position.set(pos.x > 0 ? -0.025 : 0.025, 0.03, 0);
-      wGroup.add(caliper);
+      assembly.add(caliper);
 
-      carGroup.add(wGroup);
-      wheels.push(wGroup);
+      carGroup.add(assembly);
+      wheels.push(spinner);
     });
 
     // 4. Optical Lighting: Front Projector LEDs & Full-Width Rear Lightbar
@@ -751,11 +1031,11 @@ export class ExperienceScene {
     // 11. Fleet of Stylized Coastal Grand Tourers & Speedsters
     this.cruisers = [];
     const carConfigs = [
-      { color: 0xea580c, isConvertible: true, speed: 0.082 },  // Sunset Lava Orange Speedster
-      { color: 0xdc2626, isConvertible: false, speed: 0.075 }, // Guards Crimson Red Fastback Coupe
-      { color: 0x0284c7, isConvertible: true, speed: 0.088 },  // Pacific Riviera Blue Speedster
-      { color: 0xf1f5f9, isConvertible: false, speed: 0.070 }, // Chalk White Fastback Coupe
-      { color: 0x15803d, isConvertible: true, speed: 0.085 }   // Monterey Cypress Green Speedster
+      { color: 0xea580c, isConvertible: true, speed: 0.056 },  // Sunset Lava Orange Speedster
+      { color: 0xdc2626, isConvertible: false, speed: 0.050 }, // Guards Crimson Red Fastback Coupe
+      { color: 0x0284c7, isConvertible: true, speed: 0.058 },  // Pacific Riviera Blue Speedster
+      { color: 0xf1f5f9, isConvertible: false, speed: 0.048 }, // Chalk White Fastback Coupe
+      { color: 0x15803d, isConvertible: true, speed: 0.054 }   // Monterey Cypress Green Speedster
     ];
 
     const roadWidth = 3.2;
@@ -769,12 +1049,20 @@ export class ExperienceScene {
       this.cruisers.push({
         group: carGroup,
         wheels,
-        progress: (idx / carConfigs.length) + Math.random() * 0.08,
-        speed: cfg.speed + (Math.random() - 0.5) * 0.01,
-        laneOffset: (isNorthbound ? -1 : 1) * (roadWidth * 0.24),
+        progress: (idx / carConfigs.length) + 0.04,
+        speed: cfg.speed,
+        laneOffset: (isNorthbound ? -1 : 1) * (roadWidth * 0.235),
         isNorthbound
       });
     });
+  }
+
+  getLanePosition(progress, laneOffset) {
+    const t = ((progress % 1.0) + 1.0) % 1.0;
+    const pt = this.curve.getPoint(t);
+    const tangent = this.curve.getTangent(t).normalize();
+    const roadSide = new THREE.Vector3().crossVectors(tangent, this.worldUp).normalize();
+    return pt.addScaledVector(roadSide, laneOffset);
   }
 
   initSeaSprayMist() {
@@ -804,24 +1092,111 @@ export class ExperienceScene {
   }
 
   bindEvents() {
-    this.onMouseMove = (e) => {
+    this.raycaster = new THREE.Raycaster();
+    this.mouseCoords = new THREE.Vector2();
+    let pointerDownPos = { x: 0, y: 0 };
+
+    this.onPointerMove = (e) => {
       const rect = this.container.getBoundingClientRect();
       const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       const y = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
       this.targetMouse.set(x, y);
+
+      this.mouseCoords.set(x, y);
+      if (this.hitboxes && this.hitboxes.length > 0) {
+        this.raycaster.setFromCamera(this.mouseCoords, this.camera);
+        const intersects = this.raycaster.intersectObjects(this.hitboxes, false);
+        if (intersects.length > 0) {
+          const hitId = intersects[0].object.userData.milestoneId;
+          if (this.hoveredMilestoneId !== hitId) {
+            this.hoveredMilestoneId = hitId;
+            soundEngine.playHover();
+          }
+          this.container.style.cursor = 'pointer';
+        } else {
+          if (this.hoveredMilestoneId !== null) {
+            this.hoveredMilestoneId = null;
+          }
+          this.container.style.cursor = 'default';
+        }
+      }
     };
 
-    this.container.addEventListener('mousemove', this.onMouseMove);
+    this.onPointerDown = (e) => {
+      pointerDownPos = { x: e.clientX, y: e.clientY };
+    };
+
+    this.onPointerUp = (e) => {
+      const dx = Math.abs(e.clientX - pointerDownPos.x);
+      const dy = Math.abs(e.clientY - pointerDownPos.y);
+      if (dx < 12 && dy < 12 && this.hitboxes && this.hitboxes.length > 0) {
+        const rect = this.container.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        const y = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
+        this.mouseCoords.set(x, y);
+        this.raycaster.setFromCamera(this.mouseCoords, this.camera);
+        const intersects = this.raycaster.intersectObjects(this.hitboxes, false);
+        if (intersects.length > 0) {
+          const hitObj = intersects[0].object;
+          const hitId = hitObj.userData.milestoneId;
+          const hitCfg = hitObj.userData.config;
+          soundEngine.playClick();
+          this.selectMilestone(hitId, hitCfg);
+        }
+      }
+    };
+
+    this.container.addEventListener('pointermove', this.onPointerMove);
+    this.container.addEventListener('pointerdown', this.onPointerDown);
+    this.container.addEventListener('pointerup', this.onPointerUp);
+  }
+
+  selectMilestone(id, config = null) {
+    this.selectedMilestoneId = id;
+    const m = this.milestones.find((item) => item.id === id);
+    const cfg = config || (m ? m.config : null);
+    if (this.onSelectMilestone && cfg) {
+      this.onSelectMilestone(cfg);
+    }
+  }
+
+  clearSelection() {
+    this.selectedMilestoneId = null;
   }
 
   update(delta) {
     this.time += delta;
     this.mouse.lerp(this.targetMouse, 0.06);
 
+    // Interactive Milestone Overlook Monuments (Expands smoothly on touch / selection / hover)
+    if (this.milestones) {
+      this.milestones.forEach((m) => {
+        const isSelected = this.selectedMilestoneId === m.id;
+        const isHovered = this.hoveredMilestoneId === m.id;
+
+        m.targetScale = isSelected ? 1.38 : (isHovered ? 1.15 : 1.0);
+        const targetY = isSelected ? 1.44 : (isHovered ? 1.34 : m.baseY);
+
+        m.currentScale = THREE.MathUtils.lerp(m.currentScale, m.targetScale, 0.12);
+        if (m.signboard) {
+          m.signboard.scale.setScalar(m.currentScale);
+          m.signboard.position.y = THREE.MathUtils.lerp(m.signboard.position.y, targetY, 0.12);
+        }
+
+        // Animate solar beacon pulse
+        if (m.solarBeacon) {
+          const beaconScale = isSelected
+            ? 1.65 + Math.sin(this.time * 6.0) * 0.25
+            : (isHovered ? 1.35 + Math.sin(this.time * 4.0) * 0.15 : 1.0 + Math.sin(this.time * 2.0) * 0.08);
+          m.solarBeacon.scale.setScalar(beaconScale);
+        }
+      });
+    }
+
     // Scenic vista camera perspective looking down the Pacific Coast Highway
     this.camera.position.x = THREE.MathUtils.lerp(this.camera.position.x, 0.4 + this.mouse.x * 2.0, 0.05);
-    this.camera.position.y = THREE.MathUtils.lerp(this.camera.position.y, 7.2 - this.mouse.y * 1.0, 0.05);
-    this.camera.lookAt(0, 2.4, -14.0);
+    this.camera.position.y = THREE.MathUtils.lerp(this.camera.position.y, 7.8 - this.mouse.y * 1.0, 0.05);
+    this.camera.lookAt(0, 2.8, -16.0);
 
     // Gentle camera parallax banking
     if (this.group) {
@@ -839,36 +1214,54 @@ export class ExperienceScene {
       });
     }
 
-    // Cruising Coastal Roadsters along Highway Lanes
+    // Cruising Coastal Sports Cars along Highway Lanes with exact road alignment
     if (this.cruisers && this.curve) {
+      const rotMat = new THREE.Matrix4();
+      const dt = 0.012; // Lookahead chord along lane
+
       this.cruisers.forEach((car) => {
         if (car.isNorthbound) {
-          // Northbound: Cruises toward distant mountain pass
+          // Northbound: Cruises toward distant mountain pass (decreasing t)
           car.progress = (car.progress - delta * car.speed + 1.0) % 1.0;
         } else {
-          // Southbound: Cruises south along coastal highway
+          // Southbound: Cruises south along coastal highway (increasing t)
           car.progress = (car.progress + delta * car.speed) % 1.0;
         }
 
-        const pt = this.curve.getPoint(car.progress);
-        const tangent = this.curve.getTangent(car.progress);
-        const normal = new THREE.Vector3().crossVectors(tangent, new THREE.Vector3(0, 1, 0)).normalize();
+        // Exact lane points for vehicle center, front lookahead, and rear lookbehind
+        const posCenter = this.getLanePosition(car.progress, car.laneOffset);
+        const posFront = this.getLanePosition(
+          car.isNorthbound ? car.progress - dt : car.progress + dt,
+          car.laneOffset
+        );
+        const posRear = this.getLanePosition(
+          car.isNorthbound ? car.progress + dt : car.progress - dt,
+          car.laneOffset
+        );
 
-        car.group.position.copy(pt)
-          .addScaledVector(normal, car.laneOffset)
-          .add(new THREE.Vector3(0, 0.04, 0));
+        // Forward vector aligned along the exact lane curvature
+        const forward = new THREE.Vector3().subVectors(posFront, posRear).normalize();
 
-        // Orient vehicle along highway curvature
-        const forward = car.isNorthbound ? tangent.clone().negate() : tangent;
-        const lookPt = pt.clone().add(forward);
-        car.group.lookAt(lookPt);
-        car.group.rotation.z = (car.isNorthbound ? 1 : -1) * normal.x * 0.18;
+        // Local road surface coordinate frame
+        const tangent = this.curve.getTangent(car.progress).normalize();
+        const roadSide = new THREE.Vector3().crossVectors(tangent, this.worldUp).normalize();
+        const roadUp = new THREE.Vector3().crossVectors(roadSide, tangent).normalize();
 
-        // Dynamically spin all 4 alloy wheels proportional to speed
-        const spinSpeed = car.speed * 42;
+        // Exact orthonormal vehicle basis (car local +X is right side, +Y is roof, +Z is front)
+        const carRight = new THREE.Vector3().crossVectors(roadUp, forward).normalize();
+        const carUp = new THREE.Vector3().crossVectors(forward, carRight).normalize();
+
+        rotMat.makeBasis(carRight, carUp, forward);
+        car.group.quaternion.setFromRotationMatrix(rotMat);
+
+        // Position car precisely in its lane resting on the asphalt surface
+        car.group.position.copy(posCenter).addScaledVector(carUp, 0.055);
+
+        // Dynamically spin alloy wheels forward proportional to travel speed
+        const spinDelta = delta * car.speed * 45;
         if (car.wheels) {
           car.wheels.forEach((w) => {
-            w.rotation.x += car.isNorthbound ? -delta * spinSpeed : delta * spinSpeed;
+            w.rotation.x += spinDelta;
           });
         }
       });
@@ -890,6 +1283,8 @@ export class ExperienceScene {
   }
 
   destroy() {
-    this.container.removeEventListener('mousemove', this.onMouseMove);
+    if (this.onPointerMove) this.container.removeEventListener('pointermove', this.onPointerMove);
+    if (this.onPointerDown) this.container.removeEventListener('pointerdown', this.onPointerDown);
+    if (this.onPointerUp) this.container.removeEventListener('pointerup', this.onPointerUp);
   }
 }

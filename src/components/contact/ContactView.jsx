@@ -64,7 +64,6 @@ export const ContactView = () => {
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
           <div>
             <div className="text-xs font-mono font-bold uppercase tracking-wider text-blue-400 mb-3 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#0781ff]" />
               <span>Contact</span>
             </div>
             <h1 className="text-4xl sm:text-6xl font-display font-extrabold text-white tracking-tight">
@@ -83,12 +82,11 @@ export const ContactView = () => {
           {/* Left Column: 3D Earth Globe (7 cols) */}
           <div
             className="lg:col-span-7 relative h-[420px] sm:h-[540px] rounded-3xl bg-[#0a0a0c] border border-white/10 overflow-hidden flex flex-col justify-between p-6 shadow-2xl"
-            data-cursor="DRAG"
+            data-cursor="explore"
           >
             {/* Top Overlay */}
             <div className="relative z-10 flex items-center justify-between pointer-events-none">
               <div className="flex items-center gap-2 text-xs bg-black/80 border border-white/10 px-3.5 py-1.5 rounded-full text-gray-200 font-mono text-[11px]">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#0781ff]" />
                 <span>Madhya Pradesh, India</span>
               </div>
               <span className="font-mono text-xs text-gray-400">3D Earth</span>
@@ -101,7 +99,7 @@ export const ContactView = () => {
 
             {/* Bottom Geospatial Info */}
             <div className="relative z-10 flex items-center justify-between pt-3 border-t border-white/5 font-mono text-[11px] text-gray-400 pointer-events-none">
-              <span>Drag to rotate</span>
+              <span>Interactive Geospatial Mesh</span>
               <span className="text-blue-400">Open for Worldwide Roles</span>
             </div>
           </div>
@@ -201,7 +199,7 @@ export const ContactView = () => {
                     <button
                       type="submit"
                       disabled={formStatus === 'sending'}
-                      className="flex-1 py-3 rounded-full bg-[#0781ff] text-white font-mono font-bold text-xs hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2 shadow-lg cursor-pointer"
+                      className="pill-btn-3d flex-1 py-3 text-white font-mono font-bold text-xs flex items-center justify-center gap-2 shadow-lg cursor-pointer"
                     >
                       {formStatus === 'sending' ? (
                         <>
@@ -210,7 +208,7 @@ export const ContactView = () => {
                         </>
                       ) : (
                         <>
-                          <Send className="w-3.5 h-3.5" />
+                          <Send className="w-3.5 h-3.5 text-cyan-400" />
                           <span>Send Message</span>
                         </>
                       )}
@@ -219,9 +217,13 @@ export const ContactView = () => {
                     <button
                       type="button"
                       onClick={copyEmail}
-                      className="px-4 py-3 rounded-full border border-white/15 bg-white/5 text-gray-300 hover:border-blue-400 hover:text-blue-400 transition-all text-xs font-mono flex items-center gap-1.5 cursor-pointer"
+                      className={`text-xs font-mono flex items-center gap-1.5 px-5 py-3 cursor-pointer transition-all duration-300 ${
+                        copied
+                          ? 'pill-btn-dented text-cyan-400'
+                          : 'pill-btn-3d text-gray-300 hover:text-white'
+                      }`}
                     >
-                      {copied ? <Check className="w-3.5 h-3.5 text-blue-400" /> : <Copy className="w-3.5 h-3.5" />}
+                      {copied ? <Check className="w-3.5 h-3.5 text-cyan-400" /> : <Copy className="w-3.5 h-3.5" />}
                       <span>{copied ? 'Copied' : 'Copy'}</span>
                     </button>
                   </div>

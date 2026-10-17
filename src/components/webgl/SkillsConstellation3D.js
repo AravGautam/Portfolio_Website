@@ -323,8 +323,8 @@ export class SkillsConstellationScene {
       }
       this.hoveredNode = null;
     }
-    this.container.style.cursor = 'grab';
-    this.container.setAttribute('data-cursor', 'DRAG');
+    this.container.style.cursor = 'default';
+    this.container.setAttribute('data-cursor', 'SELECT');
     if (this.tooltip) {
       this.tooltip.style.opacity = '0';
     }

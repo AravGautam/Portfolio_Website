@@ -15,6 +15,18 @@ export const scrollToElement = (elementOrId) => {
   }
 };
 
+export const pauseSmoothScroll = () => {
+  if (typeof window !== 'undefined' && window.__lenis) {
+    window.__lenis.stop();
+  }
+};
+
+export const resumeSmoothScroll = () => {
+  if (typeof window !== 'undefined' && window.__lenis) {
+    window.__lenis.start();
+  }
+};
+
 /**
  * Lenis Inertial Smooth Scrolling Hook
  */
@@ -33,6 +45,15 @@ export const useLenis = () => {
       smoothWheel: true,
       wheelMultiplier: 0.9,
       touchMultiplier: 1.5,
+      prevent: (node) => {
+        if (!node || typeof node.closest !== 'function') return false;
+        return (
+          node.hasAttribute?.('data-lenis-prevent') ||
+          node.closest?.('[data-lenis-prevent]') !== null ||
+          node.closest?.('.fixed.inset-0') !== null ||
+          node.closest?.('.overflow-y-auto') !== null
+        );
+      }
     });
 
     window.__lenis = lenis;

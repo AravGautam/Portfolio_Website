@@ -14,8 +14,8 @@ export const WorkView = () => {
 
   const activeProject = portfolioData.projects[activeProjectIdx];
 
-  const createScene = useCallback((container) => {
-    const scene = new ProjectVisualizerScene(container, portfolioData.projects[0].visualType);
+  const createScene = useCallback((container, renderer) => {
+    const scene = new ProjectVisualizerScene(container, portfolioData.projects[0].visualType, renderer);
     visualizerRef.current = scene;
     return scene;
   }, []);
@@ -41,7 +41,6 @@ export const WorkView = () => {
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
           <div>
             <div className="text-xs font-mono font-bold uppercase tracking-wider text-blue-400 mb-3 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#0781ff]" />
               <span>Crafting Scalable Systems</span>
             </div>
             <h1 className="text-4xl sm:text-6xl font-display font-extrabold text-white tracking-tight">
@@ -59,12 +58,11 @@ export const WorkView = () => {
           {/* Left Column: Interactive 3D Spatial Visualizer (7 cols) */}
           <div
             className="lg:col-span-7 relative min-h-[440px] sm:min-h-[520px] rounded-3xl bg-[#0a0a0c]/80 border border-white/10 overflow-hidden flex flex-col justify-between p-6 sm:p-8 shadow-2xl backdrop-blur-md"
-            data-cursor="DRAG"
+            data-cursor="explore"
           >
             {/* Header */}
             <div className="relative z-10 flex items-center justify-between pointer-events-none">
               <div className="flex items-center gap-2 text-xs bg-black/80 border border-white/10 px-3.5 py-1.5 rounded-full text-gray-200 font-medium font-mono">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#0781ff]" />
                 <span>3D Preview: {activeProject.title}</span>
               </div>
               <span className="font-mono text-xs text-blue-400 font-bold">{activeProject.category}</span>
@@ -89,7 +87,7 @@ export const WorkView = () => {
               <MagneticWrapper strength={0.3}>
                 <button
                   onClick={() => handleOpenDetail(activeProject)}
-                  className="text-xs font-mono font-bold px-6 py-3 rounded-full bg-[#0781ff] text-white hover:bg-white hover:text-black transition-all duration-300 flex items-center gap-2 shadow-lg"
+                  className="pill-btn-3d text-xs font-mono font-bold px-6 py-3 text-white flex items-center gap-2 cursor-pointer shadow-lg"
                 >
                   <Eye className="w-3.5 h-3.5" />
                   <span>View Details</span>
@@ -155,7 +153,7 @@ export const WorkView = () => {
               <div className="flex items-center gap-3 pt-2">
                 <button
                   onClick={() => handleOpenDetail(activeProject)}
-                  className="flex-1 py-3 rounded-full bg-white text-black font-mono font-bold text-xs hover:bg-[#0781ff] hover:text-white transition-all flex items-center justify-center gap-2 shadow-lg"
+                  className="pill-btn-white-3d flex-1 py-3 text-black font-mono font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-lg"
                 >
                   <span>Project Overview</span>
                   <ChevronRight className="w-3.5 h-3.5" />
@@ -166,7 +164,7 @@ export const WorkView = () => {
                     href={activeProject.githubLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-3 rounded-full border border-white/15 bg-white/5 text-white hover:border-blue-400 hover:text-blue-400 transition-all"
+                    className="pill-btn-3d p-3 text-white hover:text-blue-400 cursor-pointer"
                     title="View Source Code"
                   >
                     <Github className="w-4 h-4" />
@@ -178,7 +176,7 @@ export const WorkView = () => {
                     href={activeProject.liveLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-3 rounded-full border border-white/15 bg-white/5 text-white hover:border-blue-400 hover:text-blue-400 transition-all"
+                    className="pill-btn-3d p-3 text-white hover:text-blue-400 cursor-pointer"
                     title="Open Live Deployment"
                   >
                     <ExternalLink className="w-4 h-4" />
@@ -187,7 +185,7 @@ export const WorkView = () => {
               </div>
             </div>
 
-            {/* Quick Switcher Tabs */}
+            {/* Quick Switcher 3D Pill Tabs */}
             <div className="space-y-2">
               <div className="font-mono text-[10px] text-gray-400 uppercase tracking-widest px-1">
                 ALL PROJECTS
@@ -199,10 +197,10 @@ export const WorkView = () => {
                     <button
                       key={proj.id}
                       onClick={() => handleSelectProject(pIdx)}
-                      className={`p-3 rounded-xl border font-mono text-xs text-left transition-all ${
+                      className={`p-3 font-mono text-xs text-left transition-all cursor-pointer rounded-2xl flex flex-col justify-between ${
                         isCur
-                          ? 'bg-[#0a0a0c] border-[#0781ff] text-white font-bold shadow-lg'
-                          : 'bg-black/60 border-white/5 text-gray-400 hover:border-white/20 hover:text-white'
+                          ? 'pill-btn-dented text-white font-bold'
+                          : 'pill-btn-3d text-gray-400 hover:text-white'
                       }`}
                     >
                       <div className="text-[9px] text-blue-400 font-bold">{proj.index}</div>

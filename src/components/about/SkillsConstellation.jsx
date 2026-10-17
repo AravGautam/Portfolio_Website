@@ -65,7 +65,6 @@ const SkillsConstellation = () => {
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-14 gap-6">
           <div>
             <div className="text-xs font-mono font-bold uppercase tracking-wider text-blue-400 mb-3 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#0781ff]" />
               <span>MY SKILLSET</span>
             </div>
             <h2 className="text-4xl sm:text-6xl font-display font-extrabold text-white tracking-tight">
@@ -87,7 +86,6 @@ const SkillsConstellation = () => {
           >
             <div className="relative z-10 flex items-center justify-between pointer-events-none">
               <div className="flex items-center gap-2 text-xs bg-black/70 border border-white/10 px-3.5 py-1.5 rounded-full text-gray-200 backdrop-blur-md font-mono font-medium shadow-md">
-                <span className="w-2 h-2 rounded-full bg-[#0781ff]" />
                 <span>3D Skills Graph</span>
               </div>
             </div>

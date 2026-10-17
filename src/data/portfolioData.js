@@ -11,7 +11,7 @@ export const portfolioData = {
     stats: [
       { value: "Backend", label: "Engineer Intern", sub: "Dream Filler Company" },
       { value: "200+", label: "DSA Solved", sub: "LeetCode & Codeforces" },
-      { value: "7.8", label: "Current CGPA", sub: "B.Tech CSE (2023–2027)" },
+      { value: "7.85", label: "Current CGPA", sub: "B.Tech CSE (2023–2027)" },
       { value: "92%", label: "Model Accuracy", sub: "Fitness Prediction Engine" }
     ]
   },
@@ -40,7 +40,7 @@ export const portfolioData = {
     degree: "Bachelor of Technology in Computer Science & Engineering",
     institution: "Vindhya Institute of Technology and Science (VITS), RGPV",
     duration: "2023 — 2027",
-    cgpa: "7.8",
+    cgpa: "7.85",
     highlights: [
       "Rigorous core in Data Structures, Algorithms, Operating Systems, and DBMS",
       "Object-Oriented Software Design and REST API Architecture",

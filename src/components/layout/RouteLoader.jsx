@@ -72,7 +72,6 @@ export const RouteLoader = ({ routeName, isVisible, onFinished }) => {
     >
       <div className="flex flex-col items-center gap-3 select-none">
         <div className="flex items-center gap-2 text-xs font-mono text-gray-400 uppercase tracking-widest">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#0781ff]" />
           <span>LOADING ROUTE</span>
         </div>
 

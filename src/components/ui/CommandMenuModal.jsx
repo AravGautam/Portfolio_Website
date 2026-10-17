@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   Search,
   Command,
@@ -38,20 +38,21 @@ export const CommandMenuModal = ({ isOpen, onClose }) => {
   }, []);
 
   useEffect(() => {
-    setIsMuted(soundEngine.isMuted());
-    const onMuteChange = (e) => {
-      setIsMuted(e.detail.muted);
-    };
-    window.addEventListener('sound-mute-change', onMuteChange);
-    return () => window.removeEventListener('sound-mute-change', onMuteChange);
-  }, []);
-
-  useEffect(() => {
     if (isOpen) {
+      window.__lenis?.stop();
+      const prevOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
       setTimeout(() => inputRef.current?.focus(), 50);
       setQuery('');
       setSelectedIndex(0);
       setIsMuted(soundEngine.isMuted());
+      return () => {
+        document.body.style.overflow = prevOverflow || 'unset';
+        window.__lenis?.start();
+      };
+    } else {
+      window.__lenis?.start();
+      document.body.style.overflow = 'unset';
     }
   }, [isOpen]);
 
@@ -108,11 +109,12 @@ export const CommandMenuModal = ({ isOpen, onClose }) => {
     { id: 'nav-contact', category: 'Navigation', label: 'Go to Contact', icon: Mail, action: () => handleNavigate('contact', '/contact') },
 
     // Quick Actions
-    { id: 'act-copy', category: 'Actions', label: 'Copy Email Address', icon: Copy, action: handleCopyEmail },
     {
       id: 'act-resume',
       category: 'Actions',
-      label: 'View / Download Resume',
+      label: 'View / Download Resume (CV)',
+      badge: 'PDF / CV',
+      keywords: 'resume cv curriculum vitae document download pdf bio experience arav gautam',
       icon: ExternalLink,
       action: () => {
         soundEngine.playClick();
@@ -120,7 +122,8 @@ export const CommandMenuModal = ({ isOpen, onClose }) => {
         onClose();
       }
     },
-    { id: 'act-sound', category: 'Actions', label: isMuted ? 'Unmute Audio & Music' : 'Mute Audio & Music', icon: isMuted ? VolumeX : Volume2, action: handleToggleSound },
+    { id: 'act-copy', category: 'Actions', label: 'Copy Email Address', keywords: 'email mail contact copy', icon: Copy, action: handleCopyEmail },
+    { id: 'act-sound', category: 'Actions', label: isMuted ? 'Unmute Audio & Music' : 'Mute Audio & Music', keywords: 'sound audio mute music volume', icon: isMuted ? VolumeX : Volume2, action: handleToggleSound },
 
     // Live Demos
     {
@@ -184,7 +187,8 @@ export const CommandMenuModal = ({ isOpen, onClose }) => {
 
   const filteredItems = COMMAND_ITEMS.filter((item) =>
     item.label.toLowerCase().includes(query.toLowerCase()) ||
-    item.category.toLowerCase().includes(query.toLowerCase())
+    item.category.toLowerCase().includes(query.toLowerCase()) ||
+    (item.keywords && item.keywords.toLowerCase().includes(query.toLowerCase()))
   );
 
   const handleKeyDown = (e) => {
@@ -204,10 +208,14 @@ export const CommandMenuModal = ({ isOpen, onClose }) => {
 
   return (
     <div
+      data-lenis-prevent="true"
+      onWheel={(e) => e.stopPropagation()}
       className="fixed inset-0 z-[99990] bg-black/80 backdrop-blur-md flex items-start justify-center pt-20 sm:pt-28 px-4"
       onClick={onClose}
     >
       <div
+        data-lenis-prevent="true"
+        onWheel={(e) => e.stopPropagation()}
         className="w-full max-w-xl rounded-2xl bg-[#0a0a0c] border border-white/15 shadow-2xl overflow-hidden flex flex-col text-left animate-in fade-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
@@ -238,7 +246,11 @@ export const CommandMenuModal = ({ isOpen, onClose }) => {
         </div>
 
         {/* Command List */}
-        <div className="max-h-[380px] overflow-y-auto p-2 divide-y divide-white/5">
+        <div
+          data-lenis-prevent="true"
+          onWheel={(e) => e.stopPropagation()}
+          className="max-h-[380px] overflow-y-auto overscroll-contain p-2 divide-y divide-white/5"
+        >
           {filteredItems.length === 0 ? (
             <div className="py-10 text-center text-xs font-mono text-gray-500">
               No matching commands found.
@@ -256,25 +268,38 @@ export const CommandMenuModal = ({ isOpen, onClose }) => {
                     soundEngine.playHover();
                     setSelectedIndex(idx);
                   }}
-                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-left transition-colors cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-left transition-all cursor-pointer ${
                     isSelected
-                      ? 'bg-[#0781ff] text-white shadow-md'
-                      : 'text-gray-300 hover:bg-white/5'
+                      ? 'bg-blue-600/20 border border-blue-500/40 text-white font-medium'
+                      : 'hover:bg-white/5 border border-transparent text-gray-300 hover:text-white'
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <Icon className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-blue-400'}`} />
                     <span className="text-xs font-mono font-medium">{item.label}</span>
                   </div>
-                  <span
-                    className={`text-[10px] font-mono uppercase px-2 py-0.5 rounded ${
-                      isSelected
-                        ? 'bg-black/20 text-white'
-                        : 'bg-white/5 text-gray-500'
-                    }`}
-                  >
-                    {item.category}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {item.badge && (
+                      <span
+                        className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded ${
+                          isSelected
+                            ? 'bg-white/20 text-white'
+                            : 'bg-blue-500/15 text-blue-400 border border-blue-500/30'
+                        }`}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
+                    <span
+                      className={`text-[10px] font-mono uppercase px-2 py-0.5 rounded ${
+                        isSelected
+                          ? 'bg-black/20 text-white'
+                          : 'bg-white/5 text-gray-500'
+                      }`}
+                    >
+                      {item.category}
+                    </span>
+                  </div>
                 </button>
               );
             })

@@ -150,7 +150,6 @@ export const AboutView = () => {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <div className="text-xs font-mono font-bold uppercase tracking-wider text-blue-400 mb-3 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#0781ff]" />
               <span>Background</span>
             </div>
             <h1 className="text-4xl sm:text-6xl font-display font-extrabold text-white tracking-tight">
@@ -222,7 +221,7 @@ export const AboutView = () => {
                 <div className="text-xs text-gray-400 font-mono mt-0.5">DSA Solved</div>
               </div>
               <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 backdrop-blur-md">
-                <div className="text-2xl sm:text-3xl font-display font-bold text-blue-400">7.8</div>
+                <div className="text-2xl sm:text-3xl font-display font-bold text-blue-400">7.85</div>
                 <div className="text-xs text-gray-400 font-mono mt-0.5">B.Tech CGPA</div>
               </div>
               <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 backdrop-blur-md">
@@ -237,13 +236,13 @@ export const AboutView = () => {
                 href={portfolioData.personal.resumeUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs font-mono font-semibold px-6 py-3 rounded-full bg-white text-black hover:bg-gray-200 transition-all flex items-center gap-2 shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+                className="pill-btn-white-3d text-xs font-mono font-semibold px-6 py-3 text-black flex items-center gap-2 cursor-pointer shadow-lg"
               >
                 <span>View Resume</span>
                 <ExternalLink className="w-3.5 h-3.5" />
               </a>
-              <div className="flex items-center gap-2 text-xs font-mono text-gray-400 px-4 py-3 rounded-full bg-white/[0.03] border border-white/10 backdrop-blur-md">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              <div className="pill-btn-3d flex items-center gap-2 text-xs font-mono text-gray-300 px-4 py-2.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" />
                 <span>{portfolioData.personal.status}</span>
               </div>
             </div>
@@ -255,7 +254,6 @@ export const AboutView = () => {
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
               <div className="text-xs font-mono font-bold uppercase tracking-wider text-blue-400 mb-2 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#0781ff]" />
                 <span>MY SKILLSET</span>
               </div>
               <h3 className="text-3xl sm:text-5xl font-display font-extrabold text-white">
@@ -272,7 +270,6 @@ export const AboutView = () => {
             <div className="lg:col-span-5 relative rounded-3xl bg-[#0a0a0c] border border-white/10 p-6 flex flex-col justify-between min-h-[460px] shadow-2xl overflow-hidden">
               <div className="relative z-10 flex items-center justify-between pointer-events-none">
                 <div className="flex items-center gap-2 text-xs bg-black/70 border border-white/10 px-3.5 py-1.5 rounded-full text-gray-200 backdrop-blur-md font-mono font-medium">
-                  <span className="w-2 h-2 rounded-full bg-[#0781ff]" />
                   <span>3D Skills Graph</span>
                 </div>
                 <div className="text-[10px] font-mono text-gray-400 bg-black/60 border border-white/10 px-2.5 py-1 rounded-full backdrop-blur-md">
@@ -298,10 +295,11 @@ export const AboutView = () => {
                   <MagneticWrapper strength={0.25}>
                     <button
                       onClick={() => handleCategoryClick('all')}
-                      className={`text-xs font-mono px-4 py-2.5 rounded-full transition-all duration-200 border font-medium ${activeCategory === 'all'
-                          ? 'bg-[#0781ff] text-white font-bold border-[#0781ff] shadow-md shadow-[#0781ff]/25'
-                          : 'bg-[#0a0a0c] text-gray-300 border-white/10 hover:border-blue-500/40'
-                        }`}
+                      className={`text-xs font-mono px-4 py-2 rounded-full transition-all duration-300 font-medium cursor-pointer ${
+                        activeCategory === 'all'
+                          ? 'pill-btn-dented text-white font-bold'
+                          : 'pill-btn-3d text-gray-300 hover:text-white'
+                      }`}
                     >
                       All Skills
                     </button>
@@ -313,10 +311,11 @@ export const AboutView = () => {
                       <MagneticWrapper key={cat.id} strength={0.25}>
                         <button
                           onClick={() => handleCategoryClick(cat.id)}
-                          className={`text-xs font-mono px-4 py-2.5 rounded-full transition-all duration-200 border flex items-center gap-2 font-medium ${isActive
-                              ? 'bg-[#0781ff] text-white font-bold border-[#0781ff] shadow-md shadow-[#0781ff]/25'
-                              : 'bg-[#0a0a0c] text-gray-300 border-white/10 hover:border-blue-500/40'
-                            }`}
+                          className={`text-xs font-mono px-4 py-2 rounded-full transition-all duration-300 flex items-center gap-2 font-medium cursor-pointer ${
+                            isActive
+                              ? 'pill-btn-dented text-white font-bold'
+                              : 'pill-btn-3d text-gray-300 hover:text-white'
+                          }`}
                         >
                           {getCategoryIcon(cat.id)}
                           <span>{cat.name}</span>
@@ -330,11 +329,11 @@ export const AboutView = () => {
                 <div
                   ref={skillsContainerRef}
                   data-lenis-prevent="true"
+                  onWheel={(e) => e.stopPropagation()}
                   tabIndex={0}
                   role="region"
                   aria-label="Skills Matrix Cards"
-                  className="h-[390px] overflow-y-auto overscroll-y-contain pr-2 custom-skills-scrollbar relative focus:outline-none"
-                  style={{ scrollBehavior: 'smooth' }}
+                  className="h-[390px] overflow-y-auto overscroll-contain pr-2 custom-skills-scrollbar relative focus:outline-none"
                 >
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pb-2">
                     {filteredSkills.map((skill, idx) => {
@@ -388,7 +387,6 @@ export const AboutView = () => {
                 </span>
                 <div className="flex items-center gap-3">
                   <span className="text-[#0781ff] flex items-center gap-1.5 font-medium">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#0781ff]" />
                     Scroll to view all
                   </span>
                   <div className="flex items-center gap-1">

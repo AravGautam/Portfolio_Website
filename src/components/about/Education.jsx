@@ -13,7 +13,7 @@ const Education = () => {
           <span>Education</span>
         </div>
         <div className="text-xs font-mono text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full font-semibold">
-          CGPA: 7.8 / 10.0
+          CGPA: 7.85 / 10.0
         </div>
       </div>
 

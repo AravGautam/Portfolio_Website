@@ -9,6 +9,7 @@ import {
   Instagram,
   Mail,
   Copy,
+  Check,
   ArrowRight,
   ArrowUpRight,
   ChevronDown,
@@ -22,6 +23,7 @@ import LuxuryChronometerWatch from './LuxuryChronometerWatch';
 import InteractiveEarthGlobe from './InteractiveEarthGlobe';
 import Interactive3DName from './Interactive3DName';
 import MagneticWrapper from '../ui/MagneticWrapper';
+import ShockwaveButton from '../ui/ShockwaveButton';
 import { soundEngine } from '../../audio/soundEngine';
 import { showToast } from '../ui/Toast';
 import InfiniteMarquee from '../ui/InfiniteMarquee';
@@ -127,10 +129,14 @@ export const HomeView = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const [emailCopied, setEmailCopied] = useState(false);
+
   const handleCopyEmail = () => {
     soundEngine.playClick();
     navigator.clipboard.writeText(portfolioData.personal.email);
     showToast('Email copied: working.aravgautam@gmail.com');
+    setEmailCopied(true);
+    setTimeout(() => setEmailCopied(false), 2200);
   };
 
   const scrollToBento = () => {
@@ -225,41 +231,54 @@ export const HomeView = () => {
             Backend Engineer Intern at Dream Filler Company and Computer Science student. Specialized in high-throughput REST APIs, scalable database schemas, and clean distributed architectures.
           </p>
 
-          {/* Action Buttons */}
-          <div className="flex flex-wrap items-center justify-center gap-3.5 pt-2">
+          {/* Action Buttons with Shockwave Ripple CTA */}
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 pt-3">
+            {/* 1. Primary Shockwave Radial Ripple Button */}
             <MagneticWrapper strength={0.25}>
-              <button
+              <ShockwaveButton
+                textWhite="Explore Projects"
+                textBlack="Explore Projects"
                 onClick={() => handleExplore('/work')}
-                onMouseEnter={() => soundEngine.playHover()}
-                className="text-xs sm:text-sm font-semibold px-7 py-3 rounded-full bg-white text-black hover:bg-gray-200 transition-all duration-200 flex items-center gap-2 shadow-xl hover:scale-[1.03] active:scale-[0.98] cursor-pointer"
-              >
-                <span>Explore Projects</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
+                onNavigate={() => handleExplore('/work')}
+              />
             </MagneticWrapper>
 
+            {/* 2. About Me 3D Pill Button */}
             <MagneticWrapper strength={0.25}>
               <button
                 onClick={() => handleExplore('/about')}
                 onMouseEnter={() => soundEngine.playHover()}
-                className="text-xs sm:text-sm font-semibold px-6 py-3 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/15 backdrop-blur-md transition-all duration-200 flex items-center gap-2 shadow-sm hover:scale-[1.03] active:scale-[0.98] cursor-pointer"
+                className="pill-btn-3d text-xs sm:text-sm font-semibold font-mono px-6 py-3 sm:py-3.5 text-white flex items-center gap-2 cursor-pointer"
               >
                 <span>About Me</span>
               </button>
             </MagneticWrapper>
 
+            {/* 3. Interactive Copy Email with 3D Pill & Dented Live State */}
             <MagneticWrapper strength={0.25}>
               <button
                 onClick={handleCopyEmail}
                 onMouseEnter={() => soundEngine.playHover()}
-                className="text-xs sm:text-sm font-semibold px-5 py-3 rounded-full bg-white/[0.04] hover:bg-white/[0.1] text-gray-300 hover:text-white border border-white/10 backdrop-blur-md transition-all duration-200 flex items-center gap-2 cursor-pointer"
+                className={`text-xs sm:text-sm font-semibold font-mono px-5 py-3 sm:py-3.5 flex items-center gap-2 cursor-pointer transition-all duration-300 ${
+                  emailCopied ? 'pill-btn-dented text-emerald-400' : 'pill-btn-3d text-gray-300 hover:text-white'
+                }`}
                 title="Copy email to clipboard"
               >
-                <Copy className="w-3.5 h-3.5 text-blue-400" />
-                <span>Copy Email</span>
+                {emailCopied ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-emerald-400" />
+                    <span className="text-emerald-400 font-medium">Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5 text-blue-400" />
+                    <span>Copy Email</span>
+                  </>
+                )}
               </button>
             </MagneticWrapper>
 
+            {/* 4. Resume 3D Pill Link */}
             <MagneticWrapper strength={0.25}>
               <a
                 href={portfolioData.personal.resumeUrl}
@@ -267,7 +286,7 @@ export const HomeView = () => {
                 rel="noopener noreferrer"
                 onMouseEnter={() => soundEngine.playHover()}
                 onClick={() => soundEngine.playClick()}
-                className="text-xs sm:text-sm font-semibold px-5 py-3 rounded-full bg-white/[0.04] hover:bg-white/[0.1] text-gray-300 hover:text-white border border-white/10 backdrop-blur-md transition-all duration-200 flex items-center gap-1.5 cursor-pointer"
+                className="pill-btn-3d text-xs sm:text-sm font-semibold font-mono px-5 py-3 sm:py-3.5 text-gray-300 hover:text-white flex items-center gap-1.5 cursor-pointer"
               >
                 <span>Resume</span>
                 <ArrowUpRight className="w-3.5 h-3.5 text-blue-400" />
@@ -275,52 +294,67 @@ export const HomeView = () => {
             </MagneticWrapper>
           </div>
 
-          {/* Social Links Row */}
-          <div className="flex items-center gap-2.5 pt-1">
-            {portfolioData.socialLinks.map((link) => (
-              <a
-                key={link.id}
-                href={link.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                onMouseEnter={() => soundEngine.playHover()}
-                className="w-8 h-8 rounded-full bg-white/[0.04] hover:bg-white/[0.12] border border-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-all duration-200"
-                title={link.label}
-              >
-                {getSocialIcon(link.id)}
-              </a>
-            ))}
+          {/* Social Links & Availability Dock */}
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-3">
+            <div className="inline-flex items-center gap-1.5 p-1.5 rounded-full bg-[#0a0a0f]/80 border border-white/10 backdrop-blur-2xl shadow-xl">
+              {/* Availability Badge */}
+              <div className="flex items-center gap-2 pl-3 pr-2.5 py-1 border-r border-white/10">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                <span className="font-mono text-[11px] text-gray-300 font-medium">Available for Roles</span>
+              </div>
+
+              {/* Social Icon Pills */}
+              <div className="flex items-center gap-1 px-1">
+                {portfolioData.socialLinks.map((link) => (
+                  <a
+                    key={link.id}
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onMouseEnter={() => soundEngine.playHover()}
+                    className="w-8 h-8 rounded-full bg-white/[0.04] hover:bg-white/[0.15] border border-white/5 hover:border-white/20 text-gray-400 hover:text-white flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer"
+                    title={link.label}
+                  >
+                    {getSocialIcon(link.id)}
+                  </a>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Bottom Corner Markers & Scroll Down Indicator */}
-        <div className="relative z-10 w-full max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-white/5">
-          {/* Bottom Left: Location */}
-          <div className="flex items-center gap-2.5 text-xs font-mono text-gray-400">
+        <div className="relative z-10 w-full max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t border-white/[0.08]">
+          {/* Bottom Left: Location & Local Clock */}
+          <div className="flex items-center gap-3 text-xs font-mono text-gray-400">
             <div className="w-7 h-7 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
               <MapPin className="w-3.5 h-3.5 text-blue-400" />
             </div>
-            <div className="text-left">
-              <span className="text-white font-medium">BASED IN</span> Madhya Pradesh, INDIA
+            <div className="text-left flex items-center gap-2">
+              <div>
+                <span className="text-white font-semibold">BASED IN</span> Madhya Pradesh, INDIA
+              </div>
+              <span className="text-gray-600">•</span>
+              <span className="text-blue-400 font-semibold">{liveTimes.india || 'IST'}</span>
             </div>
           </div>
 
-          {/* Center: Scroll Down Prompt Button */}
+          {/* Center: Scroll Down Prompt 3D Pill Button */}
           <button
             onClick={scrollToBento}
             onMouseEnter={() => soundEngine.playHover()}
-            className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-mono text-gray-300 transition-all hover:scale-105 cursor-pointer"
+            className="group pill-btn-3d flex items-center gap-2.5 px-6 py-2.5 text-xs font-mono text-gray-200 cursor-pointer shadow-lg"
           >
-            <span>Scroll down to explore</span>
-            <ChevronDown className="w-3.5 h-3.5 text-blue-400" />
+            <span className="tracking-wide">Scroll down to explore</span>
+            <ChevronDown className="w-3.5 h-3.5 text-blue-400 group-hover:translate-y-0.5 transition-transform duration-300" />
           </button>
 
           {/* Bottom Right: Specialization */}
-          <div className="flex items-center gap-2.5 text-xs font-mono text-gray-400">
+          <div className="flex items-center gap-3 text-xs font-mono text-gray-400">
             <div className="text-right hidden sm:block">
-              <span className="text-white font-medium">SPECIALIZATION</span> Backend & Systems
+              <span className="text-white font-semibold">SPECIALIZATION</span> Backend & Systems
             </div>
-            <div className="w-7 h-7 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
+            <div className="w-7 h-7 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shadow-xs">
               <Cpu className="w-3.5 h-3.5 text-cyan-400" />
             </div>
           </div>
@@ -339,7 +373,6 @@ export const HomeView = () => {
           {/* Section Subheader Markers */}
           <div className="flex items-center justify-between px-2 pb-1 border-b border-white/[0.06]">
             <div className="flex items-center gap-2 text-xs font-mono text-blue-400 uppercase tracking-widest">
-              <span className="w-2 h-2 rounded-full bg-[#0781ff]" />
               <span>CORE SHOWCASE</span>
             </div>
             <span className="font-mono text-xs text-gray-500">EXPERIENCE & CRAFT</span>
@@ -371,7 +404,7 @@ export const HomeView = () => {
                 </div>
 
                 {/* 3D Segmented Obsidian Rubik's Cube */}
-                <div data-cursor="drag" className="relative z-10 flex-1 w-full flex items-center justify-center my-0.5">
+                <div data-cursor="cube" className="relative z-10 flex-1 w-full flex items-center justify-center my-0.5">
                   <RubiksCube3D />
                 </div>
 
@@ -432,7 +465,7 @@ export const HomeView = () => {
                     <button
                       onClick={() => handleExplore('/experience')}
                       onMouseEnter={() => soundEngine.playHover()}
-                      className="px-3.5 py-1 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-white font-mono text-[11px] flex items-center gap-1 transition-all shadow-sm hover:scale-105 active:scale-95 cursor-pointer"
+                      className="pill-btn-3d px-4 py-1.5 text-white font-mono text-[11px] flex items-center gap-1 cursor-pointer"
                     >
                       <span>Explore Experience</span>
                       <ArrowUpRight className="w-3 h-3 text-blue-400" />
@@ -504,7 +537,7 @@ export const HomeView = () => {
                   <button
                     onClick={() => handleExplore('/contact')}
                     onMouseEnter={() => soundEngine.playHover()}
-                    className="w-full py-2.5 rounded-xl bg-white text-black hover:bg-gray-200 font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-md cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+                    className="w-full py-3 rounded-full pill-btn-white-3d text-black font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <span>Connect Now</span>
                     <ArrowUpRight className="w-3.5 h-3.5" />
@@ -540,7 +573,7 @@ export const HomeView = () => {
                 <div className="relative z-10 flex-1 flex items-center justify-between gap-4 my-auto">
                   {/* Left: 3D Dotted Particle Earth Globe (Large, Prominent & Interactive) */}
                   <div
-                    data-cursor="drag"
+                    data-cursor="explore"
                     className="relative w-[210px] sm:w-[235px] lg:w-[250px] h-[210px] sm:h-[235px] lg:h-[250px] shrink-0 flex items-center justify-center touch-none select-none"
                   >
                     <div className="absolute inset-2 bg-gradient-to-tr from-blue-600/15 via-cyan-500/10 to-transparent rounded-full blur-2xl pointer-events-none -z-10" />
@@ -582,10 +615,10 @@ export const HomeView = () => {
                               setActiveLocation('uk');
                             }}
                             onMouseEnter={() => soundEngine.playHover()}
-                            className={`group/btn relative isolate text-[11px] rounded-lg flex items-center justify-between px-2.5 py-1 border transition-all duration-200 cursor-pointer w-[150px] sm:w-[160px] lg:mr-[115px] ${
+                            className={`group/btn relative isolate text-[11px] rounded-full flex items-center justify-between px-3 py-1.5 transition-all duration-300 cursor-pointer w-[150px] sm:w-[160px] lg:mr-[115px] ${
                               isSelected
-                                ? 'bg-white text-black border-white shadow-[0_4px_16px_rgba(255,255,255,0.2)] font-semibold'
-                                : 'bg-black/60 text-gray-300 border-white/10 hover:bg-white/[0.08] hover:text-white hover:border-white/20'
+                                ? 'pill-btn-dented text-white font-semibold'
+                                : 'pill-btn-3d text-gray-300 hover:text-white'
                             }`}
                           >
                             <div className="flex items-center gap-1.5">
@@ -594,7 +627,7 @@ export const HomeView = () => {
                             </div>
                             <span
                               className={`font-mono text-[10px] ${
-                                isSelected ? 'text-black font-bold' : 'text-gray-400'
+                                isSelected ? 'text-white font-bold' : 'text-gray-400'
                               }`}
                             >
                               {liveTimes.uk || item.badge}
@@ -615,10 +648,10 @@ export const HomeView = () => {
                               setActiveLocation('india');
                             }}
                             onMouseEnter={() => soundEngine.playHover()}
-                            className={`group/btn relative isolate text-[11px] rounded-lg flex items-center justify-between px-2.5 py-1 border transition-all duration-200 cursor-pointer w-[150px] sm:w-[160px] lg:mr-[80px] ${
+                            className={`group/btn relative isolate text-[11px] rounded-full flex items-center justify-between px-3 py-1.5 transition-all duration-300 cursor-pointer w-[150px] sm:w-[160px] lg:mr-[80px] ${
                               isSelected
-                                ? 'bg-white text-black border-white shadow-[0_4px_16px_rgba(255,255,255,0.2)] font-semibold'
-                                : 'bg-black/60 text-gray-300 border-white/10 hover:bg-white/[0.08] hover:text-white hover:border-white/20'
+                                ? 'pill-btn-dented text-white font-semibold'
+                                : 'pill-btn-3d text-gray-300 hover:text-white'
                             }`}
                           >
                             <div className="flex items-center gap-1.5">
@@ -627,7 +660,7 @@ export const HomeView = () => {
                             </div>
                             <span
                               className={`font-mono text-[10px] ${
-                                isSelected ? 'text-black font-bold' : 'text-gray-400'
+                                isSelected ? 'text-white font-bold' : 'text-gray-400'
                               }`}
                             >
                               {liveTimes.india || item.badge}
@@ -648,10 +681,10 @@ export const HomeView = () => {
                               setActiveLocation('usa');
                             }}
                             onMouseEnter={() => soundEngine.playHover()}
-                            className={`group/btn relative isolate text-[11px] rounded-lg flex items-center justify-between px-2.5 py-1 border transition-all duration-200 cursor-pointer w-[150px] sm:w-[160px] lg:mr-[45px] ${
+                            className={`group/btn relative isolate text-[11px] rounded-full flex items-center justify-between px-3 py-1.5 transition-all duration-300 cursor-pointer w-[150px] sm:w-[160px] lg:mr-[45px] ${
                               isSelected
-                                ? 'bg-white text-black border-white shadow-[0_4px_16px_rgba(255,255,255,0.2)] font-semibold'
-                                : 'bg-black/60 text-gray-300 border-white/10 hover:bg-white/[0.08] hover:text-white hover:border-white/20'
+                                ? 'pill-btn-dented text-white font-semibold'
+                                : 'pill-btn-3d text-gray-300 hover:text-white'
                             }`}
                           >
                             <div className="flex items-center gap-1.5">
@@ -660,7 +693,7 @@ export const HomeView = () => {
                             </div>
                             <span
                               className={`font-mono text-[10px] ${
-                                isSelected ? 'text-black font-bold' : 'text-gray-400'
+                                isSelected ? 'text-white font-bold' : 'text-gray-400'
                               }`}
                             >
                               {liveTimes.usa || item.badge}
@@ -768,7 +801,7 @@ export const HomeView = () => {
                   <button
                     onClick={() => handleExplore('/work')}
                     onMouseEnter={() => soundEngine.playHover()}
-                    className="px-4 py-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-white font-mono text-xs flex items-center gap-1.5 transition-all shadow-sm hover:scale-105 active:scale-95 cursor-pointer"
+                    className="pill-btn-3d px-4 py-2 text-white font-mono text-xs flex items-center gap-1.5 cursor-pointer"
                   >
                     <span>Explore Architectures</span>
                     <ArrowUpRight className="w-3.5 h-3.5 text-blue-400" />
