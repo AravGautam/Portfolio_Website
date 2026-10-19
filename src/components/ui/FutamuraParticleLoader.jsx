@@ -1,16 +1,23 @@
 import React, { useEffect, useRef } from 'react';
 
 /**
- * 3D Organic Particle Orbital Halo Progress Ring
- * Inspired by Kojiro Futamura (futamura.dev)
- * - 1,600+ 3D undulating celestial particles in an organic noisy circular orbit
- * - Concentric dashed calibration circle
- * - Smooth sweeping circular progress arc with luminous head
- * - Centered 3-digit percentage readout ("000%" -> "100%") and technical phase descriptor
+ * Precision Chronometer & Orbital Particle Loader
+ * 
+ * Entire loader (ticks, circular tracks, progress arc, lead beacon, and celestial particles)
+ * is projected through the exact same dynamic 3D perspective so the loader moves in total unison with the particles.
+ * 
+ * Minimalist display: Strictly tabular percentage number only. Zero pills, zero blinking lights.
  */
-const FutamuraParticleLoader = ({ progress = 0, statusText = 'Loading Data' }) => {
+const FutamuraParticleLoader = ({ progress = 0 }) => {
   const canvasRef = useRef(null);
   const mouseRef = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 });
+  const progressRef = useRef(progress);
+  const displayProgressRef = useRef(progress);
+
+  // Keep target progress ref updated without re-running the animation setup
+  useEffect(() => {
+    progressRef.current = progress;
+  }, [progress]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -20,14 +27,14 @@ const FutamuraParticleLoader = ({ progress = 0, statusText = 'Loading Data' }) =
     if (!ctx) return;
 
     let animId;
-    let width = 260;
-    let height = 260;
+    let width = 240;
+    let height = 240;
     const dpr = Math.min(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1, 2);
 
     const updateSize = () => {
       const rect = canvas.getBoundingClientRect();
-      width = rect.width || 260;
-      height = rect.height || 260;
+      width = rect.width || 240;
+      height = rect.height || 240;
       canvas.width = Math.floor(width * dpr);
       canvas.height = Math.floor(height * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -35,28 +42,29 @@ const FutamuraParticleLoader = ({ progress = 0, statusText = 'Loading Data' }) =
 
     updateSize();
 
-    // Generate 1,600 3D orbital particles
-    const particleCount = 1600;
+    // Streamlined set of 42 celestial micro-sparks gliding along the orbital perimeter
+    const particleCount = 42;
     const particles = [];
-    const baseRadius = width * 0.38;
 
     for (let i = 0; i < particleCount; i++) {
-      const angle = (i / particleCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.05;
-      const radiusOffset = (Math.random() - 0.5) * 26; // band thickness
-      const speed = 0.004 + Math.random() * 0.006;
-      const size = 0.75 + Math.random() * 1.4;
-      const isAccent = Math.random() < 0.18; // 18% cyan/azure sparks
-      const brightness = 0.35 + Math.random() * 0.65;
-      const noisePhase = Math.random() * 100;
+      const angle = (i / particleCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.15;
+      const radiusOffset = (Math.random() - 0.5) * 10;
+      const zOffset = (Math.random() - 0.5) * 10;
+      const speed = 0.007 + Math.random() * 0.012;
+      const size = 0.9 + Math.random() * 1.5;
+      const isAccent = Math.random() < 0.45;
+      const brightness = 0.5 + Math.random() * 0.5;
+      const wavePhase = Math.random() * Math.PI * 2;
 
       particles.push({
         angle,
         radiusOffset,
+        zOffset,
         speed,
         size,
         isAccent,
         brightness,
-        noisePhase,
+        wavePhase,
       });
     }
 
@@ -64,8 +72,8 @@ const FutamuraParticleLoader = ({ progress = 0, statusText = 'Loading Data' }) =
       const rect = canvas.getBoundingClientRect();
       const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       const ny = ((e.clientY - rect.top) / rect.height) * 2 - 1;
-      mouseRef.current.targetX = nx * 0.25;
-      mouseRef.current.targetY = -ny * 0.25;
+      mouseRef.current.targetX = nx * 0.22;
+      mouseRef.current.targetY = -ny * 0.22;
     };
 
     window.addEventListener('mousemove', onMouseMove, { passive: true });
@@ -75,7 +83,12 @@ const FutamuraParticleLoader = ({ progress = 0, statusText = 'Loading Data' }) =
     const render = () => {
       time += 0.016;
 
-      // Smooth mouse lerp
+      // Smooth progress lerp for fluid 60fps gauge movement
+      const targetP = Math.min(100, Math.max(0, progressRef.current));
+      displayProgressRef.current += (targetP - displayProgressRef.current) * 0.12;
+      const currentProgress = displayProgressRef.current;
+
+      // Mouse lerp
       mouseRef.current.x += (mouseRef.current.targetX - mouseRef.current.x) * 0.08;
       mouseRef.current.y += (mouseRef.current.targetY - mouseRef.current.y) * 0.08;
 
@@ -83,92 +96,236 @@ const FutamuraParticleLoader = ({ progress = 0, statusText = 'Loading Data' }) =
 
       const centerX = width / 2;
       const centerY = height / 2;
-      const currentBaseRadius = width * 0.38;
-      const innerTrackRadius = currentBaseRadius - 20;
+      const trackRadius = width * 0.35;
+      const tickInner = trackRadius + 14;
+      const tickOuter = trackRadius + 21;
+      const innerGuideRadius = trackRadius - 16;
 
-      // 1. Concentric Inner Dashed Track (matching futamura.dev)
+      // Unified 3D Tilt: The loader moves in total synchrony with the particles
+      const tiltX = 0.14 + mouseRef.current.y + Math.sin(time * 1.8) * 0.035;
+      const tiltY = mouseRef.current.x + Math.cos(time * 1.4) * 0.03;
+
+      const fov = 420;
+      const cosY = Math.cos(tiltY);
+      const sinY = Math.sin(tiltY);
+      const cosX = Math.cos(tiltX);
+      const sinX = Math.sin(tiltX);
+
+      // 3D Perspective Projection for all loader elements
+      const project = (x, y, z = 0) => {
+        // Yaw
+        const x1 = x * cosY + z * sinY;
+        const z1 = -x * sinY + z * cosY;
+
+        // Pitch
+        const y2 = y * cosX - z1 * sinX;
+        const z2 = y * sinX + z1 * cosX;
+
+        const scale = fov / (fov + z2);
+        return {
+          x: centerX + x1 * scale,
+          y: centerY + y2 * scale,
+          scale,
+          depth: z2,
+        };
+      };
+
+      // 1. Central Ambient Radial Glow
+      const centerProj = project(0, 0, 0);
+      const centerGlow = ctx.createRadialGradient(
+        centerProj.x,
+        centerProj.y,
+        0,
+        centerProj.x,
+        centerProj.y,
+        trackRadius * 1.15 * centerProj.scale
+      );
+      centerGlow.addColorStop(0, 'rgba(56, 189, 248, 0.06)');
+      centerGlow.addColorStop(0.6, 'rgba(56, 189, 248, 0.015)');
+      centerGlow.addColorStop(1, 'transparent');
+      ctx.fillStyle = centerGlow;
+      ctx.beginPath();
+      ctx.arc(centerProj.x, centerProj.y, trackRadius * 1.15 * centerProj.scale, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 2. Precision Outer Chronometer Calibration Ticks (60 units) in 3D Perspective
+      const totalTicks = 60;
+      const activeTicksFloat = (currentProgress / 100) * totalTicks;
+
+      ctx.save();
+      for (let i = 0; i < totalTicks; i++) {
+        const tickAngle = -Math.PI / 2 + (i / totalTicks) * Math.PI * 2;
+        const cosA = Math.cos(tickAngle);
+        const sinA = Math.sin(tickAngle);
+
+        const isMajor = i % 5 === 0;
+        const extraLength = isMajor ? 3 : 0;
+
+        const p1 = project(cosA * tickInner, sinA * tickInner, 0);
+        const p2 = project(cosA * (tickOuter + extraLength), sinA * (tickOuter + extraLength), 0);
+
+        const isActive = i <= activeTicksFloat;
+        const isNearHead = Math.abs(i - activeTicksFloat) < 1.5;
+
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.lineTo(p2.x, p2.y);
+
+        if (isActive) {
+          if (isNearHead) {
+            ctx.strokeStyle = '#ffffff';
+            ctx.shadowColor = '#38bdf8';
+            ctx.shadowBlur = 10;
+            ctx.lineWidth = (isMajor ? 2.2 : 1.6) * p1.scale;
+          } else {
+            ctx.strokeStyle = isMajor ? '#38bdf8' : 'rgba(56, 189, 248, 0.65)';
+            ctx.shadowColor = '#38bdf8';
+            ctx.shadowBlur = isMajor ? 6 : 2;
+            ctx.lineWidth = (isMajor ? 1.8 : 1.2) * p1.scale;
+          }
+        } else {
+          ctx.strokeStyle = isMajor ? 'rgba(255, 255, 255, 0.22)' : 'rgba(255, 255, 255, 0.08)';
+          ctx.lineWidth = (isMajor ? 1.4 : 1.0) * p1.scale;
+          ctx.shadowBlur = 0;
+        }
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      // 3. Background Hairline Track in 3D Perspective
       ctx.save();
       ctx.beginPath();
-      ctx.arc(centerX, centerY, innerTrackRadius, 0, Math.PI * 2);
-      ctx.setLineDash([2, 5]);
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
-      ctx.lineWidth = 1;
+      const trackSteps = 80;
+      for (let i = 0; i <= trackSteps; i++) {
+        const angle = (i / trackSteps) * Math.PI * 2;
+        const pt = project(trackRadius * Math.cos(angle), trackRadius * Math.sin(angle), 0);
+        if (i === 0) ctx.moveTo(pt.x, pt.y);
+        else ctx.lineTo(pt.x, pt.y);
+      }
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+      ctx.lineWidth = 1.8 * centerProj.scale;
       ctx.stroke();
       ctx.restore();
 
-      // 2. Active Sweeping Circular Progress Arc
-      if (progress > 0) {
+      // 4. Subtle Inner Dashed Track in 3D Perspective
+      ctx.save();
+      ctx.beginPath();
+      const innerSteps = 60;
+      for (let i = 0; i <= innerSteps; i++) {
+        const angle = (i / innerSteps) * Math.PI * 2;
+        const pt = project(innerGuideRadius * Math.cos(angle), innerGuideRadius * Math.sin(angle), 0);
+        if (i === 0) ctx.moveTo(pt.x, pt.y);
+        else ctx.lineTo(pt.x, pt.y);
+      }
+      ctx.setLineDash([3, 7]);
+      ctx.lineDashOffset = -time * 6;
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.22)';
+      ctx.lineWidth = 1 * centerProj.scale;
+      ctx.stroke();
+      ctx.restore();
+
+      // 5. Active Sweeping Circular Progress Arc in 3D Perspective
+      if (currentProgress > 0) {
         ctx.save();
         const startAngle = -Math.PI / 2;
-        const sweepAngle = (Math.min(100, progress) / 100) * Math.PI * 2;
+        const sweepAngle = (currentProgress / 100) * Math.PI * 2;
         const endAngle = startAngle + sweepAngle;
+        const arcSteps = Math.max(12, Math.floor((currentProgress / 100) * 90));
 
+        // Radiant Outer Glow Arc
         ctx.beginPath();
-        ctx.arc(centerX, centerY, innerTrackRadius, startAngle, endAngle);
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 1.6;
+        for (let i = 0; i <= arcSteps; i++) {
+          const angle = startAngle + (i / arcSteps) * sweepAngle;
+          const pt = project(trackRadius * Math.cos(angle), trackRadius * Math.sin(angle), 0);
+          if (i === 0) ctx.moveTo(pt.x, pt.y);
+          else ctx.lineTo(pt.x, pt.y);
+        }
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 2.8 * centerProj.scale;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
         ctx.shadowColor = 'rgba(56, 189, 248, 0.85)';
-        ctx.shadowBlur = 8;
+        ctx.shadowBlur = 14;
         ctx.stroke();
 
-        // Glowing leading head dot
-        const headX = centerX + Math.cos(endAngle) * innerTrackRadius;
-        const headY = centerY + Math.sin(endAngle) * innerTrackRadius;
+        // Inner White Specular Highlight Core
         ctx.beginPath();
-        ctx.arc(headX, headY, 2.5, 0, Math.PI * 2);
+        for (let i = 0; i <= arcSteps; i++) {
+          const angle = startAngle + (i / arcSteps) * sweepAngle;
+          const pt = project(trackRadius * Math.cos(angle), trackRadius * Math.sin(angle), 0);
+          if (i === 0) ctx.moveTo(pt.x, pt.y);
+          else ctx.lineTo(pt.x, pt.y);
+        }
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.3 * centerProj.scale;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.shadowBlur = 0;
+        ctx.stroke();
+
+        // Luminous Leading Head Spark
+        const headPt = project(trackRadius * Math.cos(endAngle), trackRadius * Math.sin(endAngle), 0);
+
+        // Expanding Soft Pulse Halo
+        const pulse = 1 + Math.sin(time * 7) * 0.3;
+        ctx.beginPath();
+        ctx.arc(headPt.x, headPt.y, 6.5 * pulse * headPt.scale, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.35)';
+        ctx.fill();
+
+        // Solid Center Beacon Core
+        ctx.beginPath();
+        ctx.arc(headPt.x, headPt.y, 3.4 * headPt.scale, 0, Math.PI * 2);
         ctx.fillStyle = '#ffffff';
         ctx.shadowColor = '#38bdf8';
-        ctx.shadowBlur = 10;
+        ctx.shadowBlur = 14;
         ctx.fill();
+
+        // Micro-sparks trailing the leading progress head in real-time
+        for (let s = 0; s < 6; s++) {
+          const trailOffset = (s + 1) * 0.05 + Math.sin(time * 8 + s) * 0.02;
+          const trailAngle = endAngle - trailOffset;
+          const r = trackRadius + (Math.sin(time * 6 + s * 2) - 0.5) * 7;
+          const z = (Math.cos(time * 5 + s) - 0.5) * 6;
+          const trailProj = project(r * Math.cos(trailAngle), r * Math.sin(trailAngle), z);
+
+          ctx.beginPath();
+          ctx.arc(trailProj.x, trailProj.y, Math.max(0.6, (1.3 - s * 0.18) * trailProj.scale), 0, Math.PI * 2);
+          ctx.fillStyle = s % 2 === 0 ? 'rgba(56, 189, 248, 0.85)' : 'rgba(255, 255, 255, 0.9)';
+          ctx.shadowColor = '#38bdf8';
+          ctx.shadowBlur = 6;
+          ctx.fill();
+        }
 
         ctx.restore();
       }
 
-      // 3. Render 3D Undulating Organic Particle Cloud
-      const cameraDist = 300;
-      const rotX = 0.22 + mouseRef.current.y;
-      const rotY = mouseRef.current.x;
-
+      // 6. Orbital Celestial Sparks Gliding Along the Exact Same 3D Contour
+      ctx.save();
       for (let i = 0; i < particleCount; i++) {
         const p = particles[i];
         p.angle += p.speed;
 
-        // Organic multi-harmonic noise displacement
-        const wave =
-          Math.sin(p.angle * 6 + time * 2.8 + p.noisePhase) * 8 +
-          Math.cos(p.angle * 12 - time * 1.6) * 5;
+        const wave = Math.sin(p.angle * 2.5 + time * 2.2 + p.wavePhase) * 3.5;
+        const r = trackRadius + p.radiusOffset + wave;
+        const z = p.zOffset + Math.sin(p.angle * 2 + time * 2) * 5;
 
-        const r = currentBaseRadius + p.radiusOffset + wave;
-        const z = Math.sin(p.angle * 4 + time * 2.2) * 14;
-
-        // 3D Rotation Transform
-        const x0 = r * Math.cos(p.angle);
-        const y0 = r * Math.sin(p.angle);
-        const z0 = z;
-
-        // Yaw (rotY) & Pitch (rotX)
-        const x1 = x0 * Math.cos(rotY) + z0 * Math.sin(rotY);
-        const z1 = -x0 * Math.sin(rotY) + z0 * Math.cos(rotY);
-
-        const y2 = y0 * Math.cos(rotX) - z1 * Math.sin(rotX);
-        const z2 = y0 * Math.sin(rotX) + z1 * Math.cos(rotX);
-
-        // Perspective Projection
-        const scale = cameraDist / (cameraDist + z2);
-        const projX = centerX + x1 * scale;
-        const projY = centerY + y2 * scale;
-        const pSize = Math.max(0.4, p.size * scale);
-        const alpha = Math.min(1, Math.max(0.08, p.brightness * (scale * 0.85)));
+        const proj = project(r * Math.cos(p.angle), r * Math.sin(p.angle), z);
 
         ctx.beginPath();
-        ctx.arc(projX, projY, pSize, 0, Math.PI * 2);
+        ctx.arc(proj.x, proj.y, p.size * proj.scale, 0, Math.PI * 2);
         if (p.isAccent) {
-          ctx.fillStyle = `rgba(147, 197, 253, ${alpha * 0.9})`;
+          ctx.fillStyle = `rgba(56, 189, 248, ${p.brightness * 0.9})`;
+          ctx.shadowColor = '#38bdf8';
+          ctx.shadowBlur = 5;
         } else {
-          ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+          ctx.fillStyle = `rgba(255, 255, 255, ${p.brightness * 0.75})`;
+          ctx.shadowColor = '#ffffff';
+          ctx.shadowBlur = 3;
         }
         ctx.fill();
       }
+      ctx.restore();
 
       animId = requestAnimationFrame(render);
     };
@@ -185,25 +342,22 @@ const FutamuraParticleLoader = ({ progress = 0, statusText = 'Loading Data' }) =
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('resize', onResize);
     };
-  }, [progress]);
+  }, []);
 
   const paddedPercent = String(Math.min(100, Math.floor(progress))).padStart(3, '0');
 
   return (
-    <div className="relative w-[230px] h-[230px] sm:w-[260px] sm:h-[260px] flex items-center justify-center select-none my-2">
-      {/* 3D Particle Canvas */}
+    <div className="relative w-[220px] h-[220px] sm:w-[240px] sm:h-[240px] flex items-center justify-center select-none my-1">
+      {/* 2D Canvas with DPR scaling */}
       <canvas
         ref={canvasRef}
         className="w-full h-full block pointer-events-none"
       />
 
-      {/* Centered Readout (matching futamura.dev: "087%" and dynamic status) */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
-        <span className="font-mono text-2xl sm:text-3xl font-extrabold tracking-widest text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.4)]">
+      {/* Centered Readout: Bold Tabular Number only, ZERO subtitles, ZERO blinking lights */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-center">
+        <span className="font-mono text-3xl sm:text-4xl font-black tracking-widest text-white drop-shadow-[0_0_18px_rgba(56,189,248,0.45)] tabular-nums select-none">
           {paddedPercent}%
-        </span>
-        <span className="font-mono text-[9px] sm:text-[10px] text-gray-400 font-medium tracking-widest uppercase mt-1 px-3 truncate max-w-[170px]">
-          {statusText}
         </span>
       </div>
     </div>

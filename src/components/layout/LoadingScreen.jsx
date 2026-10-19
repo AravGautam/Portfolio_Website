@@ -229,18 +229,9 @@ const LoadingScreen = ({ onComplete }) => {
     }
   }, [isReady, onComplete]);
 
-  const getPhaseText = (p) => {
-    if (p < 22) return 'Synchronizing Audio Engine';
-    if (p < 46) return 'Compiling 3D Shaders';
-    if (p < 72) return 'Calibrating Optics';
-    if (p < 94) return 'Initializing Pipeline';
-    if (p < 100) return 'Finalizing Systems';
-    return 'Entering Portfolio';
-  };
-
   return (
     <div
-      className={`fixed inset-0 z-[9999] bg-[#050608] flex flex-col items-center justify-between p-4 sm:p-8 select-none transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+      className={`fixed inset-0 z-[9999] bg-[#050608] flex flex-col items-center justify-between p-4 sm:p-6 overflow-hidden select-none transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] ${
         fadeOut ? 'opacity-0 scale-[1.03] blur-sm pointer-events-none' : 'opacity-100 scale-100 blur-0'
       }`}
     >
@@ -257,46 +248,39 @@ const LoadingScreen = ({ onComplete }) => {
       />
 
       {/* Top Header */}
-      <div className="relative z-10 w-full max-w-5xl flex items-center justify-between text-xs font-mono text-gray-400 pt-2">
+      <div className="relative z-10 w-full max-w-5xl flex items-center justify-between text-xs font-mono text-gray-400 pt-2 px-2">
         <span className="text-gray-300 font-semibold tracking-widest">ARAV GAUTAM</span>
         <span className="text-gray-500 tracking-wider">PORTFOLIO '26</span>
       </div>
 
-      {/* Center 3D Sculpture, Namaste Headline & 3D Particle Halo Loader */}
-      <div className="relative z-10 w-full max-w-xl flex flex-col items-center text-center my-auto space-y-2 sm:space-y-3">
+      {/* Center 3D Obsidian Rubik's Cube, Namaste Headline & Precision Circular Loader */}
+      <div className="relative z-10 w-full max-w-xl flex flex-col items-center text-center my-auto space-y-1 sm:space-y-2">
         {/* 
-          100% Transparent 3D Obsidian Rubik's Cube Viewport:
-          No background divs, no clipped gradients, completely seamless
+          100% Transparent 3D Obsidian Rubik's Cube Viewport
         */}
         <div
           ref={canvasContainerRef}
-          className="relative z-10 w-full max-w-md h-[200px] sm:h-[240px] flex items-center justify-center pointer-events-none select-none"
+          className="relative z-10 w-full max-w-md h-[180px] sm:h-[210px] flex items-center justify-center pointer-events-none select-none"
         />
 
         {/* Primary Namaste Greeting Headline */}
-        <div className="space-y-1 pt-0">
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-display font-black text-white tracking-wide select-none drop-shadow-[0_4px_35px_rgba(255,255,255,0.22)]">
+        <div className="space-y-0.5 pt-0">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-display font-black text-white tracking-wide select-none drop-shadow-[0_4px_30px_rgba(255,255,255,0.2)]">
             नमस्ते
           </h1>
-          <p className="font-mono text-xs sm:text-[13px] tracking-[0.25em] uppercase text-gray-400 font-medium">
+          <p className="font-mono text-[11px] sm:text-xs tracking-[0.25em] uppercase text-gray-400 font-medium">
             ARAV GAUTAM • PORTFOLIO 2026
           </p>
         </div>
 
         {/* 
-          3D Organic Particle Orbital Halo Progress Ring:
-          Inspired by futamura.dev with 3-digit percentage ("087%") & dynamic phase status
+          Precision Chronometer & Orbital Particle Loader
         */}
-        <FutamuraParticleLoader
-          progress={progress}
-          statusText={getPhaseText(progress)}
-        />
+        <FutamuraParticleLoader progress={progress} />
       </div>
 
-      {/* Footer */}
-      <div className="relative z-10 w-full max-w-5xl flex justify-center text-[11px] font-mono text-gray-600 tracking-widest pb-2">
-        <span>MADHYA PRADESH, IN</span>
-      </div>
+      {/* Bottom spacer to keep perfect vertical balance without footer text */}
+      <div className="relative z-10 w-full max-w-5xl h-6 pointer-events-none" />
     </div>
   );
 };
