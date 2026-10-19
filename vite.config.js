@@ -13,5 +13,17 @@ export default defineConfig({
         secure: false
       }
     }
+  },
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'three-vendor': ['three'],
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'animation-vendor': ['gsap', 'lenis']
+        }
+      }
+    }
   }
 })
