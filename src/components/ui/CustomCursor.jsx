@@ -16,6 +16,7 @@ import React, { useEffect, useRef } from 'react';
  */
 export const CustomCursor = () => {
   const cursorSvgRef = useRef(null);
+  const penSvgRef = useRef(null);
   const badgeRef = useRef(null);
   const labelRef = useRef(null);
 
@@ -32,6 +33,7 @@ export const CustomCursor = () => {
     }
 
     const cursorSvg = cursorSvgRef.current;
+    const penSvg = penSvgRef.current;
     const badge = badgeRef.current;
     const label = labelRef.current;
     if (!cursorSvg || !badge || !label) return;
@@ -42,12 +44,22 @@ export const CustomCursor = () => {
     let ringY = -100;
     let isMouseDown = false;
     let isVisible = false;
-    let currentMode = 'default'; // 'default' | 'badge'
+    let currentMode = 'default'; // 'default' | 'badge' | 'pen'
     let currentLabel = '';
 
     const updateHoverState = (target) => {
       if (!target || !(target instanceof Element)) {
         currentMode = 'default';
+        currentLabel = '';
+        return;
+      }
+
+      // 0. Signature Drawing Pad / Canvas Check: Precision Pen Stylus (Never obscure with badge)
+      const isDrawingCanvas = target.closest(
+        '[data-cursor="pen"], [data-cursor="draw"], [data-signature-pad], .signature-pad, .signature-canvas, canvas.cursor-crosshair, canvas.touch-none'
+      );
+      if (isDrawingCanvas) {
+        currentMode = 'pen';
         currentLabel = '';
         return;
       }
@@ -108,39 +120,52 @@ export const CustomCursor = () => {
       const cursorTarget = target.closest('[data-cursor]');
       if (cursorTarget) {
         const val = (cursorTarget.getAttribute('data-cursor') || '').toLowerCase();
-        currentMode = 'badge';
-
-        // ONLY the Rubik's Cube can rotate
-        if (val === 'cube') {
-          currentLabel = isMouseDown ? 'ROTATING' : 'ROTATE';
-        } else if (val === 'drag') {
-          // If legacy drag is present on cube, allow rotate; otherwise default to explore
-          if (cursorTarget.closest('#hero, .bento-cube, [data-component="rubiks-cube"]')) {
-            currentLabel = isMouseDown ? 'ROTATING' : 'ROTATE';
-          } else {
-            currentLabel = 'EXPLORE';
-          }
-        } else if (val === 'inspect') {
-          currentLabel = 'INSPECT';
-        } else if (val === 'explore') {
-          currentLabel = 'EXPLORE';
-        } else if (val === 'interact') {
-          currentLabel = 'INTERACT';
-        } else if (val === 'view') {
-          currentLabel = 'VIEW';
-        } else if (val === 'select') {
-          currentLabel = 'SELECT';
-        } else if (val === 'copy') {
-          currentLabel = isMouseDown ? 'COPIED' : 'COPY';
-        } else if (val === 'open') {
-          currentLabel = 'OPEN';
-        } else {
-          currentLabel = val.toUpperCase();
+        if (val === 'pen' || val === 'draw') {
+          currentMode = 'pen';
+          currentLabel = '';
+          return;
         }
+        if (val === 'default' || val === 'mouse' || val === 'none') {
+          currentMode = 'default';
+          currentLabel = '';
+          return;
+        }
+        if (val === 'cube') {
+          currentMode = 'badge';
+          currentLabel = isMouseDown ? 'ROTATING' : 'ROTATE';
+          return;
+        }
+        if (val === 'copy') {
+          currentMode = 'badge';
+          currentLabel = isMouseDown ? 'COPIED' : 'COPY';
+          return;
+        }
+        if (val === 'explore') {
+          currentMode = 'badge';
+          currentLabel = 'EXPLORE';
+          return;
+        }
+        if (val === 'interact') {
+          currentMode = 'badge';
+          currentLabel = 'INTERACT';
+          return;
+        }
+        if (val === 'view') {
+          currentMode = 'badge';
+          currentLabel = 'VIEW';
+          return;
+        }
+        if (val === 'open') {
+          currentMode = 'badge';
+          currentLabel = 'OPEN';
+          return;
+        }
+        currentMode = 'badge';
+        currentLabel = val.toUpperCase();
         return;
       }
 
-      // 3. Rubik's Cube 3D Model (The ONLY rotatable model)
+      // 3. Rubik's Cube 3D Model: STRICTLY the ONLY model that rotates
       const isCube = target.closest(
         '#rubiks-cube, [data-component="rubiks-cube"], .bento-cube'
       );
@@ -150,55 +175,19 @@ export const CustomCursor = () => {
         return;
       }
 
-      // 4. 3D Highway Experience
-      const isExperienceHighway = target.closest(
-        '#experience canvas, [data-component="experience-highway"]'
+      // 4. 3D Project Visualizer & 3D Experiments Viewports
+      const is3DViewport = target.closest(
+        '#projects canvas, #work canvas, #experiments canvas, [data-component="project-visualizer"]'
       );
-      if (isExperienceHighway) {
-        // If hovering over a milestone board hitbox (cursor pointer)
-        const isHoveringBoard = window.getComputedStyle(isExperienceHighway).cursor === 'pointer';
-        currentMode = isHoveringBoard ? 'badge' : 'default';
-        currentLabel = isHoveringBoard ? 'INSPECT' : '';
-        return;
-      }
-
-      // 5. 3D Project Visualizer (Work / Projects Showcase)
-      const isProjectVisualizer = target.closest(
-        '#projects canvas, #work canvas, [data-component="project-visualizer"]'
-      );
-      if (isProjectVisualizer) {
-        currentMode = 'badge';
-        currentLabel = 'EXPLORE';
-        return;
-      }
-
-      // 6. 3D Experiments (Particle physics / shaders)
-      const isExperiment = target.closest(
-        '#experiments canvas, .experiment-canvas'
-      );
-      if (isExperiment) {
+      if (is3DViewport) {
         currentMode = 'badge';
         currentLabel = 'INTERACT';
         return;
       }
 
-      // 7. General Canvas Fallback (Non-cube canvas)
-      const isCanvas = target.closest('canvas');
-      if (isCanvas) {
-        // Check if this canvas is the Rubik's Cube canvas
-        if (isCanvas.closest('#hero') || isCanvas.getAttribute('data-cursor') === 'cube') {
-          currentMode = 'badge';
-          currentLabel = isMouseDown ? 'ROTATING' : 'ROTATE';
-        } else {
-          currentMode = 'badge';
-          currentLabel = 'EXPLORE';
-        }
-        return;
-      }
-
-      // 8. Interactive Links, Buttons, and Clickable Elements
+      // 5. Interactive Links, Buttons, and Clickable Elements
       const isClickable = target.closest(
-        'a, button, [role="button"], [role="link"], select, textarea, .cursor-pointer, [data-interactive]'
+        'a, button, [role="button"], [role="link"], select, .cursor-pointer, [data-interactive]'
       );
       if (isClickable) {
         if (isClickable.matches('input, textarea')) {
@@ -218,6 +207,18 @@ export const CustomCursor = () => {
           href.includes('drive.google') ||
           text.includes('resume');
 
+        // Dedicated Navbar Island Rules
+        if (isClickable.closest('nav')) {
+          if (text.includes('project') || text.includes('work')) {
+            currentLabel = 'VIEW';
+          } else if (text.includes('contact') || text.includes('connect')) {
+            currentLabel = 'CONNECT';
+          } else {
+            currentLabel = 'GO';
+          }
+          return;
+        }
+
         if (text.includes('copy') || text.includes('email') || title.includes('copy')) {
           currentLabel = isMouseDown ? 'COPIED' : 'COPY';
         } else if (
@@ -227,8 +228,6 @@ export const CustomCursor = () => {
           isClickable.querySelector('svg.lucide-x')
         ) {
           currentLabel = 'CLOSE';
-        } else if (text.includes('inspect')) {
-          currentLabel = 'INSPECT';
         } else if (
           isExternal ||
           text.includes('resume') ||
@@ -238,60 +237,20 @@ export const CustomCursor = () => {
         } else if (
           text.includes('project') ||
           text.includes('work') ||
+          text.includes('experience') ||
           text.includes('demo') ||
           text.includes('code')
         ) {
           currentLabel = 'VIEW';
-        } else if (text.includes('explore') || text.includes('philosophy')) {
-          currentLabel = 'EXPLORE';
         } else if (text.includes('contact') || text.includes('connect')) {
           currentLabel = 'CONNECT';
-        } else if (isClickable.closest('nav')) {
-          currentLabel = 'GO';
         } else {
           currentLabel = 'SELECT';
         }
         return;
       }
 
-      // 9. Bento Cards & Showcase Cards
-      const isBentoCard = target.closest(
-        '[data-card], section#bento-showcase > div > div > div'
-      );
-      if (isBentoCard) {
-        if (
-          isBentoCard.querySelector('[data-cursor="cube"]') ||
-          isBentoCard.id === 'cube-card'
-        ) {
-          currentMode = 'badge';
-          currentLabel = isMouseDown ? 'ROTATING' : 'ROTATE';
-          return;
-        }
-
-        currentMode = 'badge';
-        const cardText = (isBentoCard.textContent || '').toLowerCase();
-        if (
-          cardText.includes('philosophy') ||
-          cardText.includes('systems') ||
-          cardText.includes('chronometer') ||
-          cardText.includes('watch')
-        ) {
-          currentLabel = 'EXPLORE';
-        } else if (cardText.includes("let's build") || cardText.includes('available for work')) {
-          currentLabel = 'CONNECT';
-        } else if (
-          cardText.includes('project') ||
-          cardText.includes('experience') ||
-          cardText.includes('education')
-        ) {
-          currentLabel = 'VIEW';
-        } else {
-          currentLabel = 'EXPLORE';
-        }
-        return;
-      }
-
-      // Default state
+      // Default state: Authentic crisp SVG mouse pointer (No badge on static cards or text)
       currentMode = 'default';
       currentLabel = '';
     };
@@ -331,10 +290,11 @@ export const CustomCursor = () => {
 
     const render = () => {
       const isBadge = currentMode === 'badge';
+      const isPen = currentMode === 'pen';
 
-      // 1. Authentic parthh.in SVG Mouse Pointer: Instant 1:1 hardware tracking
+      // 1. Authentic SVG Mouse Pointer (Default State)
       if (cursorSvg) {
-        if (!isVisible || isBadge) {
+        if (!isVisible || isBadge || isPen) {
           cursorSvg.style.opacity = '0';
           cursorSvg.style.transform = `translate3d(${mouseX - 5.5}px, ${mouseY - 3.2}px, 0) scale(0)`;
         } else {
@@ -345,7 +305,7 @@ export const CustomCursor = () => {
         }
       }
 
-      // 2. Pure Clean Solid White Expanded Circular Badge: Smooth damped lerp tracking
+      // 2. Pure Clean Solid White Expanded Circular Badge (Interactive 3D / Buttons)
       ringX = lerp(ringX, mouseX, 0.28);
       ringY = lerp(ringY, mouseY, 0.28);
 
@@ -357,6 +317,19 @@ export const CustomCursor = () => {
           badge.style.opacity = '1';
           badge.style.transform = `translate3d(${ringX}px, ${ringY}px, 0) translate(-50%, -50%) scale(${
             isMouseDown ? 0.92 : 1
+          })`;
+        }
+      }
+
+      // 3. Precision Stylus / Pen SVG Cursor (tip aligned at mouseX, mouseY)
+      if (penSvg) {
+        if (!isVisible || !isPen) {
+          penSvg.style.opacity = '0';
+          penSvg.style.transform = `translate3d(${mouseX - 2}px, ${mouseY - 2}px, 0) scale(0)`;
+        } else {
+          penSvg.style.opacity = '1';
+          penSvg.style.transform = `translate3d(${mouseX - 2}px, ${mouseY - 2}px, 0) scale(${
+            isMouseDown ? 0.94 : 1
           })`;
         }
       }
@@ -414,7 +387,7 @@ export const CustomCursor = () => {
         </svg>
       </div>
 
-      {/* 2. Pure Clean Solid White Expanded Circular Badge (NO Grayish Effect) */}
+      {/* 2. Pure Clean Solid White Expanded Circular Badge (Interactive 3D Elements / Buttons) */}
       <div
         ref={badgeRef}
         className="fixed top-0 left-0 w-[82px] h-[82px] rounded-full bg-white pointer-events-none z-[999998] opacity-0 transition-[opacity,transform] duration-200 ease-out will-change-transform flex items-center justify-center text-center overflow-hidden shadow-[0_12px_36px_rgba(0,0,0,0.45),0_2px_10px_rgba(0,0,0,0.15)]"
@@ -423,6 +396,46 @@ export const CustomCursor = () => {
           ref={labelRef}
           className="font-mono text-[11px] font-black tracking-widest text-black uppercase transition-opacity duration-150 leading-none pointer-events-none select-none px-1"
         />
+      </div>
+
+      {/* 3. Sleek Precision Stylus / Pen SVG Cursor (Drawing & Signature Pad Mode) */}
+      <div
+        ref={penSvgRef}
+        className="fixed top-0 left-0 w-8 h-8 pointer-events-none z-[999999] opacity-0 transition-[opacity,transform] duration-150 ease-out will-change-transform"
+        style={{
+          transformOrigin: '2px 2px',
+        }}
+      >
+        <svg
+          width="26"
+          height="26"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-full h-full"
+        >
+          <defs>
+            <filter id="pen-cursor-shadow" x="-30%" y="-30%" width="160%" height="160%">
+              <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#000000" floodOpacity="0.55" />
+            </filter>
+          </defs>
+          <g filter="url(#pen-cursor-shadow)">
+            {/* Pen Nib Body */}
+            <path
+              d="M2 2L7.5 3.8L18.8 15.1C19.5 15.8 19.5 17 18.8 17.7L17.7 18.8C17 19.5 15.8 19.5 15.1 18.8L3.8 7.5L2 2Z"
+              fill="#080a10"
+              stroke="#ffffff"
+              strokeWidth="1.2"
+              strokeLinejoin="round"
+            />
+            {/* Stylus barrel highlight */}
+            <path d="M6 6L16 16" stroke="rgba(255,255,255,0.4)" strokeWidth="0.8" strokeLinecap="round" />
+            {/* Active Nib Tip */}
+            <path d="M2 2L4.5 4.5" stroke="#38bdf8" strokeWidth="1.4" strokeLinecap="round" />
+            {/* Small ink breathing ring */}
+            <circle cx="9" cy="9" r="0.75" fill="#38bdf8" />
+          </g>
+        </svg>
       </div>
     </div>
   );

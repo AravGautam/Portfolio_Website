@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { portfolioData } from '../../data/portfolioData';
 import {
@@ -24,6 +24,7 @@ import InteractiveEarthGlobe from './InteractiveEarthGlobe';
 import Interactive3DName from './Interactive3DName';
 import MagneticWrapper from '../ui/MagneticWrapper';
 import ShockwaveButton from '../ui/ShockwaveButton';
+import IndividualDraggablePills from './IndividualDraggablePills';
 import { soundEngine } from '../../audio/soundEngine';
 import { showToast } from '../ui/Toast';
 import InfiniteMarquee from '../ui/InfiniteMarquee';
@@ -58,6 +59,98 @@ const UsaFlag = () => (
     <rect width="25" height="16" fill="#3C3B6E" />
   </svg>
 );
+
+// Timezone button with radial shockwave bloom from cursor touch coordinate
+const TimezoneShockwaveButton = ({ item, isSelected, timeText, onSelect, className = '' }) => {
+  const [ripples, setRipples] = useState([]);
+  const buttonRef = useRef(null);
+  const FlagComponent = item.flag;
+
+  const handleClick = (e) => {
+    soundEngine.playClick();
+    const button = buttonRef.current;
+    if (!button) return;
+
+    const rect = button.getBoundingClientRect();
+    const clientX = e.clientX ?? (e.touches && e.touches[0]?.clientX);
+    const clientY = e.clientY ?? (e.touches && e.touches[0]?.clientY);
+    const clickX = clientX !== undefined ? clientX - rect.left : rect.width / 2;
+    const clickY = clientY !== undefined ? clientY - rect.top : rect.height / 2;
+
+    const maxRadius = Math.max(
+      Math.hypot(clickX, clickY),
+      Math.hypot(rect.width - clickX, clickY),
+      Math.hypot(clickX, rect.height - clickY),
+      Math.hypot(rect.width - clickX, rect.height - clickY)
+    ) * 1.25;
+
+    const rippleId = Date.now() + Math.random();
+    setRipples((prev) => [
+      ...prev,
+      {
+        id: rippleId,
+        x: clickX,
+        y: clickY,
+        radius: maxRadius,
+        color: !isSelected ? '#ffffff' : '#0c0e17',
+        shadow: !isSelected
+          ? '0 0 28px 6px rgba(255, 255, 255, 0.45)'
+          : '0 0 28px 6px rgba(0, 0, 0, 0.6)'
+      }
+    ]);
+
+    setTimeout(() => {
+      setRipples((prev) => prev.filter((r) => r.id !== rippleId));
+    }, 520);
+
+    onSelect();
+  };
+
+  return (
+    <button
+      ref={buttonRef}
+      onClick={handleClick}
+      onMouseEnter={() => soundEngine.playHover()}
+      className={`group/btn relative overflow-hidden isolate text-[11px] rounded-full flex items-center justify-between px-3.5 py-1.5 transition-all duration-300 cursor-pointer w-[150px] sm:w-[160px] select-none ${
+        isSelected
+          ? 'pill-btn-white-3d text-black font-semibold'
+          : 'pill-btn-3d text-gray-300 hover:text-white'
+      } ${className}`}
+    >
+      {/* Shockwave expanding from mouse click coordinate */}
+      {ripples.map((ripple) => (
+        <span
+          key={ripple.id}
+          className="absolute rounded-full pointer-events-none animate-shockwave-bloom"
+          style={{
+            left: `${ripple.x}px`,
+            top: `${ripple.y}px`,
+            width: `${ripple.radius * 2}px`,
+            height: `${ripple.radius * 2}px`,
+            marginLeft: `-${ripple.radius}px`,
+            marginTop: `-${ripple.radius}px`,
+            backgroundColor: ripple.color,
+            boxShadow: ripple.shadow,
+            transformOrigin: 'center center',
+            zIndex: 1
+          }}
+        />
+      ))}
+
+      <div className="relative z-10 flex items-center gap-1.5 pointer-events-none">
+        <FlagComponent />
+        <span className="font-semibold">{item.label}</span>
+      </div>
+      <span
+        className={`relative z-10 font-mono text-[10px] pointer-events-none ${
+          isSelected ? 'text-black font-bold' : 'text-gray-400'
+        }`}
+      >
+        {timeText}
+      </span>
+    </button>
+  );
+};
 
 export const HomeView = () => {
   const navigate = useNavigate();
@@ -236,22 +329,22 @@ export const HomeView = () => {
             {/* 1. Primary Shockwave Radial Ripple Button */}
             <MagneticWrapper strength={0.25}>
               <ShockwaveButton
-                textWhite="Explore Projects"
-                textBlack="Explore Projects"
+                text="Explore Projects"
+                icon={<ArrowRight className="w-4 h-4" />}
+                initialColor="white"
                 onClick={() => handleExplore('/work')}
-                onNavigate={() => handleExplore('/work')}
+                className="px-7 py-3 sm:py-3.5"
               />
             </MagneticWrapper>
 
-            {/* 2. About Me 3D Pill Button */}
+            {/* 2. About Me 3D Pill Button with Shockwave Ripple */}
             <MagneticWrapper strength={0.25}>
-              <button
+              <ShockwaveButton
+                text="About Me"
+                initialColor="black"
                 onClick={() => handleExplore('/about')}
-                onMouseEnter={() => soundEngine.playHover()}
-                className="pill-btn-3d text-xs sm:text-sm font-semibold font-mono px-6 py-3 sm:py-3.5 text-white flex items-center gap-2 cursor-pointer"
-              >
-                <span>About Me</span>
-              </button>
+                className="px-6 py-3 sm:py-3.5"
+              />
             </MagneticWrapper>
 
             {/* 3. Interactive Copy Email with 3D Pill & Dented Live State */}
@@ -260,7 +353,7 @@ export const HomeView = () => {
                 onClick={handleCopyEmail}
                 onMouseEnter={() => soundEngine.playHover()}
                 className={`text-xs sm:text-sm font-semibold font-mono px-5 py-3 sm:py-3.5 flex items-center gap-2 cursor-pointer transition-all duration-300 ${
-                  emailCopied ? 'pill-btn-dented text-emerald-400' : 'pill-btn-3d text-gray-300 hover:text-white'
+                  emailCopied ? 'pill-btn-dented text-emerald-400' : 'pill-btn-3d text-gray-200 hover:text-white'
                 }`}
                 title="Copy email to clipboard"
               >
@@ -278,49 +371,21 @@ export const HomeView = () => {
               </button>
             </MagneticWrapper>
 
-            {/* 4. Resume 3D Pill Link */}
+            {/* 4. Resume 3D Pill Link with Shockwave Ripple */}
             <MagneticWrapper strength={0.25}>
-              <a
-                href={portfolioData.personal.resumeUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onMouseEnter={() => soundEngine.playHover()}
-                onClick={() => soundEngine.playClick()}
-                className="pill-btn-3d text-xs sm:text-sm font-semibold font-mono px-5 py-3 sm:py-3.5 text-gray-300 hover:text-white flex items-center gap-1.5 cursor-pointer"
-              >
-                <span>Resume</span>
-                <ArrowUpRight className="w-3.5 h-3.5 text-blue-400" />
-              </a>
+              <ShockwaveButton
+                text="Resume"
+                icon={<ArrowUpRight className="w-3.5 h-3.5 text-blue-400" />}
+                initialColor="black"
+                onClick={() => window.open(portfolioData.personal.resumeUrl, '_blank')}
+                autoReset={true}
+                className="px-5 py-3 sm:py-3.5"
+              />
             </MagneticWrapper>
           </div>
 
-          {/* Social Links & Availability Dock */}
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-3">
-            <div className="inline-flex items-center gap-1.5 p-1.5 rounded-full bg-[#0a0a0f]/80 border border-white/10 backdrop-blur-2xl shadow-xl">
-              {/* Availability Badge */}
-              <div className="flex items-center gap-2 pl-3 pr-2.5 py-1 border-r border-white/10">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                <span className="font-mono text-[11px] text-gray-300 font-medium">Available for Roles</span>
-              </div>
-
-              {/* Social Icon Pills */}
-              <div className="flex items-center gap-1 px-1">
-                {portfolioData.socialLinks.map((link) => (
-                  <a
-                    key={link.id}
-                    href={link.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onMouseEnter={() => soundEngine.playHover()}
-                    className="w-8 h-8 rounded-full bg-white/[0.04] hover:bg-white/[0.15] border border-white/5 hover:border-white/20 text-gray-400 hover:text-white flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer"
-                    title={link.label}
-                  >
-                    {getSocialIcon(link.id)}
-                  </a>
-                ))}
-              </div>
-            </div>
-          </div>
+          {/* Individual Draggable 3D Pills (Available for Roles + Socials) */}
+          <IndividualDraggablePills />
         </div>
 
         {/* Bottom Corner Markers & Scroll Down Indicator */}
@@ -339,15 +404,16 @@ export const HomeView = () => {
             </div>
           </div>
 
-          {/* Center: Scroll Down Prompt 3D Pill Button */}
-          <button
+          {/* Center: Scroll Down Prompt 3D Pill Shockwave Button */}
+          <ShockwaveButton
+            text="Scroll down to explore"
+            icon={<ChevronDown className="w-3.5 h-3.5 text-blue-400 group-hover:translate-y-0.5 transition-transform duration-300" />}
+            initialColor="black"
             onClick={scrollToBento}
-            onMouseEnter={() => soundEngine.playHover()}
-            className="group pill-btn-3d flex items-center gap-2.5 px-6 py-2.5 text-xs font-mono text-gray-200 cursor-pointer shadow-lg"
-          >
-            <span className="tracking-wide">Scroll down to explore</span>
-            <ChevronDown className="w-3.5 h-3.5 text-blue-400 group-hover:translate-y-0.5 transition-transform duration-300" />
-          </button>
+            autoReset={true}
+            resetDelay={1400}
+            className="px-6 py-2.5 shadow-xl"
+          />
 
           {/* Bottom Right: Specialization */}
           <div className="flex items-center gap-3 text-xs font-mono text-gray-400">
@@ -601,106 +667,34 @@ export const HomeView = () => {
                       </h3>
                     </div>
 
-                    {/* Small & Compact Timezone Buttons - Positioned close to watch circumference */}
+                    {/* Small & Compact Timezone Buttons with Shockwave - Positioned close to watch circumference */}
                     <div className="flex flex-col gap-1.5 w-full items-start lg:items-end pt-1">
                       {/* UK: Along upper clock arc */}
-                      {(() => {
-                        const item = TIMEZONE_CONFIG.uk;
-                        const isSelected = activeLocation === 'uk';
-                        const FlagComponent = item.flag;
-                        return (
-                          <button
-                            onClick={() => {
-                              soundEngine.playClick();
-                              setActiveLocation('uk');
-                            }}
-                            onMouseEnter={() => soundEngine.playHover()}
-                            className={`group/btn relative isolate text-[11px] rounded-full flex items-center justify-between px-3 py-1.5 transition-all duration-300 cursor-pointer w-[150px] sm:w-[160px] lg:mr-[115px] ${
-                              isSelected
-                                ? 'pill-btn-dented text-white font-semibold'
-                                : 'pill-btn-3d text-gray-300 hover:text-white'
-                            }`}
-                          >
-                            <div className="flex items-center gap-1.5">
-                              <FlagComponent />
-                              <span className="font-medium">{item.label}</span>
-                            </div>
-                            <span
-                              className={`font-mono text-[10px] ${
-                                isSelected ? 'text-white font-bold' : 'text-gray-400'
-                              }`}
-                            >
-                              {liveTimes.uk || item.badge}
-                            </span>
-                          </button>
-                        );
-                      })()}
+                      <TimezoneShockwaveButton
+                        item={TIMEZONE_CONFIG.uk}
+                        isSelected={activeLocation === 'uk'}
+                        timeText={liveTimes.uk || TIMEZONE_CONFIG.uk.badge}
+                        onSelect={() => setActiveLocation('uk')}
+                        className="lg:mr-[115px]"
+                      />
 
                       {/* India: Middle clock arc */}
-                      {(() => {
-                        const item = TIMEZONE_CONFIG.india;
-                        const isSelected = activeLocation === 'india';
-                        const FlagComponent = item.flag;
-                        return (
-                          <button
-                            onClick={() => {
-                              soundEngine.playClick();
-                              setActiveLocation('india');
-                            }}
-                            onMouseEnter={() => soundEngine.playHover()}
-                            className={`group/btn relative isolate text-[11px] rounded-full flex items-center justify-between px-3 py-1.5 transition-all duration-300 cursor-pointer w-[150px] sm:w-[160px] lg:mr-[80px] ${
-                              isSelected
-                                ? 'pill-btn-dented text-white font-semibold'
-                                : 'pill-btn-3d text-gray-300 hover:text-white'
-                            }`}
-                          >
-                            <div className="flex items-center gap-1.5">
-                              <FlagComponent />
-                              <span className="font-medium">{item.label}</span>
-                            </div>
-                            <span
-                              className={`font-mono text-[10px] ${
-                                isSelected ? 'text-white font-bold' : 'text-gray-400'
-                              }`}
-                            >
-                              {liveTimes.india || item.badge}
-                            </span>
-                          </button>
-                        );
-                      })()}
+                      <TimezoneShockwaveButton
+                        item={TIMEZONE_CONFIG.india}
+                        isSelected={activeLocation === 'india'}
+                        timeText={liveTimes.india || TIMEZONE_CONFIG.india.badge}
+                        onSelect={() => setActiveLocation('india')}
+                        className="lg:mr-[80px]"
+                      />
 
                       {/* USA: Lower clock arc */}
-                      {(() => {
-                        const item = TIMEZONE_CONFIG.usa;
-                        const isSelected = activeLocation === 'usa';
-                        const FlagComponent = item.flag;
-                        return (
-                          <button
-                            onClick={() => {
-                              soundEngine.playClick();
-                              setActiveLocation('usa');
-                            }}
-                            onMouseEnter={() => soundEngine.playHover()}
-                            className={`group/btn relative isolate text-[11px] rounded-full flex items-center justify-between px-3 py-1.5 transition-all duration-300 cursor-pointer w-[150px] sm:w-[160px] lg:mr-[45px] ${
-                              isSelected
-                                ? 'pill-btn-dented text-white font-semibold'
-                                : 'pill-btn-3d text-gray-300 hover:text-white'
-                            }`}
-                          >
-                            <div className="flex items-center gap-1.5">
-                              <FlagComponent />
-                              <span className="font-medium">{item.label}</span>
-                            </div>
-                            <span
-                              className={`font-mono text-[10px] ${
-                                isSelected ? 'text-white font-bold' : 'text-gray-400'
-                              }`}
-                            >
-                              {liveTimes.usa || item.badge}
-                            </span>
-                          </button>
-                        );
-                      })()}
+                      <TimezoneShockwaveButton
+                        item={TIMEZONE_CONFIG.usa}
+                        isSelected={activeLocation === 'usa'}
+                        timeText={liveTimes.usa || TIMEZONE_CONFIG.usa.badge}
+                        onSelect={() => setActiveLocation('usa')}
+                        className="lg:mr-[45px]"
+                      />
                     </div>
                   </div>
                 </div>

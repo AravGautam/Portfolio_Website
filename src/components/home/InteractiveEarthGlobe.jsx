@@ -2,11 +2,11 @@ import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
 /**
- * Ultra-High-Fidelity Interactive 3D Earth Globe
- * - Real continental landmass particle matrix (36,000 Fibonacci sampled points)
- * - Textured ocean/land sphere with subtle NASA night lights and atmospheric cyan depth
- * - Glowing wireframe astronomical graticule meridians
- * - Luminous double-layer atmospheric rim glow
+ * Ultra-High-Fidelity Interactive 3D Earth Globe (Home Page Bento)
+ * - Deep space obsidian navy oceanic sphere with NASA dark surface
+ * - Luminous continental landmass particle matrix (Fibonacci sampled points from topology)
+ * - Volumetric spherical atmosphere glow shader (soft Fresnel bloom in electric royal azure, NO flat donut rings)
+ * - Astronomical graticule meridians in royal azure
  * - 3D pulsing geospatial radar beacons (India, UK, USA) with active targeting
  * - Physics drag-to-rotate inertia and smooth auto-drift
  */
@@ -23,7 +23,6 @@ const InteractiveEarthGlobe = ({ activeLocation = 'india', onLocationSelect }) =
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 1000);
-    // Camera placed to frame the full 3D sphere and atmospheric halo with zero edge clipping
     camera.position.set(0, 0, 24.0);
 
     const renderer = new THREE.WebGLRenderer({
@@ -37,15 +36,15 @@ const InteractiveEarthGlobe = ({ activeLocation = 'india', onLocationSelect }) =
     renderer.setClearColor(0x000000, 0);
     container.appendChild(renderer.domElement);
 
-    // Subtle Lighting for realistic standard material response
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
+    // Balanced Lighting for deep space obsidian and glowing particles
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
     scene.add(ambientLight);
 
     const keyLight = new THREE.DirectionalLight(0x38bdf8, 1.4);
     keyLight.position.set(12, 10, 15);
     scene.add(keyLight);
 
-    const rimLight = new THREE.DirectionalLight(0x0781ff, 0.9);
+    const rimLight = new THREE.DirectionalLight(0x0781ff, 1.1);
     rimLight.position.set(-15, -10, -10);
     scene.add(rimLight);
 
@@ -53,7 +52,7 @@ const InteractiveEarthGlobe = ({ activeLocation = 'india', onLocationSelect }) =
     const globeGroup = new THREE.Group();
     scene.add(globeGroup);
 
-    // 1. High-Quality Textured Core Sphere
+    // 1. High-Quality Textured Core Sphere (Deep space obsidian navy)
     const textureLoader = new THREE.TextureLoader();
     const earthTexture = textureLoader.load('/earth-dark.jpg');
     earthTexture.wrapS = THREE.RepeatWrapping;
@@ -62,11 +61,11 @@ const InteractiveEarthGlobe = ({ activeLocation = 'india', onLocationSelect }) =
     const coreGeo = new THREE.SphereGeometry(globeRadius - 0.04, 64, 64);
     const coreMat = new THREE.MeshStandardMaterial({
       map: earthTexture,
-      roughness: 0.75,
+      color: 0x030715,
+      roughness: 0.85,
       metalness: 0.15,
-      color: 0x142036,
-      emissive: new THREE.Color(0x0284c7),
-      emissiveIntensity: 0.18,
+      emissive: new THREE.Color(0x021838),
+      emissiveIntensity: 0.4,
     });
     const coreSphere = new THREE.Mesh(coreGeo, coreMat);
     globeGroup.add(coreSphere);
@@ -74,25 +73,71 @@ const InteractiveEarthGlobe = ({ activeLocation = 'india', onLocationSelect }) =
     // 2. Astronomical Wireframe Graticule Meridians
     const graticuleGeo = new THREE.SphereGeometry(globeRadius + 0.05, 36, 18);
     const graticuleMat = new THREE.MeshBasicMaterial({
-      color: 0x38bdf8,
+      color: 0x0781ff,
       wireframe: true,
       transparent: true,
-      opacity: 0.08,
+      opacity: 0.12,
     });
     const graticule = new THREE.Mesh(graticuleGeo, graticuleMat);
     globeGroup.add(graticule);
 
-    // 3. Double-Layer Atmospheric Outer Rim Glow
-    const haloGeo = new THREE.RingGeometry(globeRadius + 0.1, globeRadius + 1.2, 64);
-    const haloMat = new THREE.MeshBasicMaterial({
-      color: 0x0284c7,
-      transparent: true,
-      opacity: 0.4,
-      side: THREE.DoubleSide,
+    // 3. Volumetric Spherical Atmosphere Glow (Soft Fresnel Bloom, NO flat cardboard ring!)
+    const atmosphereGeo = new THREE.SphereGeometry(globeRadius * 1.15, 64, 64);
+    const atmosphereMat = new THREE.ShaderMaterial({
+      vertexShader: `
+        varying vec3 vNormal;
+        void main() {
+          vNormal = normalize(normalMatrix * normal);
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        varying vec3 vNormal;
+        uniform vec3 glowColor;
+        void main() {
+          float intensity = pow(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0))), 2.4);
+          gl_FragColor = vec4(glowColor, intensity * 0.82);
+        }
+      `,
+      uniforms: {
+        glowColor: { value: new THREE.Color(0x0781ff) }, // Radiant Electric Azure
+      },
       blending: THREE.AdditiveBlending,
+      side: THREE.BackSide,
+      transparent: true,
+      depthWrite: false,
     });
-    const halo = new THREE.Mesh(haloGeo, haloMat);
-    scene.add(halo);
+    const atmosphere = new THREE.Mesh(atmosphereGeo, atmosphereMat);
+    scene.add(atmosphere);
+
+    // Inner Horizon Twilight Rim
+    const innerRimGeo = new THREE.SphereGeometry(globeRadius + 0.02, 64, 64);
+    const innerRimMat = new THREE.ShaderMaterial({
+      vertexShader: `
+        varying vec3 vNormal;
+        void main() {
+          vNormal = normalize(normalMatrix * normal);
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        varying vec3 vNormal;
+        uniform vec3 rimColor;
+        void main() {
+          float intensity = pow(1.0 - max(0.0, dot(vNormal, vec3(0.0, 0.0, 1.0))), 3.6);
+          gl_FragColor = vec4(rimColor, intensity * 0.65);
+        }
+      `,
+      uniforms: {
+        rimColor: { value: new THREE.Color(0x38bdf8) },
+      },
+      blending: THREE.AdditiveBlending,
+      side: THREE.FrontSide,
+      transparent: true,
+      depthWrite: false,
+    });
+    const innerRim = new THREE.Mesh(innerRimGeo, innerRimMat);
+    globeGroup.add(innerRim);
 
     const latLongToVector3 = (lat, lon, radius = globeRadius) => {
       const phi = (90 - lat) * (Math.PI / 180);
@@ -111,23 +156,25 @@ const InteractiveEarthGlobe = ({ activeLocation = 'india', onLocationSelect }) =
       const ctx = canvas.getContext('2d');
       const grad = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
       grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
-      grad.addColorStop(0.35, 'rgba(147, 197, 253, 0.9)');
-      grad.addColorStop(0.7, 'rgba(14, 116, 144, 0.4)');
+      grad.addColorStop(0.35, 'rgba(56, 189, 248, 0.9)');
+      grad.addColorStop(0.7, 'rgba(7, 129, 255, 0.35)');
       grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, 32, 32);
       return new THREE.CanvasTexture(canvas);
     };
+
     const circleTexture = createCircleTexture();
 
     // 4. Build Detailed Continental Particle Matrix
+    let pointsMesh = null;
     const buildGlobeGeometry = (imgData, mapWidth, mapHeight) => {
       const particleCount = 34000;
       const positions = [];
       const colors = [];
 
-      const landDotColor = new THREE.Color(0xecfeff); // Crisp luminous cyan-white
-      const faintOceanColor = new THREE.Color(0x082f49); // Deep dark oceanic point
+      const landDotColor = new THREE.Color(0xe0f2fe);   // Crisp luminous cyan-white
+      const landAccentColor = new THREE.Color(0x38bdf8); // Radiant electric azure
 
       for (let i = 0; i < particleCount; i++) {
         const phi = Math.acos(1 - (2 * (i + 0.5)) / particleCount);
@@ -145,18 +192,18 @@ const InteractiveEarthGlobe = ({ activeLocation = 'india', onLocationSelect }) =
         const py = Math.floor(v * mapHeight);
         const rawVal = imgData[(py * mapWidth + px) * 4];
 
-        // Any non-zero pixel in topology is continental landmass!
+        // Any non-zero pixel in topology is continental landmass
         const isLand = rawVal > 0;
 
-        if (isLand || Math.random() < 0.05) {
-          const r = isLand ? globeRadius + 0.12 : globeRadius + 0.02;
+        if (isLand) {
+          const r = globeRadius + 0.12;
           const pos = latLongToVector3(lat, lon, r);
           positions.push(pos.x, pos.y, pos.z);
 
-          if (isLand) {
+          if (Math.random() < 0.45) {
             colors.push(landDotColor.r, landDotColor.g, landDotColor.b);
           } else {
-            colors.push(faintOceanColor.r, faintOceanColor.g, faintOceanColor.b);
+            colors.push(landAccentColor.r, landAccentColor.g, landAccentColor.b);
           }
         }
       }
@@ -166,7 +213,7 @@ const InteractiveEarthGlobe = ({ activeLocation = 'india', onLocationSelect }) =
       pointsGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
 
       const pointsMat = new THREE.PointsMaterial({
-        size: 0.18,
+        size: 0.20,
         map: circleTexture,
         vertexColors: true,
         transparent: true,
@@ -175,7 +222,7 @@ const InteractiveEarthGlobe = ({ activeLocation = 'india', onLocationSelect }) =
         depthWrite: false,
       });
 
-      const pointsMesh = new THREE.Points(pointsGeo, pointsMat);
+      pointsMesh = new THREE.Points(pointsGeo, pointsMat);
       globeGroup.add(pointsMesh);
     };
 
@@ -191,9 +238,6 @@ const InteractiveEarthGlobe = ({ activeLocation = 'india', onLocationSelect }) =
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
       buildGlobeGeometry(imgData, canvas.width, canvas.height);
-    };
-    img.onerror = () => {
-      // Fallback
     };
 
     // 5. Geospatial Beacons for India, UK, USA
@@ -215,10 +259,10 @@ const InteractiveEarthGlobe = ({ activeLocation = 'india', onLocationSelect }) =
       const dotMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
       group.add(new THREE.Mesh(dotGeo, dotMat));
 
-      // Expanding sonar radar ripple
+      // Expanding sonar radar ripple in Electric Azure
       const ringGeo = new THREE.RingGeometry(0.32, 0.52, 32);
       const ringMat = new THREE.MeshBasicMaterial({
-        color: 0x00f0ff,
+        color: 0x38bdf8,
         transparent: true,
         opacity: 0.95,
         side: THREE.DoubleSide,
@@ -289,7 +333,7 @@ const InteractiveEarthGlobe = ({ activeLocation = 'india', onLocationSelect }) =
           velocityX *= 0.94; // Smooth inertia damping
           velocityY *= 0.94;
         } else {
-          targetRotationY += 0.0012; // Continuous smooth ambient drift
+          targetRotationY += 0.0015; // Continuous smooth ambient drift
         }
         globeGroup.rotation.y += (targetRotationY - globeGroup.rotation.y) * 0.08;
         globeGroup.rotation.x += (targetRotationX - globeGroup.rotation.x) * 0.08;
@@ -345,10 +389,16 @@ const InteractiveEarthGlobe = ({ activeLocation = 'india', onLocationSelect }) =
       coreMat.dispose();
       graticuleGeo.dispose();
       graticuleMat.dispose();
-      haloGeo.dispose();
-      haloMat.dispose();
+      atmosphereGeo.dispose();
+      atmosphereMat.dispose();
+      innerRimGeo.dispose();
+      innerRimMat.dispose();
       circleTexture.dispose();
       earthTexture.dispose();
+      if (pointsMesh) {
+        pointsMesh.geometry.dispose();
+        pointsMesh.material.dispose();
+      }
     };
   }, []);
 

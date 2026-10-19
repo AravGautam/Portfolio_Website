@@ -385,6 +385,48 @@ class SoundEngine {
   }
 
   /**
+   * Harmonious Dual-Tone Success Chime
+   */
+  playSuccess() {
+    if (this.muted) return;
+    this.initContext();
+    if (!this.ctx) return;
+
+    const doSuccess = () => {
+      try {
+        const now = this.ctx.currentTime;
+        // Two ascending harmonic tones (523.25Hz C5 -> 659.25Hz E5 -> 783.99Hz G5)
+        const notes = [523.25, 659.25, 783.99];
+        notes.forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.09);
+
+          gain.gain.setValueAtTime(0.001, now + idx * 0.09);
+          gain.gain.exponentialRampToValueAtTime(0.18, now + idx * 0.09 + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.09 + 0.35);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc.start(now + idx * 0.09);
+          osc.stop(now + idx * 0.09 + 0.38);
+        });
+      } catch {
+        // Ignore
+      }
+    };
+
+    if (this.ctx.state === 'suspended') {
+      this.ctx.resume().then(doSuccess).catch(() => {});
+    } else {
+      doSuccess();
+    }
+  }
+
+  /**
    * Resonant Harmonic Chime (Used for skill constellation & interactive chips)
    */
   playNote(freq = 528) {

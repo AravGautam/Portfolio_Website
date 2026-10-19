@@ -54,7 +54,6 @@ const LuxuryChronometerWatch = ({ timezone = 'Asia/Kolkata' }) => {
 
   return (
     <div
-      data-cursor="explore"
       onMouseEnter={() => soundEngine.playHover?.()}
       className="relative w-full h-full rounded-full border border-black/10 dark:border-white/20 flex items-center justify-center transition-transform duration-300 hover:scale-[1.02] shadow-[0_24px_70px_rgba(0,0,0,0.95)] cursor-none group/watch"
     >

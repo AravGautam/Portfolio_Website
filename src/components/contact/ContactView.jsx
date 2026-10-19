@@ -4,6 +4,7 @@ import WebGLCanvas from '../webgl/WebGLCanvas';
 import { GlobeScene } from '../webgl/GlobeScene';
 import { Send, Check, Copy, ExternalLink, Radio, Mail, Github, Linkedin, Twitter, Instagram, RefreshCw } from 'lucide-react';
 import MagneticWrapper from '../ui/MagneticWrapper';
+import ShockwaveButton from '../ui/ShockwaveButton';
 import { soundEngine } from '../../audio/soundEngine';
 import AudioCreditsModal from '../ui/AudioCreditsModal';
 import { showToast } from '../ui/Toast';
@@ -67,7 +68,7 @@ export const ContactView = () => {
               <span>Contact</span>
             </div>
             <h1 className="text-4xl sm:text-6xl font-display font-extrabold text-white tracking-tight">
-              Get In Touch
+              Get In <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-sky-300 to-cyan-400">Touch</span>
             </h1>
           </div>
 
@@ -91,6 +92,9 @@ export const ContactView = () => {
               </div>
               <span className="font-mono text-xs text-gray-400">3D Earth</span>
             </div>
+
+            {/* Subtle Ambient Radial Glow */}
+            <div className="absolute inset-0 bg-radial from-blue-600/15 via-cyan-500/5 to-transparent pointer-events-none -z-0" />
 
             {/* 3D Globe WebGL Canvas */}
             <div className="absolute inset-0 z-0">
@@ -196,23 +200,16 @@ export const ContactView = () => {
                   </div>
 
                   <div className="flex items-center gap-3 pt-1">
-                    <button
+                    <ShockwaveButton
                       type="submit"
                       disabled={formStatus === 'sending'}
-                      className="pill-btn-3d flex-1 py-3 text-white font-mono font-bold text-xs flex items-center justify-center gap-2 shadow-lg cursor-pointer"
-                    >
-                      {formStatus === 'sending' ? (
-                        <>
-                          <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          <span>Sending...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Send className="w-3.5 h-3.5 text-cyan-400" />
-                          <span>Send Message</span>
-                        </>
-                      )}
-                    </button>
+                      text={formStatus === 'sending' ? 'Sending...' : 'Send Message'}
+                      icon={formStatus === 'sending' ? null : <Send className="w-3.5 h-3.5 text-cyan-600" />}
+                      initialColor="white"
+                      autoReset={true}
+                      resetDelay={1500}
+                      className="flex-1 py-3.5 shadow-xl text-xs font-bold"
+                    />
 
                     <button
                       type="button"

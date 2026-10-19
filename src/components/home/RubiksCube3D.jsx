@@ -223,7 +223,7 @@ const RubiksCube3D = () => {
 
   return (
     <div
-      data-cursor="drag"
+      data-cursor="cube"
       className="relative w-full h-full flex items-center justify-center select-none overflow-hidden"
     >
       {/* Soft Studio Radial Spotlight */}

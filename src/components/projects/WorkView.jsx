@@ -5,6 +5,7 @@ import { ProjectVisualizerScene } from '../webgl/ProjectVisualizer';
 import ProjectModal from './ProjectModal';
 import { ExternalLink, Github, ChevronRight, Layers, Eye, Check } from 'lucide-react';
 import MagneticWrapper from '../ui/MagneticWrapper';
+import ShockwaveButton from '../ui/ShockwaveButton';
 import { soundEngine } from '../../audio/soundEngine';
 
 export const WorkView = () => {
@@ -44,7 +45,7 @@ export const WorkView = () => {
               <span>Crafting Scalable Systems</span>
             </div>
             <h1 className="text-4xl sm:text-6xl font-display font-extrabold text-white tracking-tight">
-              PROJECT <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-sky-300 to-cyan-400">SHOWCASE</span>
+              Project <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-sky-300 to-cyan-400">Showcase</span>
             </h1>
           </div>
 
@@ -85,13 +86,14 @@ export const WorkView = () => {
               </div>
 
               <MagneticWrapper strength={0.3}>
-                <button
+                <ShockwaveButton
+                  text="View Details"
+                  icon={<Eye className="w-3.5 h-3.5" />}
+                  initialColor="black"
                   onClick={() => handleOpenDetail(activeProject)}
-                  className="pill-btn-3d text-xs font-mono font-bold px-6 py-3 text-white flex items-center gap-2 cursor-pointer shadow-lg"
-                >
-                  <Eye className="w-3.5 h-3.5" />
-                  <span>View Details</span>
-                </button>
+                  autoReset={true}
+                  className="px-6 py-3 shadow-lg"
+                />
               </MagneticWrapper>
             </div>
           </div>
@@ -151,13 +153,14 @@ export const WorkView = () => {
 
               {/* Action Buttons */}
               <div className="flex items-center gap-3 pt-2">
-                <button
+                <ShockwaveButton
+                  text="Project Overview"
+                  icon={<ChevronRight className="w-3.5 h-3.5" />}
+                  initialColor="white"
                   onClick={() => handleOpenDetail(activeProject)}
-                  className="pill-btn-white-3d flex-1 py-3 text-black font-mono font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-lg"
-                >
-                  <span>Project Overview</span>
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </button>
+                  autoReset={true}
+                  className="flex-1 py-3 shadow-lg"
+                />
 
                 {activeProject.githubLink && (
                   <a

@@ -153,7 +153,7 @@ export const AboutView = () => {
               <span>Background</span>
             </div>
             <h1 className="text-4xl sm:text-6xl font-display font-extrabold text-white tracking-tight">
-              About Me
+              About <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-sky-300 to-cyan-400">Me</span>
             </h1>
           </div>
 
