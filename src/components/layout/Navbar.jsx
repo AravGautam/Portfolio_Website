@@ -40,7 +40,7 @@ export const Navbar = () => {
     document.addEventListener('mousedown', handleClickOutside);
 
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('scrll', handleScroll);
       window.removeEventListener('toggle-command-menu', handleToggleCommand);
       document.removeEventListener('mousedown', handleClickOutside);
     };
@@ -86,9 +86,8 @@ export const Navbar = () => {
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled ? 'py-3 bg-black/90 backdrop-blur-md border-b border-white/10 shadow-2xl' : 'py-4 bg-transparent'
-        }`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'py-3 bg-black/90 backdrop-blur-md border-b border-white/10 shadow-2xl' : 'py-4 bg-transparent'
+          }`}
       >
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 lg:px-12 flex items-center justify-between">
           {/* Brand Left: Ꮧ𝓖 Monogram */}
@@ -249,9 +248,8 @@ export const Navbar = () => {
               </div>
               <button
                 onClick={() => handleMoreItemClick('/experiments', 'labs')}
-                className={`w-full py-2.5 px-4 rounded-xl text-left font-mono text-xs flex items-center justify-between cursor-pointer transition-colors ${
-                  location.pathname === '/experiments' ? 'bg-white/10 text-white font-bold' : 'text-gray-300 hover:text-white hover:bg-white/5'
-                }`}
+                className={`w-full py-2.5 px-4 rounded-xl text-left font-mono text-xs flex items-center justify-between cursor-pointer transition-colors ${location.pathname === '/experiments' ? 'bg-white/10 text-white font-bold' : 'text-gray-300 hover:text-white hover:bg-white/5'
+                  }`}
               >
                 <span className="flex items-center gap-2">
                   <FlaskConical className="w-3.5 h-3.5 text-cyan-400" />
