@@ -79,37 +79,19 @@ export const ContactView = () => {
         </div>
 
         {/* 3D Earth Globe (Left) + Contact Form & Channels (Right) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          {/* Left Column: 3D Earth Globe (7 cols) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+          {/* Left Column: 3D Earth Globe (7 cols) - Frameless Floating in Space */}
           <div
-            className="lg:col-span-7 relative h-[420px] sm:h-[540px] rounded-3xl bg-[#0a0a0c] border border-white/10 overflow-hidden flex flex-col justify-between p-6 shadow-2xl"
-            data-cursor="explore"
+            className="lg:col-span-7 relative min-h-[520px] lg:min-h-0 lg:h-full flex items-center justify-center overflow-hidden"
+            data-cursor="drag"
           >
-            {/* Top Overlay */}
-            <div className="relative z-10 flex items-center justify-between pointer-events-none">
-              <div className="flex items-center gap-2 text-xs bg-black/80 border border-white/10 px-3.5 py-1.5 rounded-full text-gray-200 font-mono text-[11px]">
-                <span>Madhya Pradesh, India</span>
-              </div>
-              <span className="font-mono text-xs text-gray-400">3D Earth</span>
-            </div>
-
-            {/* Subtle Ambient Radial Glow */}
-            <div className="absolute inset-0 bg-radial from-blue-600/15 via-cyan-500/5 to-transparent pointer-events-none -z-0" />
-
-            {/* 3D Globe WebGL Canvas */}
             <div className="absolute inset-0 z-0">
               <WebGLCanvas createScene={createGlobeScene} className="w-full h-full" />
-            </div>
-
-            {/* Bottom Geospatial Info */}
-            <div className="relative z-10 flex items-center justify-between pt-3 border-t border-white/5 font-mono text-[11px] text-gray-400 pointer-events-none">
-              <span>Interactive Geospatial Mesh</span>
-              <span className="text-blue-400">Open for Worldwide Roles</span>
             </div>
           </div>
 
           {/* Right Column: Contact Action Form + Social Matrix (5 cols) */}
-          <div className="lg:col-span-5 space-y-6">
+          <div className="lg:col-span-5 flex flex-col gap-6">
             {/* Contact Form Card */}
             <div className="p-7 rounded-3xl bg-[#0a0a0c]/80 border border-white/10 backdrop-blur-xl shadow-2xl space-y-4">
               <div className="flex items-center justify-between">
@@ -208,20 +190,22 @@ export const ContactView = () => {
                       initialColor="white"
                       autoReset={true}
                       resetDelay={1500}
-                      className="flex-1 py-3.5 shadow-xl text-xs font-bold"
+                      className="flex-1 py-3.5 shadow-xl font-script text-base sm:text-lg font-bold tracking-wider"
                     />
 
                     <button
                       type="button"
                       onClick={copyEmail}
-                      className={`text-xs font-mono flex items-center gap-1.5 px-5 py-3 cursor-pointer transition-all duration-300 ${
+                      className={`flex items-center gap-2 px-5 py-3 cursor-pointer transition-all duration-300 ${
                         copied
                           ? 'pill-btn-dented text-cyan-400'
-                          : 'pill-btn-3d text-gray-300 hover:text-white'
+                          : 'pill-btn-3d text-gray-200 hover:text-white'
                       }`}
                     >
                       {copied ? <Check className="w-3.5 h-3.5 text-cyan-400" /> : <Copy className="w-3.5 h-3.5" />}
-                      <span>{copied ? 'Copied' : 'Copy'}</span>
+                      <span className="font-script text-base sm:text-lg font-bold tracking-wider">
+                        {copied ? 'Copied' : 'Copy'}
+                      </span>
                     </button>
                   </div>
                 </form>

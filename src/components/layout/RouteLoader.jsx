@@ -66,7 +66,7 @@ export const RouteLoader = ({ routeName, isVisible, onFinished }) => {
 
   return (
     <div
-      className={`fixed inset-0 z-[9990] bg-black/90 backdrop-blur-md flex flex-col items-center justify-center pointer-events-none transition-opacity duration-250 ${
+      className={`fixed inset-0 z-[9990] bg-[#030308]/60 backdrop-blur-sm flex flex-col items-center justify-center pointer-events-none transition-opacity duration-250 ${
         opacity === 0 ? 'opacity-0' : 'opacity-100'
       }`}
     >
@@ -75,7 +75,7 @@ export const RouteLoader = ({ routeName, isVisible, onFinished }) => {
           <span>LOADING ROUTE</span>
         </div>
 
-        <h2 className="text-4xl sm:text-5xl font-mono font-extrabold text-white tracking-widest">
+        <h2 className="text-5xl sm:text-7xl font-script font-bold text-white tracking-widest drop-shadow-[0_0_24px_rgba(7,129,255,0.4)]">
           {scrambled}
         </h2>
 

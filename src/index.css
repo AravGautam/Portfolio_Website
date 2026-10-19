@@ -1,5 +1,19 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'Always In The Star';
+  src: url('/fonts/AlwaysInTheStar.ttf') format('truetype'),
+       url('/always_in_the_star/Always in the Star.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --font-mono: 'Geist Mono', 'JetBrains Mono', monospace;
+  --font-script: 'Always In The Star', cursive, sans-serif;
+}
+
 /* Global Unlayered Rule: Enforces custom cursor on fine pointers across 100% of DOM */
 @media (pointer: fine) {
 
@@ -54,7 +68,12 @@
   code,
   pre,
   .font-mono {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Geist Mono', 'JetBrains Mono', monospace;
+  }
+
+  .font-script,
+  .font-signature {
+    font-family: 'Always In The Star', cursive, sans-serif;
   }
 
   /* Custom Sleek Minimalist Scrollbar */
@@ -120,7 +139,7 @@
 }
 
 .cyber-badge-azure {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', 'JetBrains Mono', monospace;
   font-size: 0.75rem;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -428,4 +447,53 @@
 .text-rotate-3d-stage {
   perspective: 450px;
   transform-style: preserve-3d;
+}
+
+/* Fluid Aurora Continuous Fallback Keyframes */
+@keyframes auroraFlow1 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translate3d(8vw, -6vh, 0) scale(1.18) rotate(14deg);
+    opacity: 0.8;
+  }
+}
+
+@keyframes auroraFlow2 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1.1) rotate(0deg);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translate3d(-10vw, 8vh, 0) scale(0.92) rotate(-18deg);
+    opacity: 0.75;
+  }
+}
+
+@keyframes auroraFlow3 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(0.95);
+    opacity: 0.45;
+  }
+  50% {
+    transform: translate3d(6vw, 10vh, 0) scale(1.22);
+    opacity: 0.7;
+  }
+}
+
+.animate-aurora-blob-1 {
+  animation: auroraFlow1 18s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.animate-aurora-blob-2 {
+  animation: auroraFlow2 24s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.animate-aurora-blob-3 {
+  animation: auroraFlow3 20s ease-in-out infinite;
+  will-change: transform, opacity;
 }

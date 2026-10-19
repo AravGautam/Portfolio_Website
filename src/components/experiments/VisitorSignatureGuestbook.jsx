@@ -636,7 +636,7 @@ export const VisitorSignatureGuestbook = () => {
                   initialColor="white"
                   autoReset={true}
                   resetDelay={1000}
-                  className="w-full py-2.5 text-xs font-mono font-bold shadow-lg"
+                  className="w-full py-3 font-script text-base sm:text-lg font-bold tracking-wider shadow-lg"
                 />
               </div>
             </div>

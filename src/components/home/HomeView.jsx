@@ -111,7 +111,7 @@ const TimezoneShockwaveButton = ({ item, isSelected, timeText, onSelect, classNa
       ref={buttonRef}
       onClick={handleClick}
       onMouseEnter={() => soundEngine.playHover()}
-      className={`group/btn relative overflow-hidden isolate text-[11px] rounded-full flex items-center justify-between px-3.5 py-1.5 transition-all duration-300 cursor-pointer w-[150px] sm:w-[160px] select-none ${
+      className={`group/btn relative overflow-hidden isolate text-[11px] rounded-full flex items-center justify-between px-3.5 py-1.5 transition-all duration-300 cursor-pointer w-[170px] sm:w-[180px] select-none ${
         isSelected
           ? 'pill-btn-white-3d text-black font-semibold'
           : 'pill-btn-3d text-gray-300 hover:text-white'
@@ -137,17 +137,19 @@ const TimezoneShockwaveButton = ({ item, isSelected, timeText, onSelect, classNa
         />
       ))}
 
-      <div className="relative z-10 flex items-center gap-1.5 pointer-events-none">
-        <FlagComponent />
-        <span className="font-semibold">{item.label}</span>
+      <div className="relative z-10 flex items-center justify-between w-full gap-4 pointer-events-none">
+        <div className="flex items-center gap-2 shrink-0">
+          <FlagComponent />
+          <span className="font-semibold text-xs tracking-tight">{item.label}</span>
+        </div>
+        <span
+          className={`font-mono text-[10px] tracking-tight shrink-0 tabular-nums ${
+            isSelected ? 'text-black font-bold' : 'text-gray-400'
+          }`}
+        >
+          {timeText}
+        </span>
       </div>
-      <span
-        className={`relative z-10 font-mono text-[10px] pointer-events-none ${
-          isSelected ? 'text-black font-bold' : 'text-gray-400'
-        }`}
-      >
-        {timeText}
-      </span>
     </button>
   );
 };
@@ -675,7 +677,7 @@ export const HomeView = () => {
                         isSelected={activeLocation === 'uk'}
                         timeText={liveTimes.uk || TIMEZONE_CONFIG.uk.badge}
                         onSelect={() => setActiveLocation('uk')}
-                        className="lg:mr-[115px]"
+                        className="lg:mr-[100px]"
                       />
 
                       {/* India: Middle clock arc */}
@@ -684,7 +686,7 @@ export const HomeView = () => {
                         isSelected={activeLocation === 'india'}
                         timeText={liveTimes.india || TIMEZONE_CONFIG.india.badge}
                         onSelect={() => setActiveLocation('india')}
-                        className="lg:mr-[80px]"
+                        className="lg:mr-[68px]"
                       />
 
                       {/* USA: Lower clock arc */}
@@ -693,7 +695,7 @@ export const HomeView = () => {
                         isSelected={activeLocation === 'usa'}
                         timeText={liveTimes.usa || TIMEZONE_CONFIG.usa.badge}
                         onSelect={() => setActiveLocation('usa')}
-                        className="lg:mr-[45px]"
+                        className="lg:mr-[36px]"
                       />
                     </div>
                   </div>

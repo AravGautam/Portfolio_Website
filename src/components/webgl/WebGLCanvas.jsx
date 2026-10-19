@@ -101,6 +101,18 @@ export const WebGLCanvas = ({
       if (container && renderer.domElement && container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
       }
+
+      // Immediately release WebGL context slot to prevent context starvation
+      try {
+        const gl = renderer.getContext();
+        if (gl) {
+          const loseContext = gl.getExtension('WEBGL_lose_context');
+          if (loseContext) loseContext.loseContext();
+        }
+      } catch (e) {
+        // Safe context disposal fallback
+      }
+
       renderer.dispose();
     };
   }, [createScene, sceneRef, onSceneReady]);

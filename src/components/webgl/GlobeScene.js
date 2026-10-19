@@ -2,14 +2,14 @@ import * as THREE from 'three';
 import { soundEngine } from '../../audio/soundEngine';
 
 /**
- * Ultra-High Quality 3D Earth Globe (Contact Page)
- * - Deep space obsidian navy oceanic sphere with NASA dark surface
- * - Luminous continental landmass particle matrix (Fibonacci-distributed points from topology)
- * - Volumetric spherical atmosphere glow shader (soft Fresnel bloom in electric royal azure)
- * - Astronomical graticule meridians & geodesic latitude/longitude mesh
+ * Ultra-High Quality Realistic 3D Earth Globe (Contact Page)
+ * - 100% Real NASA satellite Earth texture mapping (true natural continents, oceans, vegetation, deserts)
+ * - Night city lights on the dark hemisphere with warm golden illumination
+ * - Specular water reflection so oceans glisten under sunlight while land remains natural matte
+ * - Clean, simple, and realistic: NO thick artificial blue glow rings or heavy halos
  * - Geospatial pinpoint at Satna, Madhya Pradesh, India (24.5854° N, 80.8293° E)
- * - Concentric expanding sonar radar rings & flowing intercontinental data transmission arcs
- * - Physics-based 3D drag rotation + smooth idle drift & camera parallax
+ * - Concentric sonar radar rings & radiant location glow beacon
+ * - Physics drag-to-rotate, auto-drift, and dynamic responsive camera fitting
  */
 export class GlobeScene {
   constructor(container) {
@@ -19,7 +19,8 @@ export class GlobeScene {
 
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(45, this.width / this.height, 0.1, 1000);
-    this.camera.position.set(0, 0, 26);
+    this.baseCameraDistance = 26.0;
+    this.camera.position.set(0, 0, this.baseCameraDistance);
 
     this.mouse = new THREE.Vector2(0, 0);
     this.targetMouse = new THREE.Vector2(0, 0);
@@ -27,17 +28,18 @@ export class GlobeScene {
     this.previousMousePosition = { x: 0, y: 0 };
     this.time = 0;
 
-    this.globeRadius = 9.5;
+    this.globeRadius = 9.2;
     this.globeGroup = new THREE.Group();
     this.scene.add(this.globeGroup);
 
+    this.sunPosition = new THREE.Vector3(18.0, 12.0, 16.0);
+
     this.initLighting();
     this.initEarthMesh();
-    this.initContinentalParticles();
-    this.initAtmosphericGlow();
     this.initSatnaPinpoint();
-    this.initTransmissionArcs();
     this.bindEvents();
+
+    this.resize(this.width, this.height);
   }
 
   latLongToVector3(lat, lon, radius = this.globeRadius) {
@@ -50,226 +52,144 @@ export class GlobeScene {
   }
 
   initLighting() {
-    // Balanced lighting for deep obsidian surface and luminous land particles
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+    // Subtle deep-space ambient light
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.35);
     this.scene.add(ambientLight);
 
-    const keyLight = new THREE.DirectionalLight(0x38bdf8, 1.4);
-    keyLight.position.set(16, 12, 18);
-    this.scene.add(keyLight);
+    // Primary sunlight directional light
+    const sunLight = new THREE.DirectionalLight(0xfff8ee, 1.8);
+    sunLight.position.copy(this.sunPosition);
+    this.scene.add(sunLight);
 
-    const rimLight = new THREE.DirectionalLight(0x0781ff, 1.1);
-    rimLight.position.set(-18, -12, -12);
+    // Subtle cool rim light
+    const rimLight = new THREE.DirectionalLight(0x38bdf8, 0.4);
+    rimLight.position.set(-18.0, -10.0, -12.0);
     this.scene.add(rimLight);
   }
 
   initEarthMesh() {
     const textureLoader = new THREE.TextureLoader();
 
-    // High-resolution dark Earth texture
-    const earthTexture = textureLoader.load('/earth-dark.jpg');
-    earthTexture.wrapS = THREE.RepeatWrapping;
-    earthTexture.wrapT = THREE.ClampToEdgeWrapping;
+    // 1. Real NASA Satellite Earth Texture (true natural colors: deep blue oceans, forests, deserts, snow)
+    this.dayTexture = textureLoader.load('/earth-real.jpg', () => {
+      if (this.earthMat) this.earthMat.needsUpdate = true;
+    });
+    this.dayTexture.wrapS = THREE.RepeatWrapping;
+    this.dayTexture.wrapT = THREE.ClampToEdgeWrapping;
+    this.dayTexture.minFilter = THREE.LinearMipmapLinearFilter;
+    this.dayTexture.magFilter = THREE.LinearFilter;
 
-    // 1. Core Sphere: Deep space obsidian navy oceans (eliminates greenish murky tint)
+    // 2. Specular Ocean Reflection Map (water reflects sunlight, land stays matte)
+    this.specularTexture = textureLoader.load('/earth-specular.jpg', () => {
+      if (this.earthMat) this.earthMat.needsUpdate = true;
+    });
+    this.specularTexture.wrapS = THREE.RepeatWrapping;
+    this.specularTexture.wrapT = THREE.ClampToEdgeWrapping;
+
+    // 3. Night City Lights Map (twinkling amber city lights on the night hemisphere)
+    this.lightsTexture = textureLoader.load('/earth-lights.png', () => {
+      if (this.earthMat) this.earthMat.needsUpdate = true;
+    });
+    this.lightsTexture.wrapS = THREE.RepeatWrapping;
+    this.lightsTexture.wrapT = THREE.ClampToEdgeWrapping;
+
+    // Photorealistic Day/Night Earth Shader (Simple, Natural, Realistic)
     const earthGeo = new THREE.SphereGeometry(this.globeRadius, 64, 64);
-    const earthMat = new THREE.MeshStandardMaterial({
-      map: earthTexture,
-      color: 0x030715,
-      roughness: 0.85,
-      metalness: 0.15,
-      emissive: new THREE.Color(0x021838),
-      emissiveIntensity: 0.4
-    });
+    this.earthMat = new THREE.ShaderMaterial({
+      vertexShader: `
+        varying vec2 vUv;
+        varying vec3 vWorldNormal;
+        varying vec3 vWorldPosition;
 
-    this.earthSphere = new THREE.Mesh(earthGeo, earthMat);
-    this.globeGroup.add(this.earthSphere);
-
-    // 2. Wireframe Graticule Meridians in deep royal azure
-    const graticuleGeo = new THREE.SphereGeometry(this.globeRadius + 0.06, 36, 18);
-    const graticuleMat = new THREE.MeshBasicMaterial({
-      color: 0x0781ff,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.12
-    });
-    this.graticule = new THREE.Mesh(graticuleGeo, graticuleMat);
-    this.globeGroup.add(this.graticule);
-  }
-
-  initContinentalParticles() {
-    // Soft circular glowing particle texture
-    const createCircleTexture = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = 32;
-      canvas.height = 32;
-      const ctx = canvas.getContext('2d');
-      const grad = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
-      grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
-      grad.addColorStop(0.35, 'rgba(56, 189, 248, 0.9)');
-      grad.addColorStop(0.7, 'rgba(7, 129, 255, 0.35)');
-      grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, 32, 32);
-      return new THREE.CanvasTexture(canvas);
-    };
-
-    const circleTexture = createCircleTexture();
-
-    const buildPoints = (imgData, mapWidth, mapHeight) => {
-      const particleCount = 36000;
-      const positions = [];
-      const colors = [];
-
-      const landDotColor = new THREE.Color(0xe0f2fe);   // Crisp luminous cyan-white
-      const landAccentColor = new THREE.Color(0x38bdf8); // Radiant electric azure
-
-      for (let i = 0; i < particleCount; i++) {
-        const phi = Math.acos(1 - (2 * (i + 0.5)) / particleCount);
-        const theta = Math.PI * (1 + Math.sqrt(5)) * (i + 0.5);
-
-        const lat = 90 - (phi * 180) / Math.PI;
-        let lon = ((theta * 180) / Math.PI) % 360;
-        if (lon > 180) lon -= 360;
-        if (lon < -180) lon += 360;
-
-        const u = Math.min(Math.max((lon + 180) / 360, 0), 0.999);
-        const v = Math.min(Math.max((90 - lat) / 180, 0), 0.999);
-
-        const px = Math.floor(u * mapWidth);
-        const py = Math.floor(v * mapHeight);
-        const rawVal = imgData[(py * mapWidth + px) * 4];
-
-        const isLand = rawVal > 0;
-
-        if (isLand) {
-          const r = this.globeRadius + 0.12;
-          const pos = this.latLongToVector3(lat, lon, r);
-          positions.push(pos.x, pos.y, pos.z);
-
-          // Alternating bright white and electric azure highlights
-          if (Math.random() < 0.45) {
-            colors.push(landDotColor.r, landDotColor.g, landDotColor.b);
-          } else {
-            colors.push(landAccentColor.r, landAccentColor.g, landAccentColor.b);
-          }
+        void main() {
+          vUv = uv;
+          vWorldNormal = normalize((modelMatrix * vec4(normal, 0.0)).xyz);
+          vec4 worldPos = modelMatrix * vec4(position, 1.0);
+          vWorldPosition = worldPos.xyz;
+          gl_Position = projectionMatrix * viewMatrix * worldPos;
         }
+      `,
+      fragmentShader: `
+        varying vec2 vUv;
+        varying vec3 vWorldNormal;
+        varying vec3 vWorldPosition;
+
+        uniform sampler2D dayMap;
+        uniform sampler2D specularMap;
+        uniform sampler2D lightsMap;
+        uniform vec3 sunPosition;
+        uniform vec3 cameraWorldPosition;
+
+        void main() {
+          vec4 dayColor = texture2D(dayMap, vUv);
+          vec4 specColor = texture2D(specularMap, vUv);
+          vec4 lightsColor = texture2D(lightsMap, vUv);
+
+          vec3 normal = normalize(vWorldNormal);
+          vec3 sunDir = normalize(sunPosition);
+          vec3 viewDir = normalize(cameraWorldPosition - vWorldPosition);
+
+          // Sunlight incidence angle
+          float sunDot = dot(normal, sunDir);
+
+          // Smooth twilight terminator between day and night
+          float dayFactor = smoothstep(-0.12, 0.18, sunDot);
+
+          // Daylight diffuse shading
+          float diffuse = max(sunDot, 0.0);
+          float ambient = 0.12;
+          vec3 litDay = dayColor.rgb * (ambient + diffuse * 0.92);
+
+          // Realistic ocean specular glint (sun glisten on water)
+          vec3 halfDir = normalize(sunDir + viewDir);
+          float specFactor = pow(max(dot(normal, halfDir), 0.0), 28.0);
+          vec3 sunGlint = vec3(1.0, 0.95, 0.85) * specFactor * specColor.r * 0.9 * max(sunDot, 0.0);
+
+          // Night side city lights (amber/gold cities glowing in darkness)
+          float nightFactor = 1.0 - smoothstep(-0.18, 0.08, sunDot);
+          vec3 nightLights = lightsColor.rgb * vec3(1.0, 0.86, 0.62) * nightFactor * 1.5;
+
+          // Natural day + night blending
+          vec3 surface = mix(nightLights, litDay + sunGlint, dayFactor);
+
+          // Ultra-subtle, natural atmospheric horizon edge (NO thick blue ring!)
+          float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), 4.2);
+          vec3 subtleRim = vec3(0.2, 0.5, 0.95) * fresnel * 0.28 * max(sunDot + 0.35, 0.0);
+
+          gl_FragColor = vec4(surface + subtleRim, 1.0);
+        }
+      `,
+      uniforms: {
+        dayMap: { value: this.dayTexture },
+        specularMap: { value: this.specularTexture },
+        lightsMap: { value: this.lightsTexture },
+        sunPosition: { value: this.sunPosition },
+        cameraWorldPosition: { value: this.camera.position }
       }
-
-      const pointsGeo = new THREE.BufferGeometry();
-      pointsGeo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-      pointsGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-
-      const pointsMat = new THREE.PointsMaterial({
-        size: 0.22,
-        map: circleTexture,
-        vertexColors: true,
-        transparent: true,
-        opacity: 0.95,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false
-      });
-
-      this.pointsMesh = new THREE.Points(pointsGeo, pointsMat);
-      this.globeGroup.add(this.pointsMesh);
-    };
-
-    // Sample from topology texture for exact landmass contours
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.src = '/earth-topology.png';
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      canvas.width = 1024;
-      canvas.height = 512;
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-      buildPoints(imgData, canvas.width, canvas.height);
-    };
-  }
-
-  initAtmosphericGlow() {
-    // 1. Outer Volumetric Atmosphere Shader (Soft Fresnel Bloom, NO flat cardboard ring!)
-    const outerAtmosphereGeo = new THREE.SphereGeometry(this.globeRadius * 1.14, 64, 64);
-    const outerAtmosphereMat = new THREE.ShaderMaterial({
-      vertexShader: `
-        varying vec3 vNormal;
-        void main() {
-          vNormal = normalize(normalMatrix * normal);
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-      `,
-      fragmentShader: `
-        varying vec3 vNormal;
-        uniform vec3 glowColor;
-        void main() {
-          // Fresnel rim: reaches maximum at glancing silhouette edges, fades smoothly to zero
-          float intensity = pow(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0))), 2.4);
-          gl_FragColor = vec4(glowColor, intensity * 0.82);
-        }
-      `,
-      uniforms: {
-        glowColor: { value: new THREE.Color(0x0781ff) } // Radiant Electric Azure
-      },
-      blending: THREE.AdditiveBlending,
-      side: THREE.BackSide,
-      transparent: true,
-      depthWrite: false
     });
 
-    this.outerAtmosphere = new THREE.Mesh(outerAtmosphereGeo, outerAtmosphereMat);
-    this.scene.add(this.outerAtmosphere);
-
-    // 2. Inner Horizon Twilight Rim Shader (subtle cyan planetary limb on front surface)
-    const innerRimGeo = new THREE.SphereGeometry(this.globeRadius + 0.02, 64, 64);
-    const innerRimMat = new THREE.ShaderMaterial({
-      vertexShader: `
-        varying vec3 vNormal;
-        void main() {
-          vNormal = normalize(normalMatrix * normal);
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-      `,
-      fragmentShader: `
-        varying vec3 vNormal;
-        uniform vec3 rimColor;
-        void main() {
-          float intensity = pow(1.0 - max(0.0, dot(vNormal, vec3(0.0, 0.0, 1.0))), 3.6);
-          gl_FragColor = vec4(rimColor, intensity * 0.65);
-        }
-      `,
-      uniforms: {
-        rimColor: { value: new THREE.Color(0x38bdf8) } // Cyan Azure
-      },
-      blending: THREE.AdditiveBlending,
-      side: THREE.FrontSide,
-      transparent: true,
-      depthWrite: false
-    });
-
-    this.innerRim = new THREE.Mesh(innerRimGeo, innerRimMat);
-    this.globeGroup.add(this.innerRim);
+    this.earthSphere = new THREE.Mesh(earthGeo, this.earthMat);
+    this.globeGroup.add(this.earthSphere);
   }
 
   initSatnaPinpoint() {
     // Coordinates for Satna, Madhya Pradesh, India
     const satnaLat = 24.5854;
     const satnaLon = 80.8293;
-    this.satnaPos = this.latLongToVector3(satnaLat, satnaLon, this.globeRadius + 0.16);
+    this.satnaPos = this.latLongToVector3(satnaLat, satnaLon, this.globeRadius + 0.14);
 
     this.satnaGroup = new THREE.Group();
     this.satnaGroup.position.copy(this.satnaPos);
     this.satnaGroup.lookAt(this.satnaPos.clone().multiplyScalar(2));
 
-    // Concentric Sonar Pulse Rings in Electric Azure
+    // 1. Concentric Sonar Pulse Rings in Clean Sky-Blue
     this.sonarRings = [];
     for (let i = 0; i < 3; i++) {
-      const ringGeo = new THREE.RingGeometry(0.32 + i * 0.38, 0.38 + i * 0.38, 32);
+      const ringGeo = new THREE.RingGeometry(0.32 + i * 0.38, 0.40 + i * 0.38, 36);
       const ringMat = new THREE.MeshBasicMaterial({
         color: 0x38bdf8,
         transparent: true,
-        opacity: 0.9,
+        opacity: 0.85,
         side: THREE.DoubleSide
       });
       const ring = new THREE.Mesh(ringGeo, ringMat);
@@ -278,16 +198,38 @@ export class GlobeScene {
       this.sonarRings.push(ring);
     }
 
-    // Glowing Core Beacon Dot (Pure White)
-    const coreGeo = new THREE.SphereGeometry(0.26, 16, 16);
+    // 2. Luminous Glow Halo Disk around the core (glowing aura on the location)
+    const glowGeo = new THREE.RingGeometry(0.05, 0.7, 32);
+    const glowMat = new THREE.MeshBasicMaterial({
+      color: 0x38bdf8,
+      transparent: true,
+      opacity: 0.75,
+      side: THREE.DoubleSide,
+      blending: THREE.AdditiveBlending
+    });
+    this.locationGlowHalo = new THREE.Mesh(glowGeo, glowMat);
+    this.satnaGroup.add(this.locationGlowHalo);
+
+    // 3. Glowing Core Beacon Dot (Pure White center with soft cyan aura)
+    const coreGeo = new THREE.SphereGeometry(0.24, 16, 16);
     const coreMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
     this.satnaGroup.add(new THREE.Mesh(coreGeo, coreMat));
 
-    // Outer Target Crosshair lines in Electric Azure
-    const lineMat = new THREE.LineBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.75 });
+    const auraGeo = new THREE.SphereGeometry(0.42, 16, 16);
+    const auraMat = new THREE.MeshBasicMaterial({
+      color: 0x38bdf8,
+      transparent: true,
+      opacity: 0.55,
+      blending: THREE.AdditiveBlending
+    });
+    this.beaconAura = new THREE.Mesh(auraGeo, auraMat);
+    this.satnaGroup.add(this.beaconAura);
+
+    // 4. Outer Target Crosshair lines in Clean Sky-Blue
+    const lineMat = new THREE.LineBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.7 });
     const crossPoints = [
-      new THREE.Vector3(-1.3, 0, 0), new THREE.Vector3(1.3, 0, 0),
-      new THREE.Vector3(0, -1.3, 0), new THREE.Vector3(0, 1.3, 0)
+      new THREE.Vector3(-1.25, 0, 0), new THREE.Vector3(1.25, 0, 0),
+      new THREE.Vector3(0, -1.25, 0), new THREE.Vector3(0, 1.25, 0)
     ];
     const crossGeo = new THREE.BufferGeometry().setFromPoints(crossPoints);
     this.satnaGroup.add(new THREE.LineSegments(crossGeo, lineMat));
@@ -297,48 +239,6 @@ export class GlobeScene {
     // Initial orientation: Orient Satna, MP, India directly towards the camera
     this.globeGroup.rotation.y = -Math.PI * 0.72;
     this.globeGroup.rotation.x = 0.28;
-  }
-
-  initTransmissionArcs() {
-    this.arcGroup = new THREE.Group();
-    this.arcs = [];
-
-    const hubs = [
-      { lat: 51.5074, lon: -0.1278 },   // London
-      { lat: 37.7749, lon: -122.4194 }, // San Francisco
-      { lat: 35.6762, lon: 139.6503 },  // Tokyo
-      { lat: 1.3521, lon: 103.8198 },   // Singapore
-      { lat: -33.8688, lon: 151.2093 }  // Sydney
-    ];
-
-    hubs.forEach((hub, idx) => {
-      const endPos = this.latLongToVector3(hub.lat, hub.lon, this.globeRadius + 0.1);
-      const midPoint = this.satnaPos.clone().add(endPos).multiplyScalar(0.5);
-      const dist = this.satnaPos.distanceTo(endPos);
-      midPoint.setLength(this.globeRadius + Math.min(dist * 0.32, 3.8));
-
-      const curve = new THREE.QuadraticBezierCurve3(this.satnaPos, midPoint, endPos);
-      const points = curve.getPoints(45);
-      const arcGeo = new THREE.BufferGeometry().setFromPoints(points);
-      const arcMat = new THREE.LineBasicMaterial({
-        color: 0x0781ff,
-        transparent: true,
-        opacity: 0.55
-      });
-      const arcLine = new THREE.Line(arcGeo, arcMat);
-      this.arcGroup.add(arcLine);
-
-      // Flowing photon packet
-      const packet = new THREE.Mesh(
-        new THREE.SphereGeometry(0.16, 8, 8),
-        new THREE.MeshBasicMaterial({ color: 0xffffff })
-      );
-      this.arcGroup.add(packet);
-
-      this.arcs.push({ curve, packet, speed: 0.35 + idx * 0.08 });
-    });
-
-    this.globeGroup.add(this.arcGroup);
   }
 
   bindEvents() {
@@ -401,40 +301,63 @@ export class GlobeScene {
     this.time += delta;
     this.mouse.lerp(this.targetMouse, 0.05);
 
-    // Idle auto-drift when not dragging
+    // Keep camera world position updated in shader
+    if (this.earthMat && this.earthMat.uniforms.cameraWorldPosition) {
+      this.earthMat.uniforms.cameraWorldPosition.value.copy(this.camera.position);
+    }
+
+    // Smooth idle auto-drift when not dragging
     if (!this.isDragging) {
       this.globeGroup.rotation.y += delta * 0.035;
     }
 
-    // Concentric Sonar pulse rings animation
+    // Concentric Sonar pulse rings animation on Satna, MP, India
     if (this.sonarRings) {
       this.sonarRings.forEach((ring) => {
         const progress = (this.time * 0.8 + ring.userData.phase) % 1;
         const scale = 0.5 + progress * 2.2;
         ring.scale.set(scale, scale, 1);
-        ring.material.opacity = Math.max(0, 1 - progress);
+        ring.material.opacity = Math.max(0, (1 - progress) * 0.85);
       });
     }
 
-    // Flowing packets along transmission arcs
-    if (this.arcs) {
-      this.arcs.forEach((arc) => {
-        const t = (this.time * arc.speed) % 1;
-        const pt = arc.curve.getPoint(t);
-        arc.packet.position.copy(pt);
-      });
+    // Radiant beacon glow pulsation on user's location
+    if (this.beaconAura) {
+      const pulse = 1.0 + Math.sin(this.time * 3.2) * 0.22;
+      this.beaconAura.scale.set(pulse, pulse, pulse);
+    }
+    if (this.locationGlowHalo) {
+      const haloPulse = 1.0 + Math.sin(this.time * 2.2) * 0.14;
+      this.locationGlowHalo.scale.set(haloPulse, haloPulse, 1);
     }
 
-    // Subtle parallax response to mouse cursor
-    this.camera.position.x = this.mouse.x * 1.5;
-    this.camera.position.y = this.mouse.y * 1.0;
+    // Interactive subtle parallax response to mouse cursor
+    this.camera.position.x = this.mouse.x * 1.2;
+    this.camera.position.y = this.mouse.y * 0.8;
+    this.camera.position.z = this.baseCameraDistance || 26.0;
     this.camera.lookAt(0, 0, 0);
   }
 
   resize(width, height) {
+    if (!width || !height) return;
     this.width = width;
     this.height = height;
     this.camera.aspect = width / height;
+
+    // Dynamically calculate camera Z so the real Earth globe is comfortably framed and prominent
+    const aspect = width / height;
+    const fovRad = (this.camera.fov * Math.PI) / 180;
+    const targetRadius = this.globeRadius * 1.15;
+
+    let distance;
+    if (aspect < 1.0) {
+      distance = targetRadius / (Math.tan(fovRad / 2) * aspect);
+    } else {
+      distance = targetRadius / Math.tan(fovRad / 2);
+    }
+
+    this.baseCameraDistance = Math.max(distance, 22.5);
+    this.camera.position.z = this.baseCameraDistance;
     this.camera.updateProjectionMatrix();
   }
 
@@ -448,16 +371,11 @@ export class GlobeScene {
 
     if (this.earthSphere) {
       this.earthSphere.geometry.dispose();
-      this.earthSphere.material.dispose();
+      if (this.earthSphere.material) this.earthSphere.material.dispose();
     }
-    if (this.pointsMesh) {
-      this.pointsMesh.geometry.dispose();
-      this.pointsMesh.material.dispose();
-    }
-    if (this.outerAtmosphere) {
-      this.outerAtmosphere.geometry.dispose();
-      this.outerAtmosphere.material.dispose();
-    }
+    if (this.dayTexture) this.dayTexture.dispose();
+    if (this.specularTexture) this.specularTexture.dispose();
+    if (this.lightsTexture) this.lightsTexture.dispose();
   }
 }
 

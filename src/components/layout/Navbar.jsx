@@ -46,6 +46,10 @@ export const Navbar = () => {
     };
   }, []);
 
+  useEffect(() => {
+    setMoreOpen(false);
+  }, [location.pathname]);
+
   const handleNavClick = (item) => {
     soundEngine.playClick();
     setMobileMenuOpen(false);
@@ -70,11 +74,14 @@ export const Navbar = () => {
 
   const handleLogoClick = () => {
     soundEngine.playClick();
+    setMobileMenuOpen(false);
+    setMoreOpen(false);
     navigate('/');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const isMoreActive = location.pathname === '/experiments';
+  const isMoreSelected = isMoreActive || moreOpen;
 
   return (
     <>
@@ -121,8 +128,8 @@ export const Navbar = () => {
             <div className="relative" ref={moreRef}>
               <ShockwaveButton
                 text="More"
-                active={isMoreActive}
-                initialColor={isMoreActive ? 'white' : 'black'}
+                active={isMoreSelected}
+                initialColor={isMoreSelected ? 'white' : 'black'}
                 onClick={() => {
                   soundEngine.playClick();
                   setMoreOpen((prev) => !prev);

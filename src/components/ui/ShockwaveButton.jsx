@@ -119,6 +119,12 @@ export const ShockwaveButton = ({
     setOverrideIsWhite(nextIsWhite);
     if (!isControlled) {
       setInternalIsWhite(nextIsWhite);
+    } else {
+      // Auto-clear override state for controlled buttons so they resync with prop
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => {
+        setOverrideIsWhite(null);
+      }, Math.max(navigateDelay + 60, 300));
     }
 
     // Trigger 3D tumbler rolling text animation
@@ -202,7 +208,13 @@ export const ShockwaveButton = ({
       disabled={disabled}
       onClick={handleClick}
       onMouseEnter={() => soundEngine.playHover()}
-      className={`group relative overflow-hidden rounded-full font-mono text-xs font-semibold select-none isolate transition-all duration-300 ${
+      className={`group relative overflow-hidden rounded-full select-none isolate transition-all duration-300 ${
+        !className.includes('font-') ? 'font-mono' : ''
+      } ${
+        !/\btext-(xs|sm|base|lg|xl)\b/.test(className) ? 'text-xs' : ''
+      } ${
+        !/\bfont-(normal|medium|semibold|bold|extrabold)\b/.test(className) ? 'font-semibold' : ''
+      } ${
         disabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
       } ${
         isWhite ? 'pill-btn-white-3d text-black' : 'pill-btn-3d text-gray-200 hover:text-white'
